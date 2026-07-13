@@ -1,7 +1,7 @@
 {
   "system_id": "universal-project-gateway",
   "mvp_version": "0.1.0",
-  "checkpoint_status": "project_intelligence_cache_verified",
+  "checkpoint_status": "windows_operations_layer_verified",
   "implemented_capabilities": [
     "Validated PROJECT_MANIFEST.yaml contracts and persistent project registry",
     "Deterministic intent compilation and canonical R0-R4 policy decisions",
@@ -45,11 +45,15 @@
     "Rule-based Python, Node, and generic identity, entrypoint, dependency, module, test, docs, command, adapter, and risk summaries",
     "Compact cached project intelligence in task context without repeating a full repository walk on each prepared job",
     "CLI intelligence generate/list/show and read-only MCP gateway_get_project_intelligence cache retrieval",
-    "Additive project-intelligence schema, cache hash, and source fingerprint references in validation and evidence-chain records"
+    "Additive project-intelligence schema, cache hash, and source fingerprint references in validation and evidence-chain records",
+    "Read-only local doctor checks for Python/venv/import, Git, repository paths, registry/manifest, SQLite schema, adapters, sandbox, intelligence, evidence, and MCP imports",
+    "Read-only status reporting for registered projects, job state counts, latest terminal jobs, checkpoint, adapters, cache age, default sandbox, and evidence schema",
+    "Conservative cleanup planning with dry-run default, terminal-job retention, immediate-child containment, and registered-source/durable-path refusal",
+    "Windows doctor and clean-main fast-forward pull-and-verify helpers with consistent nonzero failure propagation"
   ],
   "verified_capabilities": [
     "Ruff and compileall checks passed",
-    "66 unit and integration tests passed, including deterministic UPG/Python/Node intelligence, refresh fingerprints, cache tamper refusal, cached context, protected-path/no-execution controls, CLI/MCP read-only retrieval, evidence integration, adapter contracts, both fixture flows, lease/recovery, cancellation, and idempotency",
+    "71 unit and integration tests passed, including doctor PASS/WARN/FAIL reporting, status aggregation, cleanup dry-run/protected-root controls, Windows helper coverage, deterministic UPG/Python/Node intelligence, evidence integration, adapter contracts, both fixture flows, lease/recovery, cancellation, and idempotency",
     "58 security tests passed, including sandbox controls plus evidence chain creation, canonical hashing, tamper detection, reorder/missing-event refusal, attestation binding, legacy compatibility, and runner phase coverage; one symlink-escape test skipped because this Windows process lacks symlink privilege",
     "The root UPG manifest and both fixture manifests passed structured manifest verification",
     "A UPG self-management job completed both mandatory allowlisted actions and produced an independently verified evidence bundle",
@@ -57,7 +61,7 @@
     "Two consecutive Windows verification demos passed with distinct job workspaces and evidence bundles",
     "Both demo evidence bundles preserve all 12 compatibility files and independently verify their additive event chains, unsigned attestations, and SHA-256 manifests",
     "Idempotent Git publication replay returned the original result and left exactly one commit",
-    "VERIFY_GATEWAY.bat completed with exit code 0 after project intelligence was added, including manifest verification, 124 passing tests, two demos, independent chain verification, and git diff --check"
+    "VERIFY_GATEWAY.bat completed with exit code 0 after the Windows operations layer was added, including manifest verification, 129 passing tests, two demos, independent chain verification, and git diff --check"
   ],
   "known_limitations": [
     "Both local sandbox backends remain application/process-level foundations and are not operating-system security boundaries",
@@ -81,8 +85,11 @@
     "Project intelligence is rule-based advisory metadata, not semantic code understanding or a policy authority",
     "Existing project-intelligence caches remain stale until explicit refresh; read-only CLI/MCP retrieval intentionally does not rescan source",
     "Bounded scans use metadata-only fingerprints for files above byte limits, so same-size changes beyond those limits require other source-integrity checks",
-    "No LLM summaries, model APIs, repository ingestion, vector or embedding database, dynamic adapter loading, or dependency installation is part of project intelligence"
+    "No LLM summaries, model APIs, repository ingestion, vector or embedding database, dynamic adapter loading, or dependency installation is part of project intelligence",
+    "Doctor and status are local snapshots rather than continuous monitoring; doctor imports but does not start the MCP transport",
+    "Intelligence freshness in status is cache-age-only and does not prove that the registered source is unchanged",
+    "Cleanup cannot terminate live processes and deletes nothing unless an operator supplies --execute after reviewing the dry-run plan"
   ],
-  "last_completed_checkpoint": "UPG-INTEL-001 deterministic project intelligence cache verified on Windows on 2026-07-14 from the v0.1.6 checkpoint while retaining legacy manifests, CLI/MCP consumers, sandbox/adapter metadata, and evidence-chain verification",
-  "next_recommended_checkpoint": "Keep intelligence advisory and local; separately design incremental refresh/retention and continue OS/container sandbox plus external evidence-signing threat modeling before any remote execution, semantic indexing, or public endpoint"
+  "last_completed_checkpoint": "UPG-OPS-001 Windows local operations layer verified on Windows on 2026-07-14 from the v0.1.7 checkpoint with read-only doctor/status, conservative cleanup, and clean-main pull-and-verify behavior",
+  "next_recommended_checkpoint": "Continue property/fuzz coverage for Windows paths and operator-reviewed recovery, then separately threat-model OS/container sandboxing and external evidence signing before any remote execution or public endpoint"
 }

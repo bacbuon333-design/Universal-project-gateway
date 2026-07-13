@@ -27,6 +27,8 @@ stack:
       - tests/
     scripts:
       - scripts/
+      - DOCTOR_GATEWAY.bat
+      - PULL_AND_VERIFY.bat
       - REGISTER_PROJECT.bat
       - RUN_DEMO.bat
       - START_GATEWAY.bat
@@ -42,6 +44,8 @@ important_paths:
   - README.md
   - pyproject.toml
   - requirements.lock
+  - DOCTOR_GATEWAY.bat
+  - PULL_AND_VERIFY.bat
   - REGISTER_PROJECT.bat
   - RUN_DEMO.bat
   - START_GATEWAY.bat
@@ -54,6 +58,8 @@ entrypoints:
   evidence_verification: scripts/verify_gateway.py
   demo: scripts/run_demo.py
   gateway_verification: VERIFY_GATEWAY.bat
+  gateway_doctor: DOCTOR_GATEWAY.bat
+  pull_and_verify: PULL_AND_VERIFY.bat
 
 memory_files:
   - AGENTS.md

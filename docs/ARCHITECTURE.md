@@ -105,6 +105,27 @@ rescanning. Job preparation safely creates a missing cache once, then injects
 only a compact subset into the context pack. The cache is advisory metadata;
 the current manifest remains the authority for policy and validation.
 
+### Local operations layer
+
+`operations.py` provides Windows-first, process-local observability without
+adding a daemon, dashboard, remote worker, or execution endpoint. `doctor`
+composes independent `PASS`/`WARN`/`FAIL` checks and deliberately opens the job
+database read-only: migration and runtime-directory creation remain normal
+Gateway startup responsibilities. Its MCP smoke check imports the server
+factory but never constructs a service or starts a transport.
+
+`status` is a read-only snapshot of the portable/runtime registry, schema-v2
+job metadata, built-in adapter declarations, cached intelligence age, default
+sandbox label, and evidence schema. It reports no lease tokens, request text,
+environment values, or protected content. Intelligence freshness describes
+cache age only and cannot establish current-source equivalence.
+
+`cleanup` owns the only new deletion path. Dry-run is the default; execution
+requires explicit `--execute`. Eligibility is the intersection of a terminal
+SQLite job, an immediate safe-named directory under a configured runtime root,
+and the retention window. Canonical overlap checks refuse every registered
+source root and durable/protected Gateway path before deletion begins.
+
 ### Intent and policy
 
 The deterministic intent compiler normalizes a bounded request into target

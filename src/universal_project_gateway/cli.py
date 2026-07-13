@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
-import sqlite3
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -21,64 +19,37 @@ def _json(value: Any) -> None:
 
 
 def doctor(config: GatewayConfig) -> dict[str, Any]:
-    """Run side-effect-light local readiness checks."""
+    """Compatibility wrapper for the comprehensive local doctor."""
 
-    checks: list[dict[str, str]] = []
+    from .operations import doctor as run_doctor
 
-    def add(name: str, status: str, message: str) -> None:
-        checks.append({"name": name, "status": status, "message": message})
+    return run_doctor(config)
 
-    version = sys.version_info
-    add(
-        "python",
-        "PASS" if version >= (3, 11) else "FAIL",
-        f"{version.major}.{version.minor}.{version.micro}",
+
+def _print_status(result: dict[str, Any]) -> None:
+    jobs = result["jobs"]
+    registry = result["registry"]
+    intelligence = result["intelligence"]
+    print(f"Universal Project Gateway {result['version']}")
+    print(f"Checkpoint: {result['checkpoint'] or 'unavailable'}")
+    print(f"Projects: {registry['project_count']}")
+    print(f"Jobs: {jobs['total']} ({json.dumps(jobs['by_state'], sort_keys=True)})")
+    print(f"Adapters: {result['adapters']['count']}")
+    print(
+        "Intelligence: "
+        f"{json.dumps(intelligence['counts'], sort_keys=True)} "
+        f"[{intelligence['freshness_basis']}]"
     )
-    try:
-        sqlite3.connect(":memory:").execute("SELECT 1").fetchone()
-        add("sqlite", "PASS", sqlite3.sqlite_version)
-    except sqlite3.Error as exc:
-        add("sqlite", "FAIL", str(exc))
-
-    for name, directory in (
-        ("var_directory", config.database_path.parent),
-        ("workspace_directory", config.workspaces_root),
-        ("artifacts_directory", config.artifacts_root),
-    ):
-        parent = next((p for p in (directory, *directory.parents) if p.exists()), None)
-        writable = bool(parent and parent.is_dir())
-        add(name, "PASS" if writable else "FAIL", str(directory))
-
-    git = shutil.which("git")
-    add("git", "PASS" if git else "WARN", git or "Git is unavailable; R3 is disabled")
-    try:
-        import mcp  # noqa: F401
-
-        add("mcp_sdk", "PASS", "official Python MCP SDK import succeeded")
-    except ImportError as exc:
-        add("mcp_sdk", "FAIL", str(exc))
-
-    fixtures = [
-        config.root_dir / "fixtures" / name / "PROJECT_MANIFEST.yaml"
-        for name in ("python_demo", "node_demo")
-    ]
-    missing = [str(path) for path in fixtures if not path.is_file()]
-    add(
-        "fixtures",
-        "PASS" if not missing else "FAIL",
-        "Python and Node fixtures found" if not missing else f"Missing: {', '.join(missing)}",
+    print(
+        "Sandbox: "
+        f"{result['sandbox']['default_backend_id']} "
+        f"({result['sandbox']['default_safety_level']})"
     )
-    overall = (
-        "FAIL"
-        if any(item["status"] == "FAIL" for item in checks)
-        else ("WARN" if any(item["status"] == "WARN" for item in checks) else "PASS")
+    print(
+        "Evidence: "
+        f"{result['evidence']['contract_version']} schema "
+        f"{result['evidence']['schema_version']}"
     )
-    return {
-        "status": overall,
-        "version": __version__,
-        "root": str(config.root_dir),
-        "checks": checks,
-    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -88,6 +59,17 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
 
     commands.add_parser("doctor", help="Inspect local prerequisites without installing anything")
+    status_command = commands.add_parser("status", help="Report local registry and runtime status")
+    status_command.add_argument("--json", action="store_true", dest="json_output")
+    cleanup_command = commands.add_parser(
+        "cleanup", help="Plan conservative cleanup of terminal-job runtime data"
+    )
+    cleanup_mode = cleanup_command.add_mutually_exclusive_group()
+    cleanup_mode.add_argument("--dry-run", action="store_true", help="Plan only (default)")
+    cleanup_mode.add_argument("--execute", action="store_true", help="Delete approved candidates")
+    cleanup_command.add_argument("--workspaces", action="store_true", help="Select job workspaces")
+    cleanup_command.add_argument("--artifacts", action="store_true", help="Select job artifacts")
+    cleanup_command.add_argument("--keep-last", type=int, default=10, metavar="N")
 
     project = commands.add_parser("project", help="Manage the persistent project registry")
     project_commands = project.add_subparsers(dest="project_command", required=True)
@@ -163,6 +145,30 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = doctor(config)
             _json(result)
             return 1 if result["status"] == "FAIL" else 0
+
+        if args.command == "status":
+            from .operations import status
+
+            result = status(config)
+            if args.json_output:
+                _json(result)
+            else:
+                _print_status(result)
+            return 0
+
+        if args.command == "cleanup":
+            from .operations import cleanup
+
+            select_all = not args.workspaces and not args.artifacts
+            result = cleanup(
+                config,
+                dry_run=not args.execute,
+                workspaces=args.workspaces or select_all,
+                artifacts=args.artifacts or select_all,
+                keep_last=args.keep_last,
+            )
+            _json(result)
+            return 0
 
         if args.command == "mcp":
             from .mcp_server import serve

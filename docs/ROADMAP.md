@@ -151,6 +151,24 @@ verified self-management bundle.
 
 ## Next: local hardening
 
+### Completed checkpoint: Windows local operations layer
+
+`UPG-OPS-001` adds an operator-facing control surface without increasing
+runtime execution authority:
+
+- comprehensive read-only doctor checks and registry/job/cache/evidence status;
+- conservative terminal-job cleanup with dry-run default, retention, canonical
+  containment, and registered-source/protected-path refusal;
+- Windows doctor and clean-main pull/fast-forward/verify helpers with explicit
+  failure codes;
+- consistent labels and nonzero failure propagation in existing batch entry
+  points.
+
+This checkpoint does not add a GUI, daemon, remote worker, public endpoint,
+automatic dependency installation, or OS sandbox. Exit evidence requires the
+operations tests, full regression/security suites, both demos, independent
+evidence verification, and `git diff --check` through `VERIFY_GATEWAY.bat`.
+
 1. Add property and fuzz tests for Windows path normalization, reparse points,
    size limits, registry corruption, and manifest argv validation.
 2. Add an operator-reviewed reconciliation workflow for jobs in

@@ -15,16 +15,20 @@ if not exist "%MANIFEST%" (
   exit /b 2
 )
 
+echo [REGISTER 1/2] Locating an existing Python 3.11 or newer runtime...
+
 if exist ".venv\Scripts\python.exe" (
+  echo [REGISTER 2/2] Validating and registering "%MANIFEST%"...
   ".venv\Scripts\python.exe" -m universal_project_gateway.cli project register "%MANIFEST%"
-  if errorlevel 1 exit /b 1
+  if errorlevel 1 goto register_failed
   exit /b 0
 )
 
 where py >nul 2>nul
 if not errorlevel 1 (
+  echo [REGISTER 2/2] Validating and registering "%MANIFEST%"...
   py -3.11 -m universal_project_gateway.cli project register "%MANIFEST%"
-  if errorlevel 1 exit /b 1
+  if errorlevel 1 goto register_failed
   exit /b 0
 )
 
@@ -34,6 +38,11 @@ if errorlevel 1 (
   exit /b 1
 )
 
+echo [REGISTER 2/2] Validating and registering "%MANIFEST%"...
 python -m universal_project_gateway.cli project register "%MANIFEST%"
-if errorlevel 1 exit /b 1
+if errorlevel 1 goto register_failed
 exit /b 0
+
+:register_failed
+echo [REGISTER] FAILED: The project was not registered. 1>&2
+exit /b 1

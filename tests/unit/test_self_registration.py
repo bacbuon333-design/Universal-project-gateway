@@ -55,6 +55,8 @@ def test_root_manifest_loads_with_allowlisted_validation() -> None:
         "tests": ["tests/"],
         "scripts": [
             "scripts/",
+            "DOCTOR_GATEWAY.bat",
+            "PULL_AND_VERIFY.bat",
             "REGISTER_PROJECT.bat",
             "RUN_DEMO.bat",
             "START_GATEWAY.bat",

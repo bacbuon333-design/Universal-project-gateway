@@ -18,13 +18,33 @@ From the repository root:
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.lock
 .\.venv\Scripts\python.exe -m pip install --no-deps -e ".[dev]"
-.\.venv\Scripts\python.exe -m universal_project_gateway.cli doctor
+DOCTOR_GATEWAY.bat
 ```
 
 If the Python launcher is unavailable, replace `py -3.11` with a Python 3.11+
 executable. Do not install dependencies globally. The doctor reports `PASS`,
-`WARN`, or `FAIL` for Python, writable runtime directories, SQLite, Git, the
-MCP dependency, and fixtures without unexpectedly changing the machine.
+`WARN`, or `FAIL` for Python/venv/import readiness, Git branch/status/origin and
+checkpoint, required paths, registry and manifest validity, read-only SQLite
+health/migration status, adapters, sandbox backends, project-intelligence
+caches, latest evidence verification, and MCP imports. It does not create
+runtime directories, initialize/migrate SQLite, refresh caches, install
+packages, or start a transport.
+
+## Inspect local status
+
+Use the human summary interactively or request stable JSON for automation:
+
+```powershell
+upg status
+upg status --json
+```
+
+The report includes registered projects, job counts by state, the latest
+completed and failed jobs, reachable Git checkpoint, adapter declarations,
+the default sandbox safety label, and evidence contract/schema versions.
+Intelligence freshness is explicitly `cache_age_only_no_source_rescan`: recent
+means generated within 24 hours, not proof that source is unchanged. Run the
+explicit intelligence generation command when a refresh is required.
 
 ## Complete verification
 
@@ -39,6 +59,16 @@ compile checks, verifies the root and fixture manifests, runs unit/integration
 and security tests, runs the deterministic demo twice, and verifies the newest
 evidence bundle. The first failing command stops the batch file with a nonzero
 exit code.
+
+To update an existing clean `main` checkout and immediately verify it, run:
+
+```bat
+PULL_AND_VERIFY.bat
+```
+
+The helper refuses dirty worktrees and non-`main` branches, uses
+`git pull --ff-only origin main`, and never stashes, resets, merges, or
+force-pushes operator work.
 
 Equivalent individual checks are:
 
@@ -370,9 +400,25 @@ Generated data is isolated under `var/`, `workspaces/`, and `artifacts/`. The
 demo may reset only runtime records it created for its own deterministic setup;
 it must not recursively remove registered source or another job's output.
 
-Before manual cleanup, close Gateway processes and verify the canonical target
-is inside this repository. Remove individual job directories by exact job ID.
-Never use a broad deletion command against a computed or empty path.
+Preview conservative cleanup first:
+
+```powershell
+upg cleanup --dry-run --keep-last 10
+upg cleanup --dry-run --workspaces --keep-last 5
+upg cleanup --dry-run --artifacts --keep-last 5
+```
+
+With no target flag, both workspace and artifact roots are inspected. Only
+immediate directories whose IDs match older SQLite jobs in `completed`,
+`failed`, or `cancelled` state are candidates. Active, recent, unknown,
+linked/reparse, malformed, or escaped paths are skipped. Registered source
+roots, `.git`, registry, root manifest, state, and database paths are refused
+even if configuration is wrong.
+
+After reviewing every candidate and closing Gateway processes, repeat with
+`--execute` to remove those exact directories. The command does not clean
+`var/`, migrate the database, delete registry/state, or infer paths from user
+text. Never use a broad manual deletion against a computed or empty path.
 
 ## Troubleshooting
 

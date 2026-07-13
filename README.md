@@ -38,6 +38,18 @@ Or run the complete Windows verification entry point:
 VERIFY_GATEWAY.bat
 ```
 
+For day-to-day local operations, use the conservative Windows entry points:
+
+```bat
+DOCTOR_GATEWAY.bat
+PULL_AND_VERIFY.bat
+```
+
+`DOCTOR_GATEWAY.bat` performs read-only readiness checks and never installs or
+migrates anything. `PULL_AND_VERIFY.bat` works only on a clean `main`, pulls
+`origin/main` with `--ff-only`, and stops if either pull or full verification
+fails.
+
 The deterministic demo registers both fixture manifests, then creates a fresh
 Python-fixture job workspace, changes its greeting from `Hello` to
 `Hello from UPG`, runs its tests, creates a patch and evidence ledger, and
@@ -50,6 +62,9 @@ After installation, these commands form the supported local interface:
 
 ```text
 upg doctor
+upg status
+upg status --json
+upg cleanup --dry-run --keep-last 10
 upg project show universal-project-gateway
 upg project register fixtures\python_demo\PROJECT_MANIFEST.yaml
 upg project list
@@ -65,6 +80,15 @@ upg mcp serve
 
 Run `upg --help` for the installed command surface. CLI and MCP operations
 return structured results; failures are not hidden behind a zero exit code.
+
+`upg doctor` checks the checkout, registry, root manifest, SQLite schema,
+adapters, sandbox backends, cached intelligence, latest evidence, and MCP
+imports without starting a server. `upg status` reads registry/job/adapter and
+cache summaries; its cache freshness is based on cache age only and does not
+rescan source. Cleanup is a plan by default. Actual removal requires
+`upg cleanup --execute`; even then, only immediate directories belonging to
+older terminal jobs are eligible, and registered source or durable Gateway
+paths are always refused.
 
 ## Manage UPG with UPG
 
