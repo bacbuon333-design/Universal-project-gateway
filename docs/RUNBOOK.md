@@ -58,6 +58,44 @@ When Node.js or an optional platform feature is absent, only a test designed to
 detect that feature may skip, with its reason shown. Core path isolation and
 the Python vertical slice must not skip.
 
+## Select and inspect a sandbox backend
+
+CLI, MCP, and ordinary `GatewayService` construction use
+`UnsafeLocalSandboxBackend` for development compatibility. The name is
+deliberate: it keeps the previous local subprocess behavior and is not an OS
+security boundary. Use it only with trusted local projects.
+
+`LocalProcessSandboxBackend` is an opt-in hardening foundation for an embedded
+Python caller:
+
+```python
+from universal_project_gateway.config import GatewayConfig
+from universal_project_gateway.runner import LocalRunner
+from universal_project_gateway.sandbox import LocalProcessSandboxBackend
+from universal_project_gateway.service import GatewayService
+
+config = GatewayConfig.discover()
+runner = LocalRunner(config, sandbox_backend=LocalProcessSandboxBackend())
+gateway = GatewayService(config, runner=runner)
+```
+
+This backend filters the environment independently, refuses a cwd outside the
+prepared workspace, always disables the shell, enforces the declared timeout,
+and performs best-effort process cleanup. It does not require Docker, Hyper-V,
+Windows Sandbox, WSL, admin privileges, or dependency installation.
+
+After validation, inspect `validation.json` and `environment.json` in the job's
+evidence directory. Each executed check records backend ID, safety level,
+runtime action, argv, cwd, timeout, return code, shell and environment flags,
+network-policy enforcement, and limitation notes. `environment.json` also
+records the prepared/destroyed handle and collected executions. Environment
+values and ambient secrets are not recorded.
+
+Treat `deny_requested` network policy as evidence of intent only. Neither local
+backend can enforce network denial without an OS/container facility. Also note
+that cooperative cancellation prevents a not-yet-started action but does not
+kill a process already running; timeout cleanup is best effort.
+
 ## Run the demo
 
 ```bat

@@ -35,7 +35,9 @@ AI, MCP client, or CLI
       LocalRunner (current implementation)
           +---- workspace manager ----> workspaces/jobs/<job-id>/workspace
           +---- scoped text filesystem
-          +---- allowlisted runtime adapter
+          +---- allowlisted runtime adapter ----> SandboxBackend
+          |                                  +--> UnsafeLocalSandboxBackend (default)
+          |                                  +--> LocalProcessSandboxBackend (opt-in)
           +---- deterministic patch + evidence ledger
                                       |
                                       v
@@ -47,11 +49,13 @@ The facade delegates to `ControlPlane`, which authorizes and orchestrates a
 `Runner`. Protocol clients do not receive direct runner, filesystem, evidence,
 or process authority.
 
-This is a dependency and responsibility boundary, not an operating-system
-security boundary. `LocalRunner` remains in-process and has the same host
-identity as the Control Plane. SQLite now assigns durable phase ownership to a
-local worker identity, but that lease is concurrency control rather than
-process isolation or remote-worker authentication.
+These are dependency and responsibility boundaries, not operating-system
+security boundaries. `LocalRunner` remains in-process and has the same host
+identity as the Control Plane. The sandbox interface isolates process-launch
+policy in code, but neither local backend constrains the child with a separate
+kernel identity or filesystem namespace. SQLite lease ownership remains
+concurrency control rather than process isolation or remote-worker
+authentication.
 
 ## Components
 
@@ -118,8 +122,10 @@ a stable state has been committed.
 `Runner` defines the bounded execution seam for workspace preparation, scoped
 file operations, validation, patch generation, and evidence production.
 `LocalRunner` implements the existing synchronous behavior by composing
-`WorkspaceManager`, `ScopedWorkspace`, the Python/Node runtime adapters, and
-`EvidenceLedger`.
+`WorkspaceManager`, `ScopedWorkspace`, the Python/Node runtime adapters, a
+`SandboxBackend`, and `EvidenceLedger`. It prepares one sandbox handle for a
+validation phase, passes only adapter-reviewed requests to it, collects
+execution metadata, and destroys the handle before evidence is finalized.
 
 Cancellation is cooperative. The runner checks before and after each named
 validation action, while the Control Plane checks between preparation,
@@ -129,9 +135,9 @@ process tree already executing an adapter action.
 
 The runner does not own the project registry, manifest discovery, intent
 compiler, policy engine, or job state machine. It cannot register an arbitrary
-source path or accept arbitrary executable text. A future sandbox backend may
-implement the same responsibilities only after a separate threat model and
-contract review; no such backend is part of this checkpoint.
+source path or accept arbitrary executable text. Additional sandbox backends
+require a separate threat-model and contract review and must not expand the
+runtime action vocabulary or bypass adapter argv validation.
 
 `GatewayService` remains a compatibility facade. Existing CLI, MCP, demo, and
 Python callers retain their method names and result shapes while implementation
@@ -161,11 +167,24 @@ does not execute.
 ### Runtime adapters
 
 Runtime adapters translate a named manifest action such as `test` into a
-reviewed argv array. The Python adapter permits selected interpreter module
-operations; the Node adapter permits selected Node/package scripts. Processes
-run with `shell=False`, an explicit workspace working directory, a timeout, a
-small environment allowlist, and captured output. There is no generic execute
+reviewed `SandboxExecutionRequest`. The Python adapter permits selected
+interpreter module operations; the Node adapter permits selected Node/package
+scripts. Adapters do not launch subprocesses. There is no generic execute
 method exposed to callers.
+
+`SandboxBackend` owns prepare, execute, collect, and destroy. Requests contain
+only a fixed runtime action, resolved argv, contained cwd, bounded timeout,
+explicit environment, and advisory network policy. Results retain the previous
+command-result fields and add backend ID, safety level, `shell=False`,
+environment-filtering, network-policy, and limitation metadata.
+
+`UnsafeLocalSandboxBackend` is the development-compatible default and preserves
+the previous `subprocess.run` behavior. Its name and evidence explicitly state
+that it is not an OS security boundary. `LocalProcessSandboxBackend` is an
+opt-in foundation using an independently filtered environment, strict cwd
+containment, `shell=False`, timeout enforcement, a new process group/session,
+and best-effort cleanup. It still cannot enforce filesystem, user, CPU/memory,
+or network isolation without platform facilities.
 
 ### Evidence ledger
 
@@ -193,8 +212,9 @@ and implicit deployment are outside the authority model.
    fresh workspace. The stable compatibility state becomes `prepared`.
 4. The Control Plane authorizes each operation; the Runner inspects or modifies
    only approved workspace-relative text paths.
-5. The worker claims the prepared job, enters `validating`, heartbeats between
-   named actions, and checks cooperative cancellation at every action boundary.
+5. The worker claims the prepared job, enters `validating`, prepares a sandbox
+   handle, heartbeats between named actions, and checks cooperative cancellation
+   before backend execution and at every action boundary.
 6. The Runner compares the workspace with its baseline and creates
    `patch.diff`.
 7. The Control Plane commits a terminal state and the Runner finalizes the

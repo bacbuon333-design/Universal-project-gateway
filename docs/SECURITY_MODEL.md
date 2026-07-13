@@ -24,8 +24,12 @@ validation actions, with a reviewable patch and evidence trail.
 - **Worker lease:** an unpredictable token grants temporary ownership of one
   local job phase. It is stored only in SQLite and typed in-process state, and
   is omitted from protocol responses, events, logs, and evidence.
-- **Child process:** an adapter receives a fixed action and reviewed argv, a
-  bounded environment, a timeout, and the workspace as its working directory.
+- **Sandbox backend:** an adapter submits only a fixed action and reviewed argv
+  to a prepared workspace handle. The backend owns child-process creation,
+  timeout, capture, cleanup, and its accurately bounded safety metadata.
+- **Child process:** receives an explicit environment, `shell=False`, a bounded
+  timeout, and a contained workspace working directory. Local backends still
+  run it under the current host identity.
 - **Evidence:** output is integrity-checked but must still be treated as
   potentially sensitive until redaction and human review have succeeded.
 - **Publication:** local Git branch creation is a distinct, higher-risk gate.
@@ -69,25 +73,40 @@ approval event and moves the job to an approval state where appropriate.
 ## Execution controls
 
 Commands in a manifest are declarations for runtime adapters, not arbitrary
-caller commands. Execution uses argv arrays and `shell=False`. The working
-directory is the active workspace. Executables, modules/scripts, optional
-arguments, timeout, and permitted environment keys are bounded by adapter and
-manifest policy.
+caller commands. Runtime adapters validate executables, modules/scripts,
+optional arguments, timeout, and permitted environment keys, then create an
+internal `SandboxExecutionRequest`. Only the sandbox package imports process
+launch APIs; service, Control Plane, Runner, and runtime adapters expose no raw
+command interface.
+
+The development-compatible `UnsafeLocalSandboxBackend` remains the default. It
+uses an explicit workspace cwd, exact adapter environment, timeout, captured
+output, and `shell=False`, but it is intentionally labeled `unsafe-local`
+because it adds no OS isolation and cannot reliably clean descendant trees.
+
+The opt-in `LocalProcessSandboxBackend` adds an independent environment
+allowlist, canonical cwd containment, no inherited environment by default, a
+new process group/session, timeout enforcement, and best-effort termination.
+Its `process-restricted` safety level is still not a kernel security boundary.
+The request can record `unrestricted` or `deny_requested` network policy, but
+network denial is advisory and recorded as unenforced until a container or
+platform sandbox implements it.
 
 Lease ownership prevents two local workers from advancing the same effectful
 phase concurrently. It does not constrain the process capabilities of the
 lease holder. Heartbeat and cancellation checks occur between named actions;
-UPG does not yet kill an adapter subprocess or its descendants mid-action.
+backends also refuse to start when cancellation is already observable. UPG
+does not yet interrupt a process mid-action; timeout cleanup is best effort.
 
 The public service, CLI, and MCP server intentionally do not expose
 `run_any_command`, shell evaluation, Python evaluation, machine browsing,
 deployment, merge, force-push, or credential access. Dependency installation
 is optional and disabled by default in the demo.
 
-Allowlisted project tests are still project code and can be malicious. This
-MVP limits invocation but does not provide kernel-level containment. Run only
-trusted local fixtures or add a separately reviewed OS sandbox before handling
-hostile repositories.
+Allowlisted project tests are still project code and can be malicious. Both
+local backends limit invocation but do not provide kernel-level containment.
+Run only trusted local projects until a separately reviewed OS/container
+backend is implemented.
 
 ## Git controls
 
@@ -127,11 +146,14 @@ model. An ad-hoc public tunnel is not an acceptable security design.
 - Application path checks are not equivalent to OS isolation.
 - Filesystem race conditions and platform-specific reparse points require
   defense in depth.
-- Trusted validation code can access capabilities of the host process.
+- Validation code can access host capabilities permitted to the current user;
+  the restricted local backend reduces ambient environment exposure but cannot
+  stop filesystem or network access.
 - Redaction is pattern-based and cannot guarantee detection of every secret.
 - SQLite is local durability, not a distributed queue or tamper-proof audit log.
 - Lease tokens prevent accidental concurrent ownership but are not remote
   authentication credentials and are not suitable for a multi-host queue.
 - Cooperative cancellation may be observed only after the current validation
-  process returns or times out; an OS sandbox/process supervisor is still required.
+  process returns or times out; process-group cleanup on timeout is best effort
+  and an OS sandbox/process supervisor is still required.
 - A local Git commit remains unreviewed until a human examines the patch.

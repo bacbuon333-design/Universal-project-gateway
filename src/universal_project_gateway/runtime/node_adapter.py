@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import re
 import shutil
-import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -28,35 +27,20 @@ class NodeAdapter(RuntimeAdapter):
                 "version": None,
                 "workspace": str(self.workspace_root),
                 "dependency_install_default": "disabled",
+                "sandbox_backend": self.sandbox_backend.backend_id,
+                "sandbox_safety_level": self.sandbox_backend.safety_level,
             }
-        try:
-            completed = subprocess.run(
-                [executable, "--version"],
-                cwd=self.workspace_root,
-                shell=False,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=10,
-                check=False,
-                env=self._environment(CommandSpec(("node", "--test"))),
-            )
-        except OSError as exc:
-            return {
-                "adapter": self.adapter_name,
-                "available": False,
-                "executable": executable,
-                "version": None,
-                "error": str(exc),
-            }
+        result = self._inspect_runtime((str(Path(executable).resolve()), "--version"))
         return {
             "adapter": self.adapter_name,
-            "available": completed.returncode == 0,
+            "available": result.passed,
             "executable": executable,
-            "version": (completed.stdout or completed.stderr).strip(),
+            "version": (result.stdout or result.stderr).strip() or None,
             "workspace": str(self.workspace_root),
             "dependency_install_default": "disabled",
+            "sandbox_backend": self.sandbox_backend.backend_id,
+            "sandbox_safety_level": self.sandbox_backend.safety_level,
+            "inspection": result.to_dict(),
         }
 
     def _validated_argv(self, action: str, spec: CommandSpec) -> tuple[str, ...]:

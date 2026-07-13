@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import subprocess
+import platform
 import sys
 from pathlib import Path
 from typing import Any
@@ -18,35 +18,15 @@ class PythonAdapter(RuntimeAdapter):
     adapter_name = "python"
 
     def inspect_environment(self) -> dict[str, Any]:
-        try:
-            completed = subprocess.run(
-                [sys.executable, "--version"],
-                cwd=self.workspace_root,
-                shell=False,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=10,
-                check=False,
-                env=self._environment(CommandSpec(("python", "-m", "compileall"))),
-            )
-        except OSError as exc:
-            return {
-                "adapter": self.adapter_name,
-                "available": False,
-                "executable": None,
-                "version": None,
-                "error": str(exc),
-            }
-        version = (completed.stdout or completed.stderr).strip()
         return {
             "adapter": self.adapter_name,
-            "available": completed.returncode == 0,
+            "available": True,
             "executable": sys.executable,
-            "version": version,
+            "version": f"Python {platform.python_version()}",
             "workspace": str(self.workspace_root),
             "dependency_install_default": "disabled",
+            "sandbox_backend": self.sandbox_backend.backend_id,
+            "sandbox_safety_level": self.sandbox_backend.safety_level,
         }
 
     def _validated_argv(self, action: str, spec: CommandSpec) -> tuple[str, ...]:

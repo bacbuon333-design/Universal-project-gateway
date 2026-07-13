@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any
 
+from ..sandbox import SandboxBackend, SandboxHandle
 from .base import (
     BaseRuntimeAdapter,
     CommandResult,
@@ -22,12 +23,29 @@ def create_runtime_adapter(
     commands: Mapping[str, Any] | Any,
     *,
     timeout_seconds: int = 120,
+    sandbox_backend: SandboxBackend | None = None,
+    sandbox_handle: SandboxHandle | None = None,
+    should_cancel: Callable[[], bool] | None = None,
 ) -> RuntimeAdapter:
     normalized = project_type.strip().casefold()
     if normalized in {"python", "py"}:
-        return PythonAdapter(workspace_root, commands, timeout_seconds=timeout_seconds)
+        return PythonAdapter(
+            workspace_root,
+            commands,
+            timeout_seconds=timeout_seconds,
+            sandbox_backend=sandbox_backend,
+            sandbox_handle=sandbox_handle,
+            should_cancel=should_cancel,
+        )
     if normalized in {"node", "nodejs", "javascript"}:
-        return NodeAdapter(workspace_root, commands, timeout_seconds=timeout_seconds)
+        return NodeAdapter(
+            workspace_root,
+            commands,
+            timeout_seconds=timeout_seconds,
+            sandbox_backend=sandbox_backend,
+            sandbox_handle=sandbox_handle,
+            should_cancel=should_cancel,
+        )
     raise RuntimeAdapterError(
         "project type does not have an installed runtime adapter",
         code="RUNTIME_ADAPTER_NOT_FOUND",

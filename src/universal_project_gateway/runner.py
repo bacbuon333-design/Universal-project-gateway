@@ -15,6 +15,7 @@ from .config import GatewayConfig
 from .evidence import EvidenceLedger
 from .models import GatewayError, Job, JobStatus, ProjectManifest, json_ready
 from .runtime import create_runtime_adapter
+from .sandbox import SandboxBackend, UnsafeLocalSandboxBackend
 from .scoped_fs import ScopedWorkspace
 from .workspaces import WorkspaceManager
 
@@ -198,10 +199,16 @@ class LocalRunner:
         "smoke_test": "run_smoke_test",
     }
 
-    def __init__(self, config: GatewayConfig) -> None:
+    def __init__(
+        self,
+        config: GatewayConfig,
+        *,
+        sandbox_backend: SandboxBackend | None = None,
+    ) -> None:
         self.config = config
         self.workspaces = WorkspaceManager(config.workspaces_root)
         self.evidence = EvidenceLedger(config.artifacts_root)
+        self.sandbox_backend = sandbox_backend or UnsafeLocalSandboxBackend()
 
     @staticmethod
     def _scoped(job: Job, manifest: ProjectManifest, *, max_file_size: int) -> ScopedWorkspace:
@@ -417,13 +424,81 @@ class LocalRunner:
     ) -> ValidationExecution:
         if job.workspace_path is None:
             raise RunnerError("Job has no workspace", code="WORKSPACE_NOT_READY")
-        adapter = create_runtime_adapter(
-            manifest.project_type,
+        sandbox_handle = self.sandbox_backend.prepare(
             job.workspace_path,
-            manifest.commands,
-            timeout_seconds=self.config.command_timeout_seconds,
+            snapshot={
+                "job_id": job.job_id,
+                "project_id": job.project_id,
+                "source_revision": job.source_revision,
+            },
         )
-        environment = _dict(adapter.inspect_environment())
+        try:
+            adapter = create_runtime_adapter(
+                manifest.project_type,
+                job.workspace_path,
+                manifest.commands,
+                timeout_seconds=self.config.command_timeout_seconds,
+                sandbox_backend=self.sandbox_backend,
+                sandbox_handle=sandbox_handle,
+                should_cancel=should_cancel,
+            )
+            environment = _dict(adapter.inspect_environment())
+            results, stdout_parts, stderr_parts, cancelled, cancellation_reason = (
+                self._execute_validation_actions(
+                    adapter,
+                    manifest,
+                    heartbeat=heartbeat,
+                    should_cancel=should_cancel,
+                )
+            )
+        finally:
+            self.sandbox_backend.destroy(sandbox_handle)
+        environment["sandbox"] = _dict(self.sandbox_backend.collect(sandbox_handle))
+
+        mandatory_passed = (
+            bool(results) and not cancelled and all(result["passed"] for result in results)
+        )
+        summary = {
+            "passed": mandatory_passed,
+            "mandatory": list(manifest.validation_requirements),
+            "checks": results,
+            "counts": {
+                "passed": sum(1 for result in results if result["passed"]),
+                "failed": sum(
+                    1 for result in results if str(result.get("status", "")).casefold() == "failed"
+                ),
+                "skipped": sum(
+                    1
+                    for result in results
+                    if str(result.get("status", "")).casefold() == "skipped"
+                ),
+                "not_run": sum(
+                    1
+                    for result in results
+                    if str(result.get("status", "")).casefold() in {"not-run", "not_run"}
+                ),
+            },
+        }
+        if cancelled:
+            summary["cancelled"] = True
+            summary["cancellation_reason"] = cancellation_reason
+        return ValidationExecution(
+            summary=summary,
+            environment=environment,
+            stdout="\n\n".join(stdout_parts),
+            stderr="\n\n".join(stderr_parts),
+            cancelled=cancelled,
+            cancellation_reason=cancellation_reason,
+        )
+
+    def _execute_validation_actions(
+        self,
+        adapter: Any,
+        manifest: ProjectManifest,
+        *,
+        heartbeat: Callable[[], None] | None,
+        should_cancel: Callable[[], bool] | None,
+    ) -> tuple[list[dict[str, Any]], list[str], list[str], bool, str | None]:
         results: list[dict[str, Any]] = []
         stdout_parts: list[str] = []
         stderr_parts: list[str] = []
@@ -483,39 +558,12 @@ class LocalRunner:
                         }
                     )
                 break
-
-        mandatory_passed = (
-            bool(results) and not cancelled and all(result["passed"] for result in results)
-        )
-        summary = {
-            "passed": mandatory_passed,
-            "mandatory": list(manifest.validation_requirements),
-            "checks": results,
-            "counts": {
-                "passed": sum(1 for result in results if result["passed"]),
-                "failed": sum(
-                    1 for result in results if str(result.get("status", "")).casefold() == "failed"
-                ),
-                "skipped": sum(
-                    1 for result in results if str(result.get("status", "")).casefold() == "skipped"
-                ),
-                "not_run": sum(
-                    1
-                    for result in results
-                    if str(result.get("status", "")).casefold() in {"not-run", "not_run"}
-                ),
-            },
-        }
-        if cancelled:
-            summary["cancelled"] = True
-            summary["cancellation_reason"] = cancellation_reason
-        return ValidationExecution(
-            summary=summary,
-            environment=environment,
-            stdout="\n\n".join(stdout_parts),
-            stderr="\n\n".join(stderr_parts),
-            cancelled=cancelled,
-            cancellation_reason=cancellation_reason,
+        return (
+            results,
+            stdout_parts,
+            stderr_parts,
+            cancelled,
+            cancellation_reason,
         )
 
     def finalize_validation(

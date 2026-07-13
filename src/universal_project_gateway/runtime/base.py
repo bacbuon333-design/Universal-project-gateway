@@ -6,14 +6,18 @@ import abc
 import dataclasses
 import os
 import re
-import subprocess
-import time
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
 from ..models import CommandSpec, GatewayError
+from ..sandbox import (
+    SandboxBackend,
+    SandboxExecutionRequest,
+    SandboxExecutionResult,
+    SandboxHandle,
+    UnsafeLocalSandboxBackend,
+)
 from ..scoped_fs import is_reparse_point
 
 ACTION_NAMES = ("install", "lint", "test", "build", "smoke_test")
@@ -36,42 +40,7 @@ class RuntimeAdapterError(GatewayError):
     default_code = "RUNTIME_ADAPTER_ERROR"
 
 
-@dataclass(frozen=True, slots=True)
-class CommandResult:
-    action: str
-    status: str
-    argv: tuple[str, ...]
-    cwd: str
-    returncode: int | None
-    stdout: str
-    stderr: str
-    duration_seconds: float
-    timed_out: bool = False
-    reason_code: str | None = None
-    message: str | None = None
-
-    @property
-    def passed(self) -> bool:
-        return self.status == "passed"
-
-    @property
-    def success(self) -> bool:
-        return self.passed
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "action": self.action,
-            "status": self.status,
-            "argv": list(self.argv),
-            "cwd": self.cwd,
-            "returncode": self.returncode,
-            "stdout": self.stdout,
-            "stderr": self.stderr,
-            "duration_seconds": self.duration_seconds,
-            "timed_out": self.timed_out,
-            "reason_code": self.reason_code,
-            "message": self.message,
-        }
+CommandResult = SandboxExecutionResult
 
 
 class RuntimeAdapter(abc.ABC):
@@ -85,9 +54,19 @@ class RuntimeAdapter(abc.ABC):
         commands: Mapping[str, Any] | Any,
         *,
         timeout_seconds: int = 120,
+        sandbox_backend: SandboxBackend | None = None,
+        sandbox_handle: SandboxHandle | None = None,
+        should_cancel: Callable[[], bool] | None = None,
     ) -> None:
-        root = Path(workspace_root).expanduser().resolve(strict=True)
-        if not root.is_dir() or is_reparse_point(root):
+        candidate = Path(workspace_root).expanduser().absolute()
+        if is_reparse_point(candidate):
+            raise RuntimeAdapterError(
+                "runtime working directory must not be a symlink or reparse point",
+                code="INVALID_RUNTIME_WORKSPACE",
+                details={"workspace_root": str(candidate)},
+            )
+        root = candidate.resolve(strict=True)
+        if not root.is_dir():
             raise RuntimeAdapterError(
                 "runtime working directory must be a real workspace directory",
                 code="INVALID_RUNTIME_WORKSPACE",
@@ -102,6 +81,17 @@ class RuntimeAdapter(abc.ABC):
         self.workspace_root = root
         self.commands = dict(commands)
         self.timeout_seconds = timeout_seconds
+        self.sandbox_backend = sandbox_backend or UnsafeLocalSandboxBackend()
+        self.sandbox_handle = sandbox_handle or self.sandbox_backend.prepare(
+            root,
+            should_cancel=should_cancel,
+        )
+        if self.sandbox_handle.workspace_root != root:
+            raise RuntimeAdapterError(
+                "sandbox handle does not belong to the runtime workspace",
+                code="SANDBOX_WORKSPACE_MISMATCH",
+            )
+        self.should_cancel = should_cancel
 
     @abc.abstractmethod
     def inspect_environment(self) -> dict[str, Any]:
@@ -215,61 +205,37 @@ class RuntimeAdapter(abc.ABC):
                 details={"action": action, "timeout_seconds": timeout},
             )
         environment = self._environment(spec)
-        start = time.monotonic()
-        try:
-            completed = subprocess.run(
-                list(argv),
-                cwd=self.workspace_root,
-                shell=False,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=timeout,
-                check=False,
-                env=environment,
-            )
-        except subprocess.TimeoutExpired as exc:
-            duration = round(time.monotonic() - start, 6)
-            return CommandResult(
-                action=action,
-                status="timed_out",
-                argv=argv,
-                cwd=str(self.workspace_root),
-                returncode=None,
-                stdout=_timeout_text(exc.stdout),
-                stderr=_timeout_text(exc.stderr),
-                duration_seconds=duration,
-                timed_out=True,
-                reason_code="COMMAND_TIMEOUT",
-                message=f"Action exceeded its {timeout} second timeout.",
-            )
-        except OSError as exc:
-            duration = round(time.monotonic() - start, 6)
-            return CommandResult(
-                action=action,
-                status="failed",
-                argv=argv,
-                cwd=str(self.workspace_root),
-                returncode=None,
-                stdout="",
-                stderr=str(exc),
-                duration_seconds=duration,
-                reason_code="COMMAND_START_FAILED",
-                message="The allowlisted executable could not be started.",
-            )
-        duration = round(time.monotonic() - start, 6)
-        return CommandResult(
+        request = SandboxExecutionRequest(
             action=action,
-            status="passed" if completed.returncode == 0 else "failed",
             argv=argv,
-            cwd=str(self.workspace_root),
-            returncode=completed.returncode,
-            stdout=completed.stdout,
-            stderr=completed.stderr,
-            duration_seconds=duration,
-            reason_code=None if completed.returncode == 0 else "COMMAND_FAILED",
-            message=None if completed.returncode == 0 else "Validation action returned a nonzero exit code.",
+            cwd=self.workspace_root,
+            timeout_seconds=timeout,
+            environment=environment,
+            environment_filtered=True,
+            network_policy="unrestricted",
+        )
+        return self.sandbox_backend.execute(
+            self.sandbox_handle,
+            request,
+            should_cancel=self.should_cancel,
+        )
+
+    def _inspect_runtime(self, argv: tuple[str, ...]) -> CommandResult:
+        """Execute one adapter-fixed availability probe through the backend."""
+
+        request = SandboxExecutionRequest(
+            action="inspect_environment",
+            argv=argv,
+            cwd=self.workspace_root,
+            timeout_seconds=min(self.timeout_seconds, 10),
+            environment=self._environment(CommandSpec(argv)),
+            environment_filtered=True,
+            network_policy="unrestricted",
+        )
+        return self.sandbox_backend.execute(
+            self.sandbox_handle,
+            request,
+            should_cancel=self.should_cancel,
         )
 
     def _environment(self, spec: CommandSpec) -> dict[str, str]:
@@ -310,6 +276,14 @@ class RuntimeAdapter(abc.ABC):
             duration_seconds=0.0,
             reason_code=reason_code,
             message=message,
+            backend_id=self.sandbox_backend.backend_id,
+            safety_level=self.sandbox_backend.safety_level,
+            timeout_seconds=0,
+            shell_disabled=True,
+            environment_filtered=True,
+            network_policy="unrestricted",
+            network_policy_enforced=False,
+            limitation_notes=self.sandbox_backend.limitation_notes,
         )
 
 
@@ -336,14 +310,6 @@ def safe_relative_argument(argument: str, *, allow_glob: bool = False) -> str:
             code="COMMAND_PATH_FORBIDDEN",
             details={"argument": argument},
         )
-    return value
-
-
-def _timeout_text(value: str | bytes | None) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, bytes):
-        return value.decode("utf-8", errors="replace")
     return value
 
 

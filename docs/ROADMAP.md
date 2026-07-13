@@ -59,14 +59,35 @@ termination, or OS sandbox. Exit evidence requires lease/recovery tests,
 idempotent publication proving one commit, the full regression/security suite,
 two demos, and an independently verified evidence bundle.
 
+## Completed checkpoint: sandbox backend foundation
+
+`UPG-SBX-001` removes process-launch ownership from runtime adapters and adds a
+bounded execution backend seam without claiming OS isolation:
+
+- `SandboxBackend` and typed handle/request/result contracts cover workspace
+  preparation, fixed-action execution, collection, cleanup, timeout, and
+  pre-execution cancellation;
+- `UnsafeLocalSandboxBackend` is the explicitly unsafe compatibility default;
+- opt-in `LocalProcessSandboxBackend` adds independent environment filtering,
+  canonical cwd containment, `shell=False`, timeouts, process groups/sessions,
+  and best-effort cleanup;
+- validation and checksum evidence include additive sandbox safety metadata;
+- CLI, MCP, demo, registry, self-registration, lease, evidence, and Git behavior
+  remain synchronous and backward compatible.
+
+This checkpoint does not provide kernel filesystem/user/resource isolation or
+enforce network denial. Exit evidence requires focused sandbox/security tests,
+the full regression suite, two demos, manifest verification, and an
+independently verified evidence bundle.
+
 ## Next: local hardening
 
 1. Add property and fuzz tests for Windows path normalization, reparse points,
    size limits, registry corruption, and manifest argv validation.
 2. Add an operator-reviewed reconciliation workflow for jobs in
    `recovery_required`, including workspace/source diagnostics.
-3. Move validation into a separately reviewed OS-level sandbox with no ambient
-   credential access and bounded CPU, memory, filesystem, process, and network.
+3. Implement and separately threat-model an OS/container backend with bounded
+   CPU, memory, filesystem, process, user, and network capabilities.
 4. Define evidence retention, encryption-at-rest options, audit export, and
    signed attestations.
 5. Version the service and MCP schemas and add compatibility tests.
