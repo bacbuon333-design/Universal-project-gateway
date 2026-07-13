@@ -4,6 +4,11 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
+from universal_project_gateway.contracts import (
+    ADAPTER_CONTRACT_VERSION,
+    EVIDENCE_CONTRACT_VERSION,
+    EXECUTION_CONTRACT_VERSION,
+)
 from universal_project_gateway.evidence import ALL_EVIDENCE_FILES
 from universal_project_gateway.service import GatewayService
 
@@ -65,6 +70,10 @@ def test_python_service_vertical_slice_isolated_diff_validation_and_evidence(
     }
     check = validation["checks"][0]
     assert check["action"] == "test"
+    assert check["contract_version"] == EXECUTION_CONTRACT_VERSION
+    assert check["adapter"]["adapter_id"] == "python"
+    assert check["adapter"]["contract_version"] == ADAPTER_CONTRACT_VERSION
+    assert check["adapter"]["resolved_capability"] == "test"
     assert check["status"] == "passed"
     assert check["returncode"] == 0
     assert check["argv"][1:3] == ["-m", "unittest"]
@@ -94,6 +103,20 @@ def test_python_service_vertical_slice_isolated_diff_validation_and_evidence(
     final_report = json.loads((evidence_path / "final_report.json").read_text(encoding="utf-8"))
     assert final_report["success"] is True
     assert final_report["status"] == "completed"
+    validation_evidence = json.loads(
+        (evidence_path / "validation.json").read_text(encoding="utf-8")
+    )
+    environment_evidence = json.loads(
+        (evidence_path / "environment.json").read_text(encoding="utf-8")
+    )
+    attestation = json.loads(
+        (evidence_path / "attestation.json").read_text(encoding="utf-8")
+    )
+    assert validation_evidence["checks"][0]["adapter"]["adapter_id"] == "python"
+    assert environment_evidence["adapter_registry"]["contract_version"] == (
+        ADAPTER_CONTRACT_VERSION
+    )
+    assert attestation["contract_version"] == EVIDENCE_CONTRACT_VERSION
     assert source_target.read_bytes() == source_before
 
 

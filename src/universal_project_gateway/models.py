@@ -9,6 +9,8 @@ from enum import Enum, StrEnum
 from pathlib import Path
 from typing import Any
 
+from .contracts import AdapterRequirement
+
 JsonMapping = Mapping[str, Any]
 
 
@@ -150,6 +152,7 @@ class ProjectPermissions:
 @dataclass(frozen=True, slots=True)
 class ProjectManifest:
     schema_version: str
+    contract_version: str
     project_id: str
     name: str
     description: str
@@ -166,6 +169,7 @@ class ProjectManifest:
     publication_policy: Mapping[str, bool]
     runtime_adapters: tuple[str, ...]
     state_file: str | None
+    adapter_requirements: tuple[AdapterRequirement, ...] = ()
     manifest_path: Path | None = None
 
     @property
@@ -178,6 +182,7 @@ class ProjectManifest:
     def to_dict(self, *, include_metadata: bool = False) -> dict[str, Any]:
         result = {
             "schema_version": self.schema_version,
+            "contract_version": self.contract_version,
             "project_id": self.project_id,
             "name": self.name,
             "description": self.description,
@@ -196,6 +201,9 @@ class ProjectManifest:
             "validation_requirements": list(self.validation_requirements),
             "publication_policy": dict(self.publication_policy),
             "runtime_adapters": list(self.runtime_adapters),
+            "adapter_requirements": [
+                requirement.to_dict() for requirement in self.adapter_requirements
+            ],
             "state_file": self.state_file,
         }
         if include_metadata and self.manifest_path is not None:

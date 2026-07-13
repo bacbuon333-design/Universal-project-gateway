@@ -16,6 +16,7 @@ CHECKSUM_MANIFEST = "manifest.sha256.json"
 CHAIN_FILE = "evidence_events.jsonl"
 ATTESTATION_FILE = "attestation.json"
 EVIDENCE_SCHEMA_VERSION = "2.0"
+EVIDENCE_CONTRACT_VERSION = "upg.evidence/v1"
 EVENT_SCHEMA_VERSION = "1.0"
 GENESIS_EVENT_HASH = "0" * 64
 COMPATIBILITY_EVIDENCE_FILES = (
@@ -269,6 +270,8 @@ def _verify_chain(
     final_event = events[-1] if events and isinstance(events[-1], Mapping) else {}
     if final_event.get("event_type") != "evidence_finalized":
         failures.append({"path": CHAIN_FILE, "reason": "invalid_final_event"})
+    if attestation.get("contract_version") not in {None, EVIDENCE_CONTRACT_VERSION}:
+        failures.append({"path": ATTESTATION_FILE, "reason": "invalid_attestation_contract"})
     if attestation.get("evidence_schema_version") != EVIDENCE_SCHEMA_VERSION:
         failures.append({"path": ATTESTATION_FILE, "reason": "invalid_attestation_schema"})
     if attestation.get("hash_algorithm") != "sha256":

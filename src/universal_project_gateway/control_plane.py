@@ -12,6 +12,7 @@ from typing import Any
 from . import __version__
 from .config import GatewayConfig
 from .context import ContextCompiler
+from .contracts import CONTRACT_VERSIONS
 from .git_controller import GitController
 from .intent import IntentCompiler
 from .jobs import LEASE_GUARDED_STATUSES, JobStore
@@ -78,7 +79,13 @@ class ControlPlane:
             "root": str(self.config.root_dir),
             "risk_boundary": {"permittable": ["R0", "R1", "R2", "R3"], "prohibited": ["R4"]},
             "transports": ["stdio", "streamable-http-localhost"],
+            "contracts": dict(CONTRACT_VERSIONS),
         }
+
+    def list_adapters(self) -> list[dict[str, Any]]:
+        """Return immutable adapter capability declarations as JSON values."""
+
+        return self.runner.list_adapters()
 
     def register_project(self, manifest_path: str | Path) -> dict[str, Any]:
         record = self.registry.register(manifest_path)

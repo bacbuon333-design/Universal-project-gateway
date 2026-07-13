@@ -8,14 +8,30 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from ..contracts import ADAPTER_CONTRACT_VERSION, AdapterCapability
 from ..models import CommandSpec
 from .base import RuntimeAdapter, RuntimeAdapterError, safe_relative_argument
 
 _SCRIPT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9:._-]{0,127}$")
 
+NODE_ADAPTER_CAPABILITY = AdapterCapability(
+    adapter_id="node",
+    adapter_version="1.0.0",
+    contract_version=ADAPTER_CONTRACT_VERSION,
+    supported_project_types=("node",),
+    supported_platforms=("linux", "macos", "windows"),
+    capabilities=("inspect", "install", "lint", "test", "build", "smoke"),
+    required_tools=("node>=18",),
+    safety_notes=(
+        "Only Node built-in checks/tests and declared npm scripts are accepted.",
+        "Execution safety is limited by the selected sandbox backend.",
+    ),
+)
+
 
 class NodeAdapter(RuntimeAdapter):
     adapter_name = "node"
+    capability = NODE_ADAPTER_CAPABILITY
 
     def inspect_environment(self) -> dict[str, Any]:
         executable = shutil.which("node")
@@ -168,4 +184,4 @@ class NodeAdapter(RuntimeAdapter):
         }
 
 
-__all__ = ["NodeAdapter"]
+__all__ = ["NODE_ADAPTER_CAPABILITY", "NodeAdapter"]

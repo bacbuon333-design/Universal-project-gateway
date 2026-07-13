@@ -9,6 +9,7 @@ from universal_project_gateway.mcp_server import create_mcp_server
 EXPECTED_TOOLS = {
     "gateway_get_status",
     "gateway_list_projects",
+    "gateway_list_adapters",
     "gateway_register_project",
     "gateway_get_project",
     "gateway_prepare_task",
@@ -49,6 +50,7 @@ def test_mcp_registers_only_explicit_high_level_gateway_tools(tmp_path: Path) ->
     assert not FORBIDDEN_TOOLS & set(by_name)
     assert all(tool.description and tool.inputSchema for tool in tools)
     assert by_name["gateway_get_status"].annotations.readOnlyHint is True
+    assert by_name["gateway_list_adapters"].annotations.readOnlyHint is True
     assert by_name["gateway_read_workspace_file"].annotations.readOnlyHint is True
     assert by_name["gateway_write_workspace_file"].annotations.readOnlyHint is False
     assert by_name["gateway_request_delete"].annotations.destructiveHint is False
@@ -64,3 +66,15 @@ def test_mcp_status_handler_delegates_to_the_gateway_service(tmp_path: Path) -> 
     assert structured["system_id"] == "universal-project-gateway"
     assert structured["status"] == "ready"
     assert structured["risk_boundary"]["prohibited"] == ["R4"]
+    assert structured["contracts"]["adapter"] == "upg.adapter/v1"
+
+
+def test_mcp_adapter_listing_is_read_only_and_versioned(tmp_path: Path) -> None:
+    server = create_mcp_server(GatewayConfig.from_root(tmp_path / "gateway"))
+
+    content, structured = asyncio.run(server.call_tool("gateway_list_adapters", {}))
+
+    assert content
+    adapters = structured["result"]
+    assert [item["adapter_id"] for item in adapters] == ["node", "python"]
+    assert all(item["contract_version"] == "upg.adapter/v1" for item in adapters)

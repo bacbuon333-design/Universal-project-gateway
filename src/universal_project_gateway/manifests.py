@@ -10,6 +10,11 @@ from urllib.parse import parse_qsl, urlsplit
 
 import yaml
 
+from .contracts import (
+    ADAPTER_CONTRACT_VERSION,
+    MANIFEST_CONTRACT_VERSION,
+    AdapterRequirement,
+)
 from .models import (
     CommandSpec,
     GatewayError,
@@ -44,6 +49,7 @@ REQUIRED_TOP_LEVEL_FIELDS = (
 )
 
 _PROJECT_ID_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9_-]{0,62}[a-z0-9])?$")
+_ADAPTER_NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9._-]{0,62}[a-z0-9])?$")
 _WINDOWS_ABSOLUTE_PATTERN = re.compile(r"^[A-Za-z]:[/\\]")
 _SECRET_KEY_PATTERN = re.compile(
     r"(?:^|_)(?:api_?key|access_?key|password|passwd|secrets?|tokens?|credentials?|private_?key)(?:$|_)",
@@ -441,6 +447,107 @@ def _validate_commands(
     return commands
 
 
+def _validate_adapter_requirements(
+    value: Any,
+    errors: list[ManifestValidationIssue],
+) -> tuple[AdapterRequirement, ...]:
+    if value is None:
+        return ()
+    if not _is_sequence(value):
+        _issue(
+            errors,
+            "INVALID_ADAPTER_REQUIREMENTS",
+            "adapter_requirements",
+            "adapter_requirements must be a list of versioned capability expectations",
+        )
+        return ()
+    requirements: list[AdapterRequirement] = []
+    seen: set[str] = set()
+    for index, raw in enumerate(value):
+        path = f"adapter_requirements[{index}]"
+        if not isinstance(raw, Mapping):
+            _issue(errors, "INVALID_ADAPTER_REQUIREMENT", path, "requirement must be a mapping")
+            continue
+        for field in sorted(
+            set(raw) - {"adapter_id", "adapter_version", "contract_version", "capabilities"}
+        ):
+            _issue(
+                errors,
+                "UNKNOWN_ADAPTER_REQUIREMENT_FIELD",
+                f"{path}.{field}",
+                "unknown adapter requirement field",
+            )
+        adapter_id_raw = raw.get("adapter_id")
+        if not isinstance(adapter_id_raw, str) or not _ADAPTER_NAME_PATTERN.fullmatch(
+            adapter_id_raw
+        ):
+            _issue(
+                errors,
+                "INVALID_ADAPTER_ID",
+                f"{path}.adapter_id",
+                "adapter_id must be a lowercase stable identifier",
+            )
+            continue
+        adapter_id = adapter_id_raw.casefold()
+        if adapter_id in seen:
+            _issue(
+                errors,
+                "DUPLICATE_ADAPTER_REQUIREMENT",
+                f"{path}.adapter_id",
+                "each adapter may have only one requirement entry",
+            )
+        seen.add(adapter_id)
+        contract_version = raw.get("contract_version")
+        if contract_version != ADAPTER_CONTRACT_VERSION:
+            _issue(
+                errors,
+                "ADAPTER_CONTRACT_INCOMPATIBLE",
+                f"{path}.contract_version",
+                f"contract_version must be {ADAPTER_CONTRACT_VERSION!r}",
+            )
+            contract_version = str(contract_version or "")
+        adapter_version_raw = raw.get("adapter_version")
+        if adapter_version_raw is not None and (
+            not isinstance(adapter_version_raw, str) or not adapter_version_raw.strip()
+        ):
+            _issue(
+                errors,
+                "INVALID_ADAPTER_VERSION",
+                f"{path}.adapter_version",
+                "adapter_version must be a non-empty string when declared",
+            )
+            adapter_version: str | None = None
+        else:
+            adapter_version = adapter_version_raw
+        capabilities_raw = raw.get("capabilities")
+        if (
+            not _is_sequence(capabilities_raw)
+            or not capabilities_raw
+            or any(
+                not isinstance(item, str) or not _ADAPTER_NAME_PATTERN.fullmatch(item)
+                for item in capabilities_raw
+            )
+        ):
+            _issue(
+                errors,
+                "INVALID_ADAPTER_CAPABILITIES",
+                f"{path}.capabilities",
+                "capabilities must be a non-empty list of lowercase names",
+            )
+            capabilities: tuple[str, ...] = ()
+        else:
+            capabilities = tuple(dict.fromkeys(capabilities_raw))
+        requirements.append(
+            AdapterRequirement(
+                adapter_id=adapter_id,
+                adapter_version=adapter_version,
+                contract_version=contract_version,
+                capabilities=capabilities,
+            )
+        )
+    return tuple(requirements)
+
+
 def validate_manifest_data(
     data: Any,
     *,
@@ -467,6 +574,15 @@ def validate_manifest_data(
             "schema_version",
             f"schema_version must be {SUPPORTED_SCHEMA_VERSION!r}",
         )
+    contract_version_raw = data.get("contract_version", MANIFEST_CONTRACT_VERSION)
+    if contract_version_raw != MANIFEST_CONTRACT_VERSION:
+        _issue(
+            errors,
+            "UNSUPPORTED_MANIFEST_CONTRACT",
+            "contract_version",
+            f"contract_version must be {MANIFEST_CONTRACT_VERSION!r}",
+        )
+    contract_version = str(contract_version_raw)
 
     project_id = _validate_string(data, "project_id", errors)
     if project_id and not _PROJECT_ID_PATTERN.fullmatch(project_id):
@@ -479,12 +595,12 @@ def validate_manifest_data(
     name = _validate_string(data, "name", errors)
     description = _validate_string(data, "description", errors)
     project_type = _validate_string(data, "project_type", errors).casefold()
-    if project_type not in {"python", "node"}:
+    if project_type and not _ADAPTER_NAME_PATTERN.fullmatch(project_type):
         _issue(
             errors,
-            "UNSUPPORTED_PROJECT_TYPE",
+            "INVALID_PROJECT_TYPE",
             "project_type",
-            "MVP project_type must be 'python' or 'node'",
+            "project_type must be a lowercase stable runtime-family identifier",
         )
 
     resolved_manifest_path = Path(manifest_path).expanduser().resolve() if manifest_path else None
@@ -623,22 +739,18 @@ def validate_manifest_data(
     else:
         runtime_adapters = tuple(dict.fromkeys(item.casefold() for item in runtime_raw))
         for index, adapter in enumerate(runtime_adapters):
-            if adapter not in {"python", "node"}:
+            if not _ADAPTER_NAME_PATTERN.fullmatch(adapter):
                 _issue(
                     errors,
-                    "UNSUPPORTED_RUNTIME_ADAPTER",
+                    "INVALID_RUNTIME_ADAPTER",
                     f"runtime_adapters[{index}]",
-                    "MVP runtime adapter must be 'python' or 'node'",
+                    "runtime adapter must be a lowercase stable identifier",
                 )
-    if project_type in {"python", "node"} and project_type not in runtime_adapters:
-        _issue(
-            errors,
-            "INCOMPATIBLE_RUNTIME_ADAPTER",
-            "runtime_adapters",
-            f"project_type {project_type!r} requires its matching adapter",
-        )
 
     commands = _validate_commands(data.get("commands"), project_type, runtime_adapters, errors)
+    adapter_requirements = _validate_adapter_requirements(
+        data.get("adapter_requirements"), errors
+    )
 
     permissions_raw = data.get("permissions")
     permission_values: dict[str, bool] = {}
@@ -784,6 +896,7 @@ def validate_manifest_data(
 
     manifest = ProjectManifest(
         schema_version=schema_version,
+        contract_version=contract_version,
         project_id=project_id,
         name=name,
         description=description,
@@ -800,8 +913,20 @@ def validate_manifest_data(
         publication_policy=publication_policy,
         runtime_adapters=runtime_adapters,
         state_file=state_file,
+        adapter_requirements=adapter_requirements,
         manifest_path=resolved_manifest_path,
     )
+    from .runtime.registry import built_in_adapter_registry
+
+    compatibility_issues = built_in_adapter_registry().validate_manifest(manifest)
+    if compatibility_issues:
+        return ManifestValidationResult(
+            errors=tuple(
+                ManifestValidationIssue(issue.code, issue.path, issue.message)
+                for issue in compatibility_issues
+            ),
+            warnings=tuple(warnings),
+        )
     return ManifestValidationResult(errors=(), warnings=tuple(warnings), manifest=manifest)
 
 

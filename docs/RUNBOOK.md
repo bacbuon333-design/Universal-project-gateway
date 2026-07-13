@@ -143,6 +143,37 @@ Registration rejects duplicate IDs, malformed manifests, credentials, and
 untrusted paths. The versioned `registry/projects.yaml` seeds a new local
 registry; mutable registry and job state are persisted under ignored `var/`.
 
+## Inspect adapter contracts and capabilities
+
+Adapter discovery is read-only and does not inspect executables or start a
+sandbox process:
+
+```powershell
+upg adapter list
+```
+
+The built-in result contains `python` and `node`, each with adapter version,
+`upg.adapter/v1`, supported project types/platforms, named capabilities,
+required tools, and safety notes. MCP clients receive the same values from
+`gateway_list_adapters`.
+
+Legacy manifest schema `1.0` files need no migration. A manifest that wants an
+explicit compatibility gate may add:
+
+```yaml
+contract_version: upg.manifest/v1
+adapter_requirements:
+  - adapter_id: python
+    adapter_version: "1.0.0"
+    contract_version: upg.adapter/v1
+    capabilities: [lint, test]
+```
+
+Run `scripts\verify_manifest.py` after changing expectations. An unknown
+adapter/capability, project-type mismatch, unsupported platform, wrong contract
+or exact version, or ambiguous resolution is a registration error. Do not
+weaken requirements or substitute a generic command to bypass the refusal.
+
 ## Prepare and validate a UPG self-management job
 
 The root `PROJECT_MANIFEST.yaml` registers this repository as
@@ -272,6 +303,12 @@ A current bundle contains the original 12 compatibility files plus:
 - `evidence_events.jsonl`: byte-appended canonical phase events;
 - `attestation.json`: final job/source/sandbox/validation metadata;
 - `manifest.sha256.json`: SHA-256 coverage for all 14 evidence files.
+
+New `attestation.json` files identify `upg.evidence/v1`, while validation
+checks identify `upg.execution/v1` and contain their resolved adapter metadata.
+`environment.json.adapter_registry` records the same resolution alongside the
+unchanged sandbox backend metadata. Older evidence-schema-v2 attestations
+without the additive contract field remain verifiable.
 
 The verifier still accepts a valid legacy bundle with only the original 12
 files and manifest, reporting `chain_checked: false`. A current bundle reports

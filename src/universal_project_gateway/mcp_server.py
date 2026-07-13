@@ -51,6 +51,12 @@ def create_mcp_server(
 
         return gateway.list_projects()
 
+    @server.tool(annotations=READ_ONLY)
+    def gateway_list_adapters() -> list[dict[str, Any]]:
+        """List installed versioned adapter capabilities without executing tools."""
+
+        return gateway.list_adapters()
+
     @server.tool(annotations=SCOPED_WRITE)
     def gateway_register_project(manifest_path: str) -> dict[str, Any]:
         """Validate and register one PROJECT_MANIFEST.yaml by its exact local path."""

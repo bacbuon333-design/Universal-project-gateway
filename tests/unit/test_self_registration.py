@@ -7,6 +7,10 @@ from pathlib import Path
 import yaml
 
 from universal_project_gateway.config import GatewayConfig
+from universal_project_gateway.contracts import (
+    ADAPTER_CONTRACT_VERSION,
+    MANIFEST_CONTRACT_VERSION,
+)
 from universal_project_gateway.manifests import load_manifest, validate_manifest
 from universal_project_gateway.registry import ProjectRegistry
 from universal_project_gateway.service import GatewayService
@@ -22,6 +26,15 @@ def test_root_manifest_loads_with_allowlisted_validation() -> None:
     assert result.valid, result.to_dict()
     manifest = load_manifest(ROOT_MANIFEST)
     assert manifest.project_id == "universal-project-gateway"
+    assert manifest.contract_version == MANIFEST_CONTRACT_VERSION
+    assert [requirement.to_dict() for requirement in manifest.adapter_requirements] == [
+        {
+            "adapter_id": "python",
+            "adapter_version": "1.0.0",
+            "contract_version": ADAPTER_CONTRACT_VERSION,
+            "capabilities": ["lint", "test"],
+        }
+    ]
     assert manifest.project_type == "python"
     assert manifest.local_path == REPOSITORY_ROOT
     assert manifest.runtime_adapters == ("python",)

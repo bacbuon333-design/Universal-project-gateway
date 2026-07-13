@@ -35,7 +35,10 @@ AI, MCP client, or CLI
       LocalRunner (current implementation)
           +---- workspace manager ----> workspaces/jobs/<job-id>/workspace
           +---- scoped text filesystem
-          +---- allowlisted runtime adapter ----> SandboxBackend
+          +---- AdapterRegistry (`upg.adapter/v1`)
+          |         +---- PythonAdapter capabilities
+          |         +---- NodeAdapter capabilities
+          |         +---- named action resolution ----> SandboxBackend
           |                                  +--> UnsafeLocalSandboxBackend (default)
           |                                  +--> LocalProcessSandboxBackend (opt-in)
           +---- deterministic patch + evidence ledger
@@ -68,6 +71,13 @@ paths, allowed validation actions, and publication policy. Registration
 validates the manifest and stores only safe project metadata. Resolution is by
 exact project ID or exact normalized registered path; an arbitrary path does
 not become trusted because a caller supplied it.
+
+Manifest schema `1.0` maps to contract `upg.manifest/v1`. Existing manifests
+without a `contract_version` or `adapter_requirements` field retain their
+original meaning. A manifest may additionally pin an installed adapter
+contract/version and require named capabilities; registration refuses an
+unknown adapter, incompatible project type/platform, unsupported capability,
+or unsatisfied exact version before a job is created.
 
 ### Intent and policy
 
@@ -166,13 +176,31 @@ Only bounded UTF-8 text operations are mutable in this MVP. Binary content is
 metadata-only. A deletion request may be recorded for approval, but deletion
 does not execute.
 
-### Runtime adapters
+### Versioned contracts and adapter registry
+
+Four additive contract identifiers separate compatibility families from their
+implementation schemas: `upg.manifest/v1`, `upg.adapter/v1`,
+`upg.execution/v1`, and `upg.evidence/v1`. Machine-readable schema descriptions
+live in `contracts.py`. Existing manifest schema `1.0` and evidence schema
+`2.0` remain intact; the contract identifiers do not silently renumber either
+format.
+
+`AdapterRegistry` owns installed adapter declarations and deterministic action
+resolution. Each declaration records adapter ID/version/contract, supported
+project types and platforms, named capabilities, required tools, and bounded
+safety notes. The reviewed built-ins are Python and Node. `LocalRunner` asks
+the registry to resolve each mandatory action, then records the resolution in
+the validation result, environment evidence, and evidence-chain phase events.
+An explicitly selected `commands.<action>.adapter` must be declared and
+compatible; ambiguous or unsupported resolution is refused.
 
 Runtime adapters translate a named manifest action such as `test` into a
-reviewed `SandboxExecutionRequest`. The Python adapter permits selected
-interpreter module operations; the Node adapter permits selected Node/package
-scripts. Adapters do not launch subprocesses. There is no generic execute
-method exposed to callers.
+reviewed `SandboxExecutionRequest` under `upg.execution/v1`. The Python adapter
+permits selected interpreter module operations; the Node adapter permits
+selected Node/package scripts. Adapters do not launch subprocesses. There is
+no generic execute method exposed to callers. The CLI `adapter list` command
+and MCP `gateway_list_adapters` tool expose only read-only declarations and do
+not probe tools or start processes.
 
 `SandboxBackend` owns prepare, execute, collect, and destroy. Requests contain
 only a fixed runtime action, resolved argv, contained cwd, bounded timeout,
@@ -217,6 +245,9 @@ payload mutation, including cases where only the outer checksum is refreshed.
 It is not an immutable audit log and cannot prove authorship or resist an
 attacker who rewrites the complete chain, attestation, and checksum manifest.
 Mandatory validation must pass before a job can report success.
+New attestations identify the additive `upg.evidence/v1` contract; verifiers
+continue accepting evidence-schema-v2 attestations created before this field
+was introduced.
 
 ### Constrained Git publication
 
@@ -267,8 +298,10 @@ registered project's manifest.
 
 ## Extension rules
 
-New stacks implement the runtime adapter interface and receive only named,
-manifest-declared actions. New execution backends implement the Runner
+New stacks add a reviewed adapter declaration and implementation to the
+built-in registry and receive only named, manifest-declared actions. Dynamic
+plugin discovery and domain-specific adapters are not implemented in this
+checkpoint. New execution backends implement the Runner
 responsibilities without moving policy or project discovery into the execution
 plane. New protocols call the compatibility facade or Control Plane; they do
 not add filesystem or process escape hatches. New business domains are managed

@@ -83,6 +83,9 @@ class GatewayService:
     def get_status(self) -> dict[str, Any]:
         return self.control_plane.get_status()
 
+    def list_adapters(self) -> list[dict[str, Any]]:
+        return self.control_plane.list_adapters()
+
     def register_project(self, manifest_path: str | Path) -> dict[str, Any]:
         return self.control_plane.register_project(manifest_path)
 

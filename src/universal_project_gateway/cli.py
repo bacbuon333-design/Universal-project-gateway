@@ -97,6 +97,10 @@ def build_parser() -> argparse.ArgumentParser:
     show = project_commands.add_parser("show", help="Show a registered project")
     show.add_argument("project_id")
 
+    adapter = commands.add_parser("adapter", help="Inspect installed adapter capabilities")
+    adapter_commands = adapter.add_subparsers(dest="adapter_command", required=True)
+    adapter_commands.add_parser("list", help="List versioned adapter capabilities")
+
     task = commands.add_parser("task", help="Prepare and operate scoped jobs")
     task_commands = task.add_subparsers(dest="task_command", required=True)
     prepare = task_commands.add_parser(
@@ -160,6 +164,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         from .service import GatewayService
 
         gateway = GatewayService(config)
+        if args.command == "adapter":
+            _json(gateway.list_adapters())
+            return 0
         if args.command == "project":
             if args.project_command == "register":
                 _json(gateway.register_project(args.manifest))

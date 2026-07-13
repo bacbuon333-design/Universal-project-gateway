@@ -100,6 +100,29 @@ attestation, or a trusted timestamp. Exit evidence requires tamper/reorder
 tests, the complete regression/security suite, two demos, self-management
 validation, and independent chain verification.
 
+## Completed checkpoint: versioned adapter contract registry
+
+`UPG-CONTRACT-002` adds capability-based runtime discovery while preserving
+existing manifest, CLI, MCP, sandbox, and evidence consumers:
+
+- constants and descriptive schemas identify `upg.manifest/v1`,
+  `upg.adapter/v1`, `upg.execution/v1`, and `upg.evidence/v1`;
+- `AdapterRegistry` registers reviewed Python and Node declarations and
+  resolves each named validation action by project type, platform, capability,
+  and optional explicit adapter selection;
+- legacy schema-`1.0` manifests remain valid, while optional requirements can
+  enforce adapter contract, exact version, and capabilities at registration;
+- validation and evidence add adapter metadata without removing sandbox or
+  evidence-chain fields;
+- read-only CLI and MCP discovery lists declarations without probing tools or
+  executing runtime actions.
+
+This checkpoint does not implement dynamic plugin loading or any video, Revit,
+trading, Auto Call, or other domain adapter. Exit evidence requires registry
+compatibility/refusal tests, both fixture flows, self-management validation,
+the complete regression/security suite, and independent evidence-chain
+verification.
+
 ## Next: local hardening
 
 1. Add property and fuzz tests for Windows path normalization, reparse points,
@@ -111,7 +134,8 @@ validation, and independent chain verification.
 4. Define evidence retention, encryption-at-rest options, audit export, and
    external-key signed attestations with rotation, revocation, and trusted-time
    semantics; do not store signing keys in the repository or evidence bundle.
-5. Version the service and MCP schemas and add compatibility tests.
+5. Version the remaining service/MCP request and response envelopes and add
+   cross-version compatibility tests beyond adapter discovery.
 6. Add human review UX for patch, validation, and R3 approval.
 
 ## Later: separately secured remote MCP

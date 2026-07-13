@@ -7,15 +7,31 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from ..contracts import ADAPTER_CONTRACT_VERSION, AdapterCapability
 from ..models import CommandSpec
 from .base import RuntimeAdapter, RuntimeAdapterError, safe_relative_argument
 
 _PYTHON_ALIASES = {"python", "python3", "py"}
 _MODULES = {"compileall", "pip", "pytest", "unittest"}
 
+PYTHON_ADAPTER_CAPABILITY = AdapterCapability(
+    adapter_id="python",
+    adapter_version="1.0.0",
+    contract_version=ADAPTER_CONTRACT_VERSION,
+    supported_project_types=("python",),
+    supported_platforms=("linux", "macos", "windows"),
+    capabilities=("inspect", "install", "lint", "test", "build", "smoke"),
+    required_tools=("python>=3.11",),
+    safety_notes=(
+        "Only allowlisted Python modules and bounded arguments are accepted.",
+        "Execution safety is limited by the selected sandbox backend.",
+    ),
+)
+
 
 class PythonAdapter(RuntimeAdapter):
     adapter_name = "python"
+    capability = PYTHON_ADAPTER_CAPABILITY
 
     def inspect_environment(self) -> dict[str, Any]:
         return {
@@ -210,4 +226,4 @@ class PythonAdapter(RuntimeAdapter):
         }
 
 
-__all__ = ["PythonAdapter"]
+__all__ = ["PYTHON_ADAPTER_CAPABILITY", "PythonAdapter"]

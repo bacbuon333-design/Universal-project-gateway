@@ -43,5 +43,7 @@ def test_node_fixture_uses_the_same_service_vertical_slice(
         "--test",
         "tests/greeting.test.js",
     ]
+    assert validation["checks"][0]["adapter"]["adapter_id"] == "node"
+    assert validation["checks"][0]["adapter"]["resolved_capability"] == "test"
     assert gateway.get_evidence(job_id)["verified"] is True
     assert source_target.read_bytes() == source_before

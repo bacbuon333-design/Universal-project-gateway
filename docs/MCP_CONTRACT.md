@@ -42,10 +42,19 @@ not protocol output.
 
 Returns Gateway version, runtime health summary, and supported capabilities.
 It does not install dependencies or modify the host.
+The additive `contracts` object reports the active manifest, adapter,
+execution, and evidence contract identifiers.
 
 ### `gateway_list_projects` (read-only)
 
 Returns registered project summaries. It accepts no arbitrary path.
+
+### `gateway_list_adapters` (read-only)
+
+Returns installed `upg.adapter/v1` declarations: adapter ID/version, supported
+project types and platforms, named capabilities, required tools, and safety
+notes. Listing does not inspect the host, install dependencies, prepare a
+sandbox, or execute an adapter action.
 
 ### `gateway_register_project`
 
@@ -116,6 +125,9 @@ Input: `job_id` and, when supported, a named action selected from the validated
 manifest. The caller cannot supply an executable or arguments. The result
 reports action, argv as executed, status (`passed`, `failed`, `skipped`, or
 `not_run`), exit code, duration, timeout, and bounded/redacted output metadata.
+Each check additively identifies `upg.execution/v1` and includes the resolved
+adapter ID, adapter version, `upg.adapter/v1` contract, and capability. Sandbox
+backend and safety metadata remain present under `sandbox`.
 
 Mandatory requirements must pass before the service marks a task successful.
 

@@ -14,6 +14,7 @@ from enum import Enum
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from .contracts import EVIDENCE_CONTRACT_VERSION
 from .evidence_chain import (
     ATTESTATION_FILE,
     CHAIN_FILE,
@@ -476,6 +477,7 @@ def _build_attestation(
     sandbox = environment.get("sandbox")
     sandbox_mapping = sandbox if isinstance(sandbox, Mapping) else {}
     return {
+        "contract_version": EVIDENCE_CONTRACT_VERSION,
         "evidence_schema_version": EVIDENCE_SCHEMA_VERSION,
         "hash_algorithm": HASH_ALGORITHM,
         "gateway_version": __version__,
@@ -519,6 +521,8 @@ def _verify_attestation(
     evidence_path: Path,
 ) -> list[dict[str, str]]:
     errors: list[dict[str, str]] = []
+    if attestation.get("contract_version") not in {None, EVIDENCE_CONTRACT_VERSION}:
+        errors.append({"code": "ATTESTATION_CONTRACT_INVALID", "path": ATTESTATION_FILE})
     if attestation.get("evidence_schema_version") != EVIDENCE_SCHEMA_VERSION:
         errors.append({"code": "ATTESTATION_SCHEMA_INVALID", "path": ATTESTATION_FILE})
     if attestation.get("hash_algorithm") != HASH_ALGORITHM:

@@ -1,4 +1,5 @@
 schema_version: "1.0"
+contract_version: upg.manifest/v1
 project_id: universal-project-gateway
 name: Universal Project Gateway
 description: Local project-agnostic orchestration layer for scoped AI-assisted software work.
@@ -121,5 +122,13 @@ publication_policy:
 
 runtime_adapters:
   - python
+
+adapter_requirements:
+  - adapter_id: python
+    adapter_version: "1.0.0"
+    contract_version: upg.adapter/v1
+    capabilities:
+      - lint
+      - test
 
 state_file: state/CURRENT_STATE.json

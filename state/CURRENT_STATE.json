@@ -1,7 +1,7 @@
 {
   "system_id": "universal-project-gateway",
   "mvp_version": "0.1.0",
-  "checkpoint_status": "evidence_hash_chain_verified",
+  "checkpoint_status": "adapter_contract_registry_verified",
   "implemented_capabilities": [
     "Validated PROJECT_MANIFEST.yaml contracts and persistent project registry",
     "Deterministic intent compilation and canonical R0-R4 policy decisions",
@@ -34,11 +34,16 @@
     "Deterministic SHA-256 payload and event hashes with sequence and previous-hash continuity across runner, control-plane, and sandbox phases",
     "Unsigned attestation.json binding final event, gateway, job, project, source commit, sandbox safety, validation summary, and compatibility-manifest digest",
     "Library and standalone verification for checksum coverage, event continuity, payload hashes, reordering, missing events, and final attestation",
-    "Legacy 12-file checksum-only evidence bundles remain verifiable"
+    "Legacy 12-file checksum-only evidence bundles remain verifiable",
+    "Versioned contract constants and descriptive schemas for upg.manifest/v1, upg.adapter/v1, upg.execution/v1, and upg.evidence/v1",
+    "AdapterRegistry with reviewed Python and Node capability declarations, deterministic named-action resolution, and structured compatibility errors",
+    "Optional manifest adapter contract, exact-version, and capability expectations while schema-1.0 manifests retain deterministic defaults",
+    "LocalRunner validation and evidence records include additive adapter ID, version, contract, capability, required-tool, and safety metadata without removing sandbox fields",
+    "Read-only CLI adapter list and MCP gateway_list_adapters discovery without tool probing or process execution"
   ],
   "verified_capabilities": [
     "Ruff and compileall checks passed",
-    "49 unit and integration tests passed, including lease claim, duplicate refusal, heartbeat, stale detection, safe and recovery-required expiry handling, cancellation, schema-v1 migration, and prepare/validate/publish idempotency",
+    "57 unit and integration tests passed, including adapter contracts/registry, legacy and explicit manifest compatibility, CLI/MCP read-only discovery, both fixture flows, lease/recovery, cancellation, and idempotency",
     "58 security tests passed, including sandbox controls plus evidence chain creation, canonical hashing, tamper detection, reorder/missing-event refusal, attestation binding, legacy compatibility, and runner phase coverage; one symlink-escape test skipped because this Windows process lacks symlink privilege",
     "The root UPG manifest and both fixture manifests passed structured manifest verification",
     "A UPG self-management job completed both mandatory allowlisted actions and produced an independently verified evidence bundle",
@@ -46,7 +51,7 @@
     "Two consecutive Windows verification demos passed with distinct job workspaces and evidence bundles",
     "Both demo evidence bundles preserve all 12 compatibility files and independently verify their additive event chains, unsigned attestations, and SHA-256 manifests",
     "Idempotent Git publication replay returned the original result and left exactly one commit",
-    "VERIFY_GATEWAY.bat completed with exit code 0 after evidence schema v2 was added, including manifest verification, 107 passing tests, two demos, independent chain verification, and git diff --check"
+    "VERIFY_GATEWAY.bat completed with exit code 0 after adapter contracts were added, including manifest verification, 115 passing tests, two demos, independent chain verification, and git diff --check"
   ],
   "known_limitations": [
     "Both local sandbox backends remain application/process-level foundations and are not operating-system security boundaries",
@@ -64,8 +69,10 @@
     "Dependency installation is disabled by default",
     "Deletion, merge, force-push, deployment, and credential operations are prohibited",
     "Remote Git push and localhost Streamable HTTP were not exercised end to end in this checkpoint",
-    "No public MCP endpoint, remote authentication, or ChatGPT Web connection has been implemented or tested"
+    "No public MCP endpoint, remote authentication, or ChatGPT Web connection has been implemented or tested",
+    "The adapter registry contains only reviewed built-ins; dynamic plugin loading, package trust, upgrade negotiation, and domain-specific adapters are not implemented",
+    "Contract schemas are descriptive in-process compatibility metadata; remaining service and MCP request/response envelopes are not independently version-negotiated"
   ],
-  "last_completed_checkpoint": "UPG-EVD-002 evidence schema v2 hash chain and unsigned local attestation verified on Windows on 2026-07-14 from the v0.1.4 checkpoint while retaining legacy 12-file checksum verification",
-  "next_recommended_checkpoint": "Design external-key evidence signing, trusted time, key rotation/revocation, and immutable retention separately from the bundle; continue OS/container sandbox threat modeling before any remote execution or public endpoint"
+  "last_completed_checkpoint": "UPG-CONTRACT-002 versioned adapter contract registry verified on Windows on 2026-07-14 from the v0.1.5 checkpoint while retaining legacy manifests, CLI/MCP consumers, sandbox metadata, and evidence-chain verification",
+  "next_recommended_checkpoint": "Design reviewed adapter packaging, trust, upgrade, and compatibility negotiation separately from dynamic loading; continue OS/container sandbox and external evidence-signing threat modeling before any remote execution or public endpoint"
 }

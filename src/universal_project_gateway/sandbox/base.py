@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
+from ..contracts import EXECUTION_CONTRACT_VERSION
 from ..models import GatewayError, json_ready, utc_now
 
 
@@ -34,6 +35,7 @@ class SandboxExecutionRequest:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "contract_version": EXECUTION_CONTRACT_VERSION,
             "action": self.action,
             "argv": list(self.argv),
             "cwd": str(self.cwd),
@@ -80,6 +82,7 @@ class SandboxExecutionResult:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "contract_version": EXECUTION_CONTRACT_VERSION,
             "action": self.action,
             "status": self.status,
             "argv": list(self.argv),

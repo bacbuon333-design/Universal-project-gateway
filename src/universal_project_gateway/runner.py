@@ -12,9 +12,10 @@ from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 from .config import GatewayConfig
+from .contracts import ADAPTER_CONTRACT_VERSION, EXECUTION_CONTRACT_VERSION
 from .evidence import EvidenceLedger
 from .models import GatewayError, Job, JobStatus, ProjectManifest, json_ready
-from .runtime import create_runtime_adapter
+from .runtime import AdapterRegistry, AdapterResolution, built_in_adapter_registry
 from .sandbox import SandboxBackend, UnsafeLocalSandboxBackend
 from .scoped_fs import ScopedWorkspace
 from .workspaces import WorkspaceManager
@@ -42,6 +43,7 @@ def _sandbox_execution_event(value: Any) -> dict[str, Any]:
     sandbox = value.get("sandbox")
     metadata = sandbox if isinstance(sandbox, Mapping) else {}
     return {
+        "contract_version": value.get("contract_version", EXECUTION_CONTRACT_VERSION),
         "runtime_action": value.get("action"),
         "status": value.get("status"),
         "return_code": value.get("returncode"),
@@ -212,6 +214,8 @@ class Runner(Protocol):
 
     def finalize_evidence(self, job_id: str) -> None: ...
 
+    def list_adapters(self) -> list[dict[str, Any]]: ...
+
 
 class LocalRunner:
     """Current synchronous execution plane using local application isolation.
@@ -235,11 +239,16 @@ class LocalRunner:
         config: GatewayConfig,
         *,
         sandbox_backend: SandboxBackend | None = None,
+        adapter_registry: AdapterRegistry | None = None,
     ) -> None:
         self.config = config
         self.workspaces = WorkspaceManager(config.workspaces_root)
         self.evidence = EvidenceLedger(config.artifacts_root)
         self.sandbox_backend = sandbox_backend or UnsafeLocalSandboxBackend()
+        self.adapter_registry = adapter_registry or built_in_adapter_registry()
+
+    def list_adapters(self) -> list[dict[str, Any]]:
+        return [capability.to_dict() for capability in self.adapter_registry.list_capabilities()]
 
     @staticmethod
     def _scoped(job: Job, manifest: ProjectManifest, *, max_file_size: int) -> ScopedWorkspace:
@@ -502,12 +511,19 @@ class LocalRunner:
     ) -> ValidationExecution:
         if job.workspace_path is None:
             raise RunnerError("Job has no workspace", code="WORKSPACE_NOT_READY")
+        resolutions = [
+            self.adapter_registry.resolve(manifest, action)
+            for action in manifest.validation_requirements
+        ]
+        resolution_payload = [resolution.to_dict() for resolution in resolutions]
         self.record_evidence_event(
             job.job_id,
             job.project_id,
             "validation_started",
             {
                 "actions": list(manifest.validation_requirements),
+                "adapter_contract_version": ADAPTER_CONTRACT_VERSION,
+                "adapter_resolutions": resolution_payload,
                 "sandbox_backend_id": self.sandbox_backend.backend_id,
                 "sandbox_safety_level": self.sandbox_backend.safety_level,
             },
@@ -522,19 +538,38 @@ class LocalRunner:
             },
         )
         try:
-            adapter = create_runtime_adapter(
-                manifest.project_type,
-                job.workspace_path,
-                manifest.commands,
-                timeout_seconds=self.config.command_timeout_seconds,
-                sandbox_backend=self.sandbox_backend,
-                sandbox_handle=sandbox_handle,
-                should_cancel=should_cancel,
+            adapters: dict[str, Any] = {}
+            resolution_by_action: dict[str, AdapterResolution] = {}
+            inspections: dict[str, dict[str, Any]] = {}
+            for resolution in resolutions:
+                adapter = adapters.get(resolution.adapter.adapter_id)
+                if adapter is None:
+                    adapter = self.adapter_registry.create(
+                        resolution,
+                        job.workspace_path,
+                        manifest.commands,
+                        timeout_seconds=self.config.command_timeout_seconds,
+                        sandbox_backend=self.sandbox_backend,
+                        sandbox_handle=sandbox_handle,
+                        should_cancel=should_cancel,
+                    )
+                    adapters[resolution.adapter.adapter_id] = adapter
+                    inspections[resolution.adapter.adapter_id] = _dict(
+                        adapter.inspect_environment()
+                    )
+                resolution_by_action[resolution.runtime_action] = resolution
+            environment = (
+                dict(inspections[resolutions[0].adapter.adapter_id]) if resolutions else {}
             )
-            environment = _dict(adapter.inspect_environment())
+            environment["adapter_registry"] = {
+                "contract_version": ADAPTER_CONTRACT_VERSION,
+                "resolved": resolution_payload,
+                "inspections": inspections,
+            }
             results, stdout_parts, stderr_parts, cancelled, cancellation_reason = (
                 self._execute_validation_actions(
-                    adapter,
+                    adapters,
+                    resolution_by_action,
                     manifest,
                     heartbeat=heartbeat,
                     should_cancel=should_cancel,
@@ -548,6 +583,8 @@ class LocalRunner:
             bool(results) and not cancelled and all(result["passed"] for result in results)
         )
         summary = {
+            "contract_version": EXECUTION_CONTRACT_VERSION,
+            "adapter_contract_version": ADAPTER_CONTRACT_VERSION,
             "passed": mandatory_passed,
             "mandatory": list(manifest.validation_requirements),
             "checks": results,
@@ -594,6 +631,7 @@ class LocalRunner:
                 "passed": mandatory_passed,
                 "cancelled": cancelled,
                 "counts": dict(summary["counts"]),
+                "adapter_resolutions": resolution_payload,
             },
             actor="local_runner",
         )
@@ -608,7 +646,8 @@ class LocalRunner:
 
     def _execute_validation_actions(
         self,
-        adapter: Any,
+        adapters: Mapping[str, Any],
+        resolutions: Mapping[str, AdapterResolution],
         manifest: ProjectManifest,
         *,
         heartbeat: Callable[[], None] | None,
@@ -621,24 +660,38 @@ class LocalRunner:
         cancelled = False
         cancellation_reason: str | None = None
         for index, action in enumerate(requirements):
+            resolution = resolutions[action]
+            adapter_metadata = {
+                **resolution.adapter.to_dict(),
+                "resolved_capability": resolution.capability,
+                "runtime_action": action,
+            }
             if should_cancel is not None and should_cancel():
                 cancelled = True
                 cancellation_reason = "Cancellation was observed before the next validation action."
                 for remaining in requirements[index:]:
                     results.append(
                         {
+                            "contract_version": EXECUTION_CONTRACT_VERSION,
                             "action": remaining,
                             "status": "not-run",
                             "passed": False,
                             "message": cancellation_reason,
+                            "adapter": {
+                                **resolutions[remaining].adapter.to_dict(),
+                                "resolved_capability": resolutions[remaining].capability,
+                                "runtime_action": remaining,
+                            },
                         }
                     )
                 break
             if heartbeat is not None:
                 heartbeat()
             method_name = self._VALIDATION_METHODS.get(action)
+            adapter = adapters[resolution.adapter.adapter_id]
             if method_name is None:
                 result = {
+                    "contract_version": EXECUTION_CONTRACT_VERSION,
                     "action": action,
                     "status": "not-run",
                     "passed": False,
@@ -649,6 +702,8 @@ class LocalRunner:
             else:
                 result = _dict(getattr(adapter, method_name)())
             result.setdefault("action", action)
+            result.setdefault("contract_version", EXECUTION_CONTRACT_VERSION)
+            result["adapter"] = adapter_metadata
             result["passed"] = self._result_passed(result)
             results.append(result)
             if result.get("stdout"):
@@ -666,10 +721,16 @@ class LocalRunner:
                 for remaining in requirements[index + 1 :]:
                     results.append(
                         {
+                            "contract_version": EXECUTION_CONTRACT_VERSION,
                             "action": remaining,
                             "status": "not-run",
                             "passed": False,
                             "message": cancellation_reason,
+                            "adapter": {
+                                **resolutions[remaining].adapter.to_dict(),
+                                "resolved_capability": resolutions[remaining].capability,
+                                "runtime_action": remaining,
+                            },
                         }
                     )
                 break

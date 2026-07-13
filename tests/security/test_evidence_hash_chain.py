@@ -7,6 +7,7 @@ from pathlib import Path
 
 from scripts.verify_gateway import verify_bundle
 from universal_project_gateway.config import GatewayConfig
+from universal_project_gateway.contracts import EVIDENCE_CONTRACT_VERSION
 from universal_project_gateway.evidence import (
     ATTESTATION_FILE,
     CHAIN_FILE,
@@ -100,6 +101,7 @@ def test_evidence_chain_and_attestation_are_created_and_verify(tmp_path: Path) -
     assert [event["sequence"] for event in events] == [1, 2, 3]
     assert events[-1]["event_type"] == "evidence_finalized"
     assert attestation["final_event_hash"] == events[-1]["event_hash"]
+    assert attestation["contract_version"] == EVIDENCE_CONTRACT_VERSION
     assert attestation["source_commit"] == "abc123"
     assert attestation["sandbox_backend"] == {
         "backend_id": "unsafe-local-subprocess",
@@ -238,4 +240,8 @@ def test_runner_chain_covers_required_phases_and_sandbox_metadata(tmp_path: Path
     attestation = json.loads((evidence_path / ATTESTATION_FILE).read_text(encoding="utf-8"))
     assert attestation["sandbox_backend"]["backend_id"] == "unsafe-local-subprocess"
     assert attestation["validation_summary"]["passed"] is True
+    validation_started = next(
+        event for event in events if event["event_type"] == "validation_started"
+    )
+    assert validation_started["payload"]["adapter_resolutions"][0]["adapter_id"] == "python"
     assert str(tmp_path) not in (evidence_path / CHAIN_FILE).read_text(encoding="utf-8")

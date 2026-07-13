@@ -6,13 +6,16 @@
 managed project's facts and permissions. Registration must validate the
 manifest before any source path, command, or policy is used.
 
-This document describes schema version `1.0`. Unknown required schema versions
-must be rejected rather than guessed.
+This document describes schema version `1.0` under the versioned compatibility
+contract `upg.manifest/v1`. Unknown required schema or contract versions must
+be rejected rather than guessed. Manifests written before the contract field
+was introduced remain valid and default to `upg.manifest/v1`.
 
 ## Complete example
 
 ```yaml
 schema_version: "1.0"
+contract_version: upg.manifest/v1
 project_id: sample-project
 name: Sample project
 description: A short, non-secret description.
@@ -67,6 +70,12 @@ publication_policy:
 runtime_adapters:
   - python
 
+adapter_requirements:
+  - adapter_id: python
+    adapter_version: "1.0.0"
+    contract_version: upg.adapter/v1
+    capabilities: [lint, test]
+
 state_file: null
 ```
 
@@ -75,6 +84,8 @@ state_file: null
 ### Identity
 
 - `schema_version` (required string): currently `1.0`.
+- `contract_version` (optional string): when present, exactly
+  `upg.manifest/v1`. Absence defaults to that value for legacy manifests.
 - `project_id` (required string): stable lowercase identifier using ASCII
   letters, digits, single hyphens, or underscores. It must be filesystem-safe,
   cannot contain separators or `..`, and should not change when a project moves.
@@ -127,6 +138,12 @@ runtime rather than interpolated into a shell string.
 `install` is separately gated and disabled by default because installation can
 execute project code and access a package network.
 
+An action mapping may add `adapter: <adapter_id>` to select one of the
+manifest's `runtime_adapters`. Without that field, `AdapterRegistry` resolves a
+single compatible adapter from project type, platform, and named capability.
+Unknown, incompatible, or ambiguous selection is refused; caller input cannot
+select a new executable.
+
 ### Permissions and validation
 
 - `permissions.read`: permit scoped workspace inspection (R0).
@@ -137,6 +154,17 @@ execute project code and access a package network.
 - `validation_requirements`: action names that must pass before job success.
 - `runtime_adapters`: permitted adapter identifiers. They must be compatible
   with `project_type` and each executable declaration.
+- `adapter_requirements` (optional): exact versioned expectations. Each entry
+  contains `adapter_id`, `contract_version`, a non-empty `capabilities` list,
+  and optional exact `adapter_version`. The adapter must also appear in
+  `runtime_adapters`. Current named capabilities are `inspect`, `install`,
+  `lint`, `test`, `build`, and `smoke` (`smoke_test` is the manifest action).
+
+The built-in registry declares Python and Node with contract
+`upg.adapter/v1`. Each read-only declaration also reports supported project
+types/platforms, required tools, and safety notes. These declarations are
+capability metadata, not permission grants and not proof that a host tool is
+installed.
 
 Permission is conjunctive: a manifest can reduce Gateway authority but cannot
 enable an operation the Gateway globally prohibits.
@@ -183,6 +211,8 @@ Registration rejects at least:
 - arbitrary executables, shell operators, command strings, or disallowed argv;
 - missing mandatory validation actions;
 - incompatible project type and runtime adapter;
+- unknown adapter, unsupported capability, incompatible adapter contract or
+  exact adapter version, and ambiguous action resolution;
 - publication settings that request globally prohibited authority.
 
 Registration should report all independently detectable schema errors in one
@@ -190,7 +220,9 @@ response when it is safe to continue validation.
 
 ## Compatibility
 
-Adding optional descriptive fields is backward-compatible. Changing command,
-permission, path, or publication semantics requires a new schema version and a
-documented migration. The Gateway must preserve the original manifest hash in
-job evidence so reviewers can identify the contract used for a run.
+Adding optional descriptive fields is backward-compatible. Schema `1.0`
+manifests without contract or requirement declarations continue through
+registry defaults. Changing command, permission, path, or publication semantics
+requires a new manifest contract/schema and a documented migration. The
+Gateway must preserve the original manifest hash in job evidence so reviewers
+can identify the contract used for a run.

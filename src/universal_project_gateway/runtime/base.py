@@ -8,8 +8,9 @@ import os
 import re
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
+from ..contracts import AdapterCapability
 from ..models import CommandSpec, GatewayError
 from ..sandbox import (
     SandboxBackend,
@@ -47,6 +48,7 @@ class RuntimeAdapter(abc.ABC):
     """Base class exposing fixed action methods instead of generic execution."""
 
     adapter_name = "base"
+    capability: ClassVar[AdapterCapability]
 
     def __init__(
         self,
