@@ -20,6 +20,24 @@ Exit evidence for this checkpoint is the observed test report, two successful
 demo job IDs, verified bundles, a clean `git diff --check`, and an accurate
 `state/CURRENT_STATE.json`. Documentation alone is not completion.
 
+## Completed checkpoint: Control Plane and LocalRunner boundary
+
+`UPG-ARCH-002` separates high-level authorization and orchestration from local
+execution while preserving the v0.1 interfaces and evidence schema:
+
+- `ControlPlane` owns registry, manifest, intent, policy, jobs, context, and
+  high-level API behavior.
+- `Runner` defines workspace, scoped file, validation, patch, and evidence
+  responsibilities without exposing arbitrary execution.
+- `LocalRunner` preserves the synchronous in-process implementation.
+- `GatewayService` remains the compatibility facade for CLI, MCP, demo, and
+  Python callers.
+
+This checkpoint creates an implementation seam; it does not claim process or
+kernel isolation. Exit evidence requires focused delegation tests, the entire
+pre-existing suite, self-registration coverage, two demos, and independently
+verified checksum evidence.
+
 ## Next: local hardening
 
 1. Add property and fuzz tests for Windows path normalization, reparse points,

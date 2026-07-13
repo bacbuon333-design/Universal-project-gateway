@@ -11,33 +11,46 @@ Gateway core remains stack- and domain-neutral.
 This MVP is a locally testable architectural proof, not a production security
 boundary.
 
-## Vertical slice
+## Control Plane and Runner boundary
 
 ```text
 AI, MCP client, or CLI
           |
           v
-  Gateway service and policy
+  GatewayService compatibility facade
           |
+          v
+      ControlPlane
           +---- registry + validated PROJECT_MANIFEST.yaml
-          |
+          +---- intent compiler + R0-R4 policy
           +---- SQLite job and event store
+          +---- bounded context compiler
+          +---- constrained Git publication
           |
-          +---- context-pack compiler (bounded, redacted)
+          | validated manifest, persisted job, named actions
+          v
+      Runner protocol
           |
+          v
+      LocalRunner (current implementation)
           +---- workspace manager ----> workspaces/jobs/<job-id>/workspace
-          |                |
-          |                +---- scoped text filesystem
-          |                +---- allowlisted runtime adapter
-          |
-          +---- deterministic diff + evidence ledger
-                              |
-                              v
-                       artifacts/jobs/<job-id>
+          +---- scoped text filesystem
+          +---- allowlisted runtime adapter
+          +---- deterministic patch + evidence ledger
+                                      |
+                                      v
+                               artifacts/jobs/<job-id>
 ```
 
-The CLI and MCP server are thin protocol surfaces over the same service. They
-do not receive broader filesystem or process authority than the service.
+The CLI and MCP server remain thin protocol surfaces over `GatewayService`.
+The facade delegates to `ControlPlane`, which authorizes and orchestrates a
+`Runner`. Protocol clients do not receive direct runner, filesystem, evidence,
+or process authority.
+
+This is a dependency and responsibility boundary, not an operating-system
+security boundary. `LocalRunner` remains in-process and has the same host
+identity as the Control Plane. It is explicitly not a sandbox, remote worker,
+leased worker, or separately authenticated execution service.
 
 ## Components
 
@@ -64,6 +77,36 @@ SQLite records each job and append-style events. Canonical job states are
 and `cancelled`. State transitions are validated. A synchronous runner is
 sufficient for the MVP, while durable records leave a recovery seam for a
 future worker model.
+
+### Control Plane
+
+`ControlPlane` owns project lookup, manifest loading, intent compilation,
+policy decisions, durable job transitions, context compilation, event
+orchestration, and the high-level API behavior used by every protocol surface.
+It does not open workspace files or construct child-process argv directly.
+
+The Control Plane passes the runner only persisted job metadata, a validated
+`ProjectManifest`, workspace-relative paths, and fixed validation action names.
+Natural-language request text never becomes a runner command. R3 Git
+publication remains a separate Control Plane gate after successful validation.
+
+### Runner protocol and LocalRunner
+
+`Runner` defines the bounded execution seam for workspace preparation, scoped
+file operations, validation, patch generation, and evidence production.
+`LocalRunner` implements the existing synchronous behavior by composing
+`WorkspaceManager`, `ScopedWorkspace`, the Python/Node runtime adapters, and
+`EvidenceLedger`.
+
+The runner does not own the project registry, manifest discovery, intent
+compiler, policy engine, or job state machine. It cannot register an arbitrary
+source path or accept arbitrary executable text. A future sandbox backend may
+implement the same responsibilities only after a separate threat model and
+contract review; no such backend is part of this checkpoint.
+
+`GatewayService` remains a compatibility facade. Existing CLI, MCP, demo, and
+Python callers retain their method names and result shapes while implementation
+work is delegated through `ControlPlane` and `LocalRunner`.
 
 ### Context packs
 
@@ -115,11 +158,16 @@ and implicit deployment are outside the authority model.
 
 1. Validate and register a project manifest.
 2. Compile intent and policy; persist a queued job.
-3. Build bounded context and copy the registered source into a fresh workspace.
-4. Inspect and modify only approved workspace-relative text paths.
-5. Execute required named validation through the project's adapter.
-6. Compare the workspace with the source and create `patch.diff`.
-7. Finalize the evidence ledger, checksums, and job state.
+3. The Control Plane builds bounded context and asks the Runner to copy the
+   registered source into a fresh workspace.
+4. The Control Plane authorizes each operation; the Runner inspects or modifies
+   only approved workspace-relative text paths.
+5. The Control Plane authorizes required action names; the Runner executes the
+   corresponding manifest-declared validation through the project's adapter.
+6. The Runner compares the workspace with its baseline and creates
+   `patch.diff`.
+7. The Control Plane transitions job state and the Runner finalizes the
+   backward-compatible evidence ledger and checksums.
 8. Optionally request the separately gated local-branch publication path.
 
 The demo repeats this flow with a new job ID. It never resets another job's
@@ -142,7 +190,9 @@ registered project's manifest.
 ## Extension rules
 
 New stacks implement the runtime adapter interface and receive only named,
-manifest-declared actions. New protocols call the existing service; they do
+manifest-declared actions. New execution backends implement the Runner
+responsibilities without moving policy or project discovery into the execution
+plane. New protocols call the compatibility facade or Control Plane; they do
 not add filesystem or process escape hatches. New business domains are managed
 projects with their own manifests and memory, never conditionals in Gateway
 core.
