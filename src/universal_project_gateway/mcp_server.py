@@ -70,6 +70,7 @@ def create_mcp_server(
         target_paths: list[str] | None = None,
         requested_operation: str | None = None,
         publication_preference: str = "none",
+        idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         """Normalize a task and create its isolated per-job workspace and context pack."""
 
@@ -79,6 +80,7 @@ def create_mcp_server(
             target_paths=target_paths or [],
             requested_operation=requested_operation,
             publication_preference=publication_preference,
+            idempotency_key=idempotency_key,
         )
 
     @server.tool(annotations=READ_ONLY)
@@ -86,6 +88,18 @@ def create_mcp_server(
         """Read a persisted job and its ordered event log."""
 
         return gateway.inspect_job(job_id)
+
+    @server.tool(annotations=SCOPED_WRITE)
+    def gateway_cancel_job(job_id: str, reason: str | None = None) -> dict[str, Any]:
+        """Persist cooperative cancellation; an in-progress process is not force-killed."""
+
+        return gateway.request_cancellation(job_id, reason=reason)
+
+    @server.tool(annotations=SCOPED_WRITE)
+    def gateway_recover_expired_job(job_id: str) -> dict[str, Any]:
+        """Recover an expired local lease using the persisted phase safety rule."""
+
+        return gateway.recover_expired_job(job_id)
 
     @server.tool(annotations=READ_ONLY)
     def gateway_list_workspace_files(job_id: str, path: str = ".") -> dict[str, Any]:
@@ -140,10 +154,13 @@ def create_mcp_server(
         return gateway.get_diff(job_id)
 
     @server.tool(annotations=SCOPED_WRITE)
-    def gateway_validate(job_id: str) -> dict[str, Any]:
+    def gateway_validate(
+        job_id: str,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
         """Run only the project's mandatory manifest-allowlisted validation actions."""
 
-        return gateway.validate(job_id)
+        return gateway.validate(job_id, idempotency_key=idempotency_key)
 
     @server.tool(annotations=READ_ONLY)
     def gateway_get_evidence(job_id: str) -> dict[str, Any]:
@@ -152,10 +169,18 @@ def create_mcp_server(
         return gateway.get_evidence(job_id)
 
     @server.tool(annotations=SCOPED_WRITE)
-    def gateway_publish_local_branch(job_id: str, explicit: bool = False) -> dict[str, Any]:
+    def gateway_publish_local_branch(
+        job_id: str,
+        explicit: bool = False,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
         """With explicit consent and project R3 permission, create a non-default local branch commit."""
 
-        return gateway.publish_local_branch(job_id, explicit=explicit)
+        return gateway.publish_local_branch(
+            job_id,
+            explicit=explicit,
+            idempotency_key=idempotency_key,
+        )
 
     return server
 

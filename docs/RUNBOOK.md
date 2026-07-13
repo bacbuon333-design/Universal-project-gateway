@@ -134,7 +134,8 @@ $prepared = & $python -m universal_project_gateway.cli task prepare `
   --request "Inspect the UPG self-registration metadata." `
   --target PROJECT_MANIFEST.yaml `
   --target registry/projects.yaml `
-  --operation inspect | ConvertFrom-Json
+  --operation inspect `
+  --idempotency-key "upg-inspection-001" | ConvertFrom-Json
 $jobId = $prepared.job.job_id
 $prepared.workspace
 $prepared.evidence
@@ -145,7 +146,8 @@ under `workspaces/jobs/$jobId/workspace`, then run the two mandatory named
 actions from the manifest and verify the checksummed evidence:
 
 ```powershell
-& $python -m universal_project_gateway.cli task validate $jobId
+& $python -m universal_project_gateway.cli task validate $jobId `
+  --idempotency-key "upg-inspection-validation-001"
 & $python -m universal_project_gateway.cli task evidence $jobId
 & $python scripts\verify_gateway.py "artifacts\jobs\$jobId"
 ```
@@ -154,6 +156,47 @@ The recorded validation argv must resolve to the active Python executable plus
 `-m compileall ...` and `-m pytest ...`. Any caller-supplied executable, shell
 operator, appended flag, installation, push, merge, deployment, or R4 action
 remains outside this workflow.
+
+## Lease, cancellation, recovery, and replay operations
+
+Preparation, validation, and publication accept bounded idempotency keys. A
+repeated prepare key for identical input returns the existing job/workspace. A
+completed validation or publication key returns its stored result without
+running another process or creating another Git commit. Reusing a prepare key
+with different input is refused.
+
+Inspect durable ownership and event history without exposing the bearer lease:
+
+```powershell
+& $python -m universal_project_gateway.cli task inspect $jobId
+```
+
+The public job payload shows worker ID, attempt, heartbeat, and lease expiry,
+but deliberately omits `lease_token`. Claim and heartbeat are internal worker
+operations; do not add the token to logs, task requests, or evidence.
+
+Request cooperative cancellation:
+
+```powershell
+& $python -m universal_project_gateway.cli task cancel $jobId `
+  --reason "Operator stopped the local job"
+```
+
+A queued, prepared, waiting, or recovery job cancels immediately. An active
+worker observes the flag at its next phase/action boundary. UPG does not yet
+kill a validation process tree already in progress; wait for the action timeout
+or return before treating cancellation as terminal.
+
+If inspection shows an expired lease, run the exact-job recovery command:
+
+```powershell
+& $python -m universal_project_gateway.cli task recover $jobId
+```
+
+Recovery refuses a live lease. A claim that expired before its phase began
+returns to its stable origin. An expiry during preparation, validation, running,
+or publication becomes `recovery_required`; preserve the workspace/evidence and
+review possible partial effects instead of blindly replaying it.
 
 ## Start local MCP
 

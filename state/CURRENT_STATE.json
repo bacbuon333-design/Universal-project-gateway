@@ -1,7 +1,7 @@
 {
   "system_id": "universal-project-gateway",
   "mvp_version": "0.1.0",
-  "checkpoint_status": "control_plane_local_runner_verified",
+  "checkpoint_status": "job_lease_recovery_verified",
   "implemented_capabilities": [
     "Validated PROJECT_MANIFEST.yaml contracts and persistent project registry",
     "Deterministic intent compilation and canonical R0-R4 policy decisions",
@@ -19,22 +19,31 @@
     "Documented self-management workflow for isolated preparation, allowlisted validation, and checksummed evidence",
     "ControlPlane ownership of project lookup, manifest loading, intent, policy, durable jobs, context, and high-level API orchestration",
     "Bounded Runner interface with LocalRunner preserving workspace, scoped file, validation, patch, and evidence behavior",
-    "GatewayService compatibility facade preserving CLI, MCP, demo, self-registration, evidence, and Git callers"
+    "GatewayService compatibility facade preserving CLI, MCP, demo, self-registration, evidence, and Git callers",
+    "SQLite schema-v2 job ownership with unpredictable lease tokens, worker identity, expiry, heartbeat, attempts, and phase-sensitive recovery",
+    "Formal claimed, preparing, validating, publishing, and recovery_required states while retaining prepared compatibility",
+    "Durable cooperative cancellation with ControlPlane and LocalRunner boundary checks and an append-style event trail",
+    "Prepare, validation, and publication idempotency preventing duplicate workspace, process, and Git commit effects",
+    "CLI and MCP cancellation/recovery operations without exposing lease tokens"
   ],
   "verified_capabilities": [
     "Ruff and compileall checks passed",
-    "40 unit and integration tests passed, including three focused ControlPlane and LocalRunner boundary tests, root manifest loading, portable seed registration, both fixture adapters, MCP surface, evidence, and local Git publication",
+    "49 unit and integration tests passed, including lease claim, duplicate refusal, heartbeat, stale detection, safe and recovery-required expiry handling, cancellation, schema-v1 migration, and prepare/validate/publish idempotency",
     "45 security tests passed; one symlink-escape test skipped because this Windows process lacks symlink privilege",
     "The root UPG manifest and both fixture manifests passed structured manifest verification",
     "A UPG self-management job completed both mandatory allowlisted actions and produced an independently verified evidence bundle",
     "The MCP stdio server process started locally and exited cleanly on end-of-input",
     "Two consecutive Windows verification demos passed with distinct job workspaces and evidence bundles",
     "Both demo evidence bundles contain all 12 required ledger files and independently verified SHA-256 manifests",
-    "VERIFY_GATEWAY.bat completed with exit code 0 after the ControlPlane and LocalRunner split, including root manifest verification and git diff --check"
+    "Idempotent Git publication replay returned the original result and left exactly one commit",
+    "VERIFY_GATEWAY.bat completed with exit code 0 after durable job ownership was added, including root manifest verification and git diff --check"
   ],
   "known_limitations": [
     "MVP isolation is application-level and is not an operating-system sandbox",
     "ControlPlane and LocalRunner are separate code responsibilities but still run in one process with the same host identity",
+    "SQLite leases coordinate only local workers and do not provide remote authentication or distributed queue semantics",
+    "Cancellation is cooperative and cannot terminate an adapter process tree already in progress",
+    "Jobs interrupted during an effectful phase require operator-reviewed recovery; automatic rollback is not implemented",
     "The symlink escape test could not create a Windows symlink without elevated privilege; link and reparse-point refusal code remains active",
     "Only UTF-8 text mutation is supported; binary files are metadata-only",
     "Validation adapters support only explicitly allowlisted local argv",
@@ -43,6 +52,6 @@
     "Remote Git push and localhost Streamable HTTP were not exercised end to end in this checkpoint",
     "No public MCP endpoint, remote authentication, or ChatGPT Web connection has been implemented or tested"
   ],
-  "last_completed_checkpoint": "UPG-ARCH-002 ControlPlane and LocalRunner boundary verified locally on Windows on 2026-07-14 from v0.1.1",
-  "next_recommended_checkpoint": "Design and security-review an OS-level sandbox backend behind the Runner boundary; do not add remote execution or a public MCP endpoint in that checkpoint"
+  "last_completed_checkpoint": "UPG-JOB-002 durable local lease, heartbeat, recovery, cancellation, and idempotency foundations verified on Windows on 2026-07-14 from the UPG-ARCH-002 commit; the local v0.1.2 tag still aliases v0.1.1 and needs separate release-metadata correction",
+  "next_recommended_checkpoint": "Design operator-reviewed reconciliation for recovery_required jobs, then security-review an OS-level sandbox backend; do not add remote execution or a public MCP endpoint yet"
 }

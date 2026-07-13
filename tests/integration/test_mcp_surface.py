@@ -13,6 +13,8 @@ EXPECTED_TOOLS = {
     "gateway_get_project",
     "gateway_prepare_task",
     "gateway_get_job",
+    "gateway_cancel_job",
+    "gateway_recover_expired_job",
     "gateway_list_workspace_files",
     "gateway_search_workspace",
     "gateway_read_workspace_file",

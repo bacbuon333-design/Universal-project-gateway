@@ -69,9 +69,19 @@ def test_validated_job_publishes_only_intended_change_to_generated_local_branch(
     assert _git(source, "branch", "--show-current") == "main"
     assert _git(source, "status", "--porcelain") == ""
 
-    published = gateway.publish_local_branch(job_id, explicit=True)
+    published = gateway.publish_local_branch(
+        job_id,
+        explicit=True,
+        idempotency_key="publish-greeting-001",
+    )
+    published_replay = gateway.publish_local_branch(
+        job_id,
+        explicit=True,
+        idempotency_key="publish-greeting-001",
+    )
 
     assert published["success"] is True
+    assert published_replay == published
     assert published["branch"].startswith(f"agent/{job_id}-")
     assert published["branch"] != "main"
     assert published["committed_paths"] == ["src/greeting.py"]
@@ -79,4 +89,5 @@ def test_validated_job_publishes_only_intended_change_to_generated_local_branch(
     assert _git(source, "branch", "--show-current") == published["branch"]
     assert _git(source, "status", "--porcelain") == ""
     assert _git(source, "diff", "--name-only", "main..HEAD") == "src/greeting.py"
+    assert _git(source, "rev-list", "--count", "main..HEAD") == "1"
     assert 'return "Hello from UPG"' in _git(source, "show", "HEAD:src/greeting.py")

@@ -38,12 +38,33 @@ kernel isolation. Exit evidence requires focused delegation tests, the entire
 pre-existing suite, self-registration coverage, two demos, and independently
 verified checksum evidence.
 
+## Completed checkpoint: durable local job ownership and recovery
+
+`UPG-JOB-002` adds SQLite-backed concurrency and replay foundations without
+changing the synchronous local runner deployment:
+
+- schema-v2 jobs persist worker, lease, heartbeat, attempt, idempotency,
+  cancellation, recovery, and last-error metadata;
+- effectful phases require an unexpired, unpredictable worker lease;
+- heartbeat refreshes and cancellation requests are append-style job events;
+- expired claim-only work safely returns to its origin, while interrupted
+  effectful work enters `recovery_required`;
+- prepare, validation, and publication keys prevent duplicate job/workspace,
+  process, and Git-commit effects;
+- existing CLI, MCP, fixture, self-registration, evidence, and Git paths remain
+  local and synchronous.
+
+This checkpoint does not add a remote worker, distributed queue, process-tree
+termination, or OS sandbox. Exit evidence requires lease/recovery tests,
+idempotent publication proving one commit, the full regression/security suite,
+two demos, and an independently verified evidence bundle.
+
 ## Next: local hardening
 
 1. Add property and fuzz tests for Windows path normalization, reparse points,
    size limits, registry corruption, and manifest argv validation.
-2. Add explicit concurrency ownership, crash recovery, cancellation, and stale
-   job reconciliation around SQLite.
+2. Add an operator-reviewed reconciliation workflow for jobs in
+   `recovery_required`, including workspace/source diagnostics.
 3. Move validation into a separately reviewed OS-level sandbox with no ambient
    credential access and bounded CPU, memory, filesystem, process, and network.
 4. Define evidence retention, encryption-at-rest options, audit export, and

@@ -58,17 +58,27 @@ def doctor(config: GatewayConfig) -> dict[str, Any]:
     except ImportError as exc:
         add("mcp_sdk", "FAIL", str(exc))
 
-    fixtures = [config.root_dir / "fixtures" / name / "PROJECT_MANIFEST.yaml" for name in ("python_demo", "node_demo")]
+    fixtures = [
+        config.root_dir / "fixtures" / name / "PROJECT_MANIFEST.yaml"
+        for name in ("python_demo", "node_demo")
+    ]
     missing = [str(path) for path in fixtures if not path.is_file()]
     add(
         "fixtures",
         "PASS" if not missing else "FAIL",
         "Python and Node fixtures found" if not missing else f"Missing: {', '.join(missing)}",
     )
-    overall = "FAIL" if any(item["status"] == "FAIL" for item in checks) else (
-        "WARN" if any(item["status"] == "WARN" for item in checks) else "PASS"
+    overall = (
+        "FAIL"
+        if any(item["status"] == "FAIL" for item in checks)
+        else ("WARN" if any(item["status"] == "WARN" for item in checks) else "PASS")
     )
-    return {"status": overall, "version": __version__, "root": str(config.root_dir), "checks": checks}
+    return {
+        "status": overall,
+        "version": __version__,
+        "root": str(config.root_dir),
+        "checks": checks,
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -89,20 +99,30 @@ def build_parser() -> argparse.ArgumentParser:
 
     task = commands.add_parser("task", help="Prepare and operate scoped jobs")
     task_commands = task.add_subparsers(dest="task_command", required=True)
-    prepare = task_commands.add_parser("prepare", help="Compile intent and create an isolated workspace")
+    prepare = task_commands.add_parser(
+        "prepare", help="Compile intent and create an isolated workspace"
+    )
     prepare.add_argument("--project", required=True, dest="project_id")
     prepare.add_argument("--request", required=True)
     prepare.add_argument("--target", action="append", default=[])
     prepare.add_argument("--operation")
     prepare.add_argument("--publication", default="none", choices=("none", "local_commit", "push"))
+    prepare.add_argument("--idempotency-key")
     for name, help_text in (
         ("inspect", "Inspect a persisted job and its events"),
         ("diff", "Compute the workspace patch"),
-        ("validate", "Run mandatory allowlisted validation"),
         ("evidence", "Inspect and verify the evidence bundle"),
     ):
         command = task_commands.add_parser(name, help=help_text)
         command.add_argument("job_id")
+    validate = task_commands.add_parser("validate", help="Run mandatory allowlisted validation")
+    validate.add_argument("job_id")
+    validate.add_argument("--idempotency-key")
+    cancel = task_commands.add_parser("cancel", help="Persist a cooperative cancellation request")
+    cancel.add_argument("job_id")
+    cancel.add_argument("--reason")
+    recover = task_commands.add_parser("recover", help="Recover one job whose lease has expired")
+    recover.add_argument("job_id")
 
     commands.add_parser("demo", help="Run the deterministic Python fixture vertical slice")
 
@@ -157,6 +177,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     target_paths=args.target,
                     requested_operation=args.operation,
                     publication_preference=args.publication,
+                    idempotency_key=args.idempotency_key,
                 )
             )
         elif args.task_command == "inspect":
@@ -164,20 +185,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.task_command == "diff":
             _json(gateway.get_diff(args.job_id))
         elif args.task_command == "validate":
-            result = gateway.validate(args.job_id)
+            result = gateway.validate(args.job_id, idempotency_key=args.idempotency_key)
             _json(result)
             return 0 if result.get("passed") else 1
+        elif args.task_command == "cancel":
+            _json(gateway.request_cancellation(args.job_id, reason=args.reason))
+        elif args.task_command == "recover":
+            _json(gateway.recover_expired_job(args.job_id))
         elif args.task_command == "evidence":
             result = gateway.get_evidence(args.job_id)
             _json(result)
             return 0 if result.get("verified") else 1
         return 0
     except (GatewayError, ValueError, FileNotFoundError) as exc:
-        payload = exc.to_dict() if isinstance(exc, GatewayError) else {
-            "code": type(exc).__name__.upper(),
-            "message": str(exc),
-            "details": {},
-        }
+        payload = (
+            exc.to_dict()
+            if isinstance(exc, GatewayError)
+            else {
+                "code": type(exc).__name__.upper(),
+                "message": str(exc),
+                "details": {},
+            }
+        )
         print(json.dumps(payload, indent=2, sort_keys=True), file=sys.stderr)
         return 2
 

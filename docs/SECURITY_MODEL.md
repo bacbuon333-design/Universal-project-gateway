@@ -21,6 +21,9 @@ validation actions, with a reviewable patch and evidence trail.
   arbitrary local path is not accepted as a project.
 - **Job workspace:** mutation authority is limited to one canonical workspace
   root. A workspace is not allowed to confer access back to its source.
+- **Worker lease:** an unpredictable token grants temporary ownership of one
+  local job phase. It is stored only in SQLite and typed in-process state, and
+  is omitted from protocol responses, events, logs, and evidence.
 - **Child process:** an adapter receives a fixed action and reviewed argv, a
   bounded environment, a timeout, and the workspace as its working directory.
 - **Evidence:** output is integrity-checked but must still be treated as
@@ -70,6 +73,11 @@ caller commands. Execution uses argv arrays and `shell=False`. The working
 directory is the active workspace. Executables, modules/scripts, optional
 arguments, timeout, and permitted environment keys are bounded by adapter and
 manifest policy.
+
+Lease ownership prevents two local workers from advancing the same effectful
+phase concurrently. It does not constrain the process capabilities of the
+lease holder. Heartbeat and cancellation checks occur between named actions;
+UPG does not yet kill an adapter subprocess or its descendants mid-action.
 
 The public service, CLI, and MCP server intentionally do not expose
 `run_any_command`, shell evaluation, Python evaluation, machine browsing,
@@ -122,4 +130,8 @@ model. An ad-hoc public tunnel is not an acceptable security design.
 - Trusted validation code can access capabilities of the host process.
 - Redaction is pattern-based and cannot guarantee detection of every secret.
 - SQLite is local durability, not a distributed queue or tamper-proof audit log.
+- Lease tokens prevent accidental concurrent ownership but are not remote
+  authentication credentials and are not suitable for a multi-host queue.
+- Cooperative cancellation may be observed only after the current validation
+  process returns or times out; an OS sandbox/process supervisor is still required.
 - A local Git commit remains unreviewed until a human examines the patch.

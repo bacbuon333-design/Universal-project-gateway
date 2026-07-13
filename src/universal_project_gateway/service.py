@@ -25,10 +25,24 @@ class GatewayService:
         *,
         control_plane: ControlPlane | None = None,
         runner: Runner | None = None,
+        worker_id: str | None = None,
+        lease_seconds: int = 300,
     ) -> None:
-        if control_plane is not None and (config is not None or runner is not None):
-            raise ValueError("control_plane cannot be combined with config or runner")
-        self.control_plane = control_plane or ControlPlane(config, runner=runner)
+        if control_plane is not None and (
+            config is not None
+            or runner is not None
+            or worker_id is not None
+            or lease_seconds != 300
+        ):
+            raise ValueError(
+                "control_plane cannot be combined with config, runner, or lease options"
+            )
+        self.control_plane = control_plane or ControlPlane(
+            config,
+            runner=runner,
+            worker_id=worker_id,
+            lease_seconds=lease_seconds,
+        )
 
     @property
     def config(self) -> GatewayConfig:
@@ -86,6 +100,7 @@ class GatewayService:
         target_paths: Iterable[str] = (),
         requested_operation: str | None = None,
         publication_preference: str = "none",
+        idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         return self.control_plane.prepare_task(
             project_id,
@@ -93,10 +108,17 @@ class GatewayService:
             target_paths=target_paths,
             requested_operation=requested_operation,
             publication_preference=publication_preference,
+            idempotency_key=idempotency_key,
         )
 
     def inspect_job(self, job_id: str) -> dict[str, Any]:
         return self.control_plane.inspect_job(job_id)
+
+    def request_cancellation(self, job_id: str, *, reason: str | None = None) -> dict[str, Any]:
+        return self.control_plane.request_cancellation(job_id, reason=reason)
+
+    def recover_expired_job(self, job_id: str) -> dict[str, Any]:
+        return self.control_plane.recover_expired_job(job_id)
 
     def list_workspace_files(self, job_id: str, path: str = ".") -> dict[str, Any]:
         return self.control_plane.list_workspace_files(job_id, path)
@@ -165,14 +187,29 @@ class GatewayService:
     def get_diff(self, job_id: str) -> dict[str, Any]:
         return self.control_plane.get_diff(job_id)
 
-    def validate(self, job_id: str) -> dict[str, Any]:
-        return self.control_plane.validate(job_id)
+    def validate(
+        self,
+        job_id: str,
+        *,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        return self.control_plane.validate(job_id, idempotency_key=idempotency_key)
 
     def get_evidence(self, job_id: str) -> dict[str, Any]:
         return self.control_plane.get_evidence(job_id)
 
-    def publish_local_branch(self, job_id: str, *, explicit: bool = False) -> dict[str, Any]:
-        return self.control_plane.publish_local_branch(job_id, explicit=explicit)
+    def publish_local_branch(
+        self,
+        job_id: str,
+        *,
+        explicit: bool = False,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        return self.control_plane.publish_local_branch(
+            job_id,
+            explicit=explicit,
+            idempotency_key=idempotency_key,
+        )
 
 
 __all__ = ["GatewayService", "ServiceError"]

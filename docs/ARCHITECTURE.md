@@ -23,7 +23,7 @@ AI, MCP client, or CLI
       ControlPlane
           +---- registry + validated PROJECT_MANIFEST.yaml
           +---- intent compiler + R0-R4 policy
-          +---- SQLite job and event store
+          +---- SQLite job, lease, event, and idempotency store
           +---- bounded context compiler
           +---- constrained Git publication
           |
@@ -49,8 +49,9 @@ or process authority.
 
 This is a dependency and responsibility boundary, not an operating-system
 security boundary. `LocalRunner` remains in-process and has the same host
-identity as the Control Plane. It is explicitly not a sandbox, remote worker,
-leased worker, or separately authenticated execution service.
+identity as the Control Plane. SQLite now assigns durable phase ownership to a
+local worker identity, but that lease is concurrency control rather than
+process isolation or remote-worker authentication.
 
 ## Components
 
@@ -70,13 +71,32 @@ scope, expected operations, validation, publication mode, and risk. It reports
 Policy then makes an explicit allow/refuse decision. The compiler does not
 grant authority, and natural language never becomes executable input.
 
-### Jobs and events
+### Jobs, leases, and events
 
-SQLite records each job and append-style events. Canonical job states are
-`queued`, `prepared`, `running`, `waiting_for_approval`, `completed`, `failed`,
-and `cancelled`. State transitions are validated. A synchronous runner is
-sufficient for the MVP, while durable records leave a recovery seam for a
-future worker model.
+SQLite schema version 2 records jobs, append-style events, worker leases, and
+idempotent operation results. The formal states are `queued`, `claimed`,
+`preparing`, `running`, `validating`, `waiting_for_approval`, `publishing`,
+`completed`, `failed`, `cancelled`, and `recovery_required`. `prepared` remains
+as a compatibility state for an isolated workspace waiting for its next local
+phase.
+
+A claim atomically records a worker ID, unpredictable bearer lease token,
+expiry, heartbeat, origin state, and incremented attempt. Only the owning
+worker with an unexpired token can advance `claimed`, `preparing`, `running`,
+`validating`, or `publishing`. Lease tokens are never returned by the public
+job serializer or written to evidence and events.
+
+Heartbeat refreshes are durable events. An expired lease that has not entered
+an effectful phase can return to its stable origin state. Expiry during
+preparation, validation, running, or publication moves the job to
+`recovery_required`, because replay safety cannot be assumed. This is a local
+SQLite ownership foundation, not a distributed queue or remote worker model.
+
+Prepare idempotency is unique per project and key. Validation and publication
+use a separate per-job operation ledger that stores `started`, `completed`, or
+`failed` plus a replayable result. Reusing a key with different prepare input
+is refused; an in-progress duplicate returns a structured conflict rather than
+starting a second effect.
 
 ### Control Plane
 
@@ -89,6 +109,9 @@ The Control Plane passes the runner only persisted job metadata, a validated
 `ProjectManifest`, workspace-relative paths, and fixed validation action names.
 Natural-language request text never becomes a runner command. R3 Git
 publication remains a separate Control Plane gate after successful validation.
+The Control Plane claims each effectful phase, supplies cooperative heartbeat
+and cancellation callbacks to `LocalRunner`, and releases the lease only when
+a stable state has been committed.
 
 ### Runner protocol and LocalRunner
 
@@ -97,6 +120,12 @@ file operations, validation, patch generation, and evidence production.
 `LocalRunner` implements the existing synchronous behavior by composing
 `WorkspaceManager`, `ScopedWorkspace`, the Python/Node runtime adapters, and
 `EvidenceLedger`.
+
+Cancellation is cooperative. The runner checks before and after each named
+validation action, while the Control Plane checks between preparation,
+validation, source-copy, and Git-publication phases. It records cancellation
+and evidence deterministically, but it does not terminate an operating-system
+process tree already executing an adapter action.
 
 The runner does not own the project registry, manifest discovery, intent
 compiler, policy engine, or job state machine. It cannot register an arbitrary
@@ -157,18 +186,22 @@ and implicit deployment are outside the authority model.
 ## End-to-end sequence
 
 1. Validate and register a project manifest.
-2. Compile intent and policy; persist a queued job.
-3. The Control Plane builds bounded context and asks the Runner to copy the
-   registered source into a fresh workspace.
+2. Compile intent and policy; atomically create or replay a queued job by its
+   optional prepare idempotency key.
+3. A local worker claims the job, enters `preparing`, and the Control Plane
+   builds bounded context while the Runner copies the registered source into a
+   fresh workspace. The stable compatibility state becomes `prepared`.
 4. The Control Plane authorizes each operation; the Runner inspects or modifies
    only approved workspace-relative text paths.
-5. The Control Plane authorizes required action names; the Runner executes the
-   corresponding manifest-declared validation through the project's adapter.
+5. The worker claims the prepared job, enters `validating`, heartbeats between
+   named actions, and checks cooperative cancellation at every action boundary.
 6. The Runner compares the workspace with its baseline and creates
    `patch.diff`.
-7. The Control Plane transitions job state and the Runner finalizes the
-   backward-compatible evidence ledger and checksums.
-8. Optionally request the separately gated local-branch publication path.
+7. The Control Plane commits a terminal state and the Runner finalizes the
+   backward-compatible evidence ledger and checksums. Repeated validation with
+   the same key returns the recorded result.
+8. Optionally claim the separately gated `publishing` phase. Repeated publish
+   with the same key returns the original result without a second commit.
 
 The demo repeats this flow with a new job ID. It never resets another job's
 workspace or evidence.

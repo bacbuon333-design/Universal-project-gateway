@@ -6,14 +6,14 @@ never accepts a caller-supplied command line or an arbitrary source path.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 from .config import GatewayConfig
 from .evidence import EvidenceLedger
-from .models import GatewayError, Job, ProjectManifest, json_ready
+from .models import GatewayError, Job, JobStatus, ProjectManifest, json_ready
 from .runtime import create_runtime_adapter
 from .scoped_fs import ScopedWorkspace
 from .workspaces import WorkspaceManager
@@ -49,6 +49,8 @@ class ValidationExecution:
     environment: Mapping[str, Any]
     stdout: str
     stderr: str
+    cancelled: bool = False
+    cancellation_reason: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +90,15 @@ class Runner(Protocol):
         intent: Mapping[str, Any],
         operations: Sequence[Mapping[str, Any]],
         error_code: str,
+        message: str,
+    ) -> Path: ...
+
+    def record_cancellation(
+        self,
+        job: Job,
+        *,
+        operations: Sequence[Mapping[str, Any]],
+        phase: str,
         message: str,
     ) -> Path: ...
 
@@ -148,7 +159,14 @@ class Runner(Protocol):
 
     def record_patch(self, job_id: str, diff: Mapping[str, Any]) -> None: ...
 
-    def execute_validation(self, job: Job, manifest: ProjectManifest) -> ValidationExecution: ...
+    def execute_validation(
+        self,
+        job: Job,
+        manifest: ProjectManifest,
+        *,
+        heartbeat: Callable[[], None] | None = None,
+        should_cancel: Callable[[], bool] | None = None,
+    ) -> ValidationExecution: ...
 
     def finalize_validation(
         self,
@@ -167,7 +185,9 @@ class LocalRunner:
     """Current synchronous execution plane using local application isolation.
 
     This implementation deliberately preserves the MVP behavior. It is not an
-    operating-system sandbox and it does not implement leases or remote work.
+    operating-system sandbox and it does not implement remote work. Durable
+    lease ownership remains enforced by the Control Plane's job store; the
+    callbacks below provide cooperative heartbeat and cancellation boundaries.
     """
 
     _VALIDATION_METHODS = {
@@ -262,6 +282,44 @@ class LocalRunner:
     def record_task(self, job: Job) -> None:
         self.evidence.write(job.job_id, "task.json", job.to_dict())
 
+    def record_cancellation(
+        self,
+        job: Job,
+        *,
+        operations: Sequence[Mapping[str, Any]],
+        phase: str,
+        message: str,
+    ) -> Path:
+        evidence_path = self.evidence.job_path(job.job_id)
+        if not evidence_path.exists():
+            self.evidence.initialize(job.job_id)
+        self.record_task(job)
+        self.record_operations(job.job_id, operations)
+        self.evidence.write(
+            job.job_id,
+            "validation.json",
+            {
+                "passed": False,
+                "cancelled": True,
+                "overall_status": "not_run",
+                "checks": [],
+                "counts": {"passed": 0, "failed": 0, "skipped": 0, "not_run": 1},
+            },
+        )
+        self.evidence.finalize(
+            job.job_id,
+            final_report={
+                "job_id": job.job_id,
+                "project_id": job.project_id,
+                "success": False,
+                "status": JobStatus.CANCELLED.value,
+                "phase": phase,
+                "message": message,
+                "evidence_path": str(evidence_path),
+            },
+        )
+        return evidence_path
+
     def record_operations(self, job_id: str, operations: Sequence[Mapping[str, Any]]) -> None:
         self.evidence.write(job_id, "operations.json", list(operations))
 
@@ -349,7 +407,14 @@ class LocalRunner:
             return False
         return result.get("returncode", result.get("return_code")) == 0
 
-    def execute_validation(self, job: Job, manifest: ProjectManifest) -> ValidationExecution:
+    def execute_validation(
+        self,
+        job: Job,
+        manifest: ProjectManifest,
+        *,
+        heartbeat: Callable[[], None] | None = None,
+        should_cancel: Callable[[], bool] | None = None,
+    ) -> ValidationExecution:
         if job.workspace_path is None:
             raise RunnerError("Job has no workspace", code="WORKSPACE_NOT_READY")
         adapter = create_runtime_adapter(
@@ -362,7 +427,25 @@ class LocalRunner:
         results: list[dict[str, Any]] = []
         stdout_parts: list[str] = []
         stderr_parts: list[str] = []
-        for action in manifest.validation_requirements:
+        requirements = list(manifest.validation_requirements)
+        cancelled = False
+        cancellation_reason: str | None = None
+        for index, action in enumerate(requirements):
+            if should_cancel is not None and should_cancel():
+                cancelled = True
+                cancellation_reason = "Cancellation was observed before the next validation action."
+                for remaining in requirements[index:]:
+                    results.append(
+                        {
+                            "action": remaining,
+                            "status": "not-run",
+                            "passed": False,
+                            "message": cancellation_reason,
+                        }
+                    )
+                break
+            if heartbeat is not None:
+                heartbeat()
             method_name = self._VALIDATION_METHODS.get(action)
             if method_name is None:
                 result = {
@@ -382,8 +465,28 @@ class LocalRunner:
                 stdout_parts.append(f"[{action}]\n{result['stdout']}")
             if result.get("stderr"):
                 stderr_parts.append(f"[{action}]\n{result['stderr']}")
+            if heartbeat is not None:
+                heartbeat()
+            if should_cancel is not None and should_cancel():
+                cancelled = True
+                cancellation_reason = (
+                    "Cancellation was observed after a validation action completed. "
+                    "The current implementation does not kill an action already in progress."
+                )
+                for remaining in requirements[index + 1 :]:
+                    results.append(
+                        {
+                            "action": remaining,
+                            "status": "not-run",
+                            "passed": False,
+                            "message": cancellation_reason,
+                        }
+                    )
+                break
 
-        mandatory_passed = bool(results) and all(result["passed"] for result in results)
+        mandatory_passed = (
+            bool(results) and not cancelled and all(result["passed"] for result in results)
+        )
         summary = {
             "passed": mandatory_passed,
             "mandatory": list(manifest.validation_requirements),
@@ -403,11 +506,16 @@ class LocalRunner:
                 ),
             },
         }
+        if cancelled:
+            summary["cancelled"] = True
+            summary["cancellation_reason"] = cancellation_reason
         return ValidationExecution(
             summary=summary,
             environment=environment,
             stdout="\n\n".join(stdout_parts),
             stderr="\n\n".join(stderr_parts),
+            cancelled=cancelled,
+            cancellation_reason=cancellation_reason,
         )
 
     def finalize_validation(

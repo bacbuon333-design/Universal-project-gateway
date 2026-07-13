@@ -25,6 +25,22 @@ def _intent() -> NormalizedIntent:
     )
 
 
+def _prepare_job(store: JobStore, job_id: str, *, worker_id: str = "test-worker") -> None:
+    claimed = store.claim(job_id, worker_id)
+    preparing = store.transition(
+        job_id,
+        JobStatus.PREPARING,
+        worker_id=worker_id,
+        lease_token=claimed.lease_token,
+    )
+    store.transition(
+        job_id,
+        JobStatus.PREPARED,
+        worker_id=worker_id,
+        lease_token=preparing.lease_token,
+    )
+
+
 def test_foundation_config_is_side_effect_free_until_explicitly_initialized(
     tmp_path: Path,
 ) -> None:
@@ -57,11 +73,19 @@ def test_foundation_job_store_persists_job_updates_and_events(tmp_path: Path) ->
     workspace = tmp_path / "workspace"
     store.update(job.job_id, workspace_path=workspace, source_revision="abc123")
     store.record_event(job.job_id, "workspace_created", {"path": str(workspace)})
-    store.transition(job.job_id, JobStatus.PREPARED)
-    store.transition(job.job_id, JobStatus.RUNNING)
+    _prepare_job(store, job.job_id)
+    claimed = store.claim(job.job_id, "validation-worker", expected_statuses=(JobStatus.PREPARED,))
+    validating = store.transition(
+        job.job_id,
+        JobStatus.VALIDATING,
+        worker_id="validation-worker",
+        lease_token=claimed.lease_token,
+    )
     completed = store.transition(
         job.job_id,
         JobStatus.COMPLETED,
+        worker_id="validation-worker",
+        lease_token=validating.lease_token,
         validation_summary={"passed": True},
         evidence_path=tmp_path / "evidence",
     )
@@ -75,7 +99,10 @@ def test_foundation_job_store_persists_job_updates_and_events(tmp_path: Path) ->
         "job_created",
         "job_updated",
         "workspace_created",
+        "job_claimed",
         "status_transition",
+        "status_transition",
+        "job_claimed",
         "status_transition",
         "status_transition",
     ]
@@ -97,7 +124,7 @@ def test_foundation_job_store_rejects_invalid_and_terminal_transitions(
     assert store.get(job.job_id).status is JobStatus.CANCELLED
 
     approval_job = store.create("python-demo", "Request deletion", _intent())
-    store.transition(approval_job.job_id, JobStatus.PREPARED)
+    _prepare_job(store, approval_job.job_id)
     waiting = store.transition(approval_job.job_id, JobStatus.WAITING_FOR_APPROVAL)
     assert waiting.status is JobStatus.WAITING_FOR_APPROVAL
 

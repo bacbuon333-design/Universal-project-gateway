@@ -77,12 +77,19 @@ class RiskLevel(StrEnum):
 
 class JobStatus(StrEnum):
     QUEUED = "queued"
+    CLAIMED = "claimed"
+    PREPARING = "preparing"
+    # Kept as a stable public compatibility state for already prepared local
+    # workspaces. New worker-owned phases use CLAIMED/PREPARING/VALIDATING.
     PREPARED = "prepared"
     RUNNING = "running"
+    VALIDATING = "validating"
     WAITING_FOR_APPROVAL = "waiting_for_approval"
+    PUBLISHING = "publishing"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    RECOVERY_REQUIRED = "recovery_required"
 
 
 class PublicationMode(StrEnum):
@@ -313,12 +320,28 @@ class Job:
     evidence_path: Path | None = None
     error_code: str | None = None
     error_message: str | None = None
+    worker_id: str | None = None
+    lease_token: str | None = field(default=None, repr=False, compare=True)
+    lease_expires_at: str | None = None
+    heartbeat_at: str | None = None
+    attempt: int = 0
+    idempotency_key: str | None = None
+    cancel_requested: bool = False
+    recovery_reason: str | None = None
+    last_error: str | None = None
+    lease_origin_status: JobStatus | None = None
 
     @property
     def id(self) -> str:
         return self.job_id
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, *, include_lease_token: bool = False) -> dict[str, Any]:
+        """Serialize public job metadata without leaking the bearer lease.
+
+        Store and worker code may read ``lease_token`` from the typed model,
+        but protocol responses, task evidence, and event logs omit it.
+        """
+
         return {
             "job_id": self.job_id,
             "project_id": self.project_id,
@@ -334,6 +357,18 @@ class Job:
             "evidence_path": str(self.evidence_path) if self.evidence_path else None,
             "error_code": self.error_code,
             "error_message": self.error_message,
+            "worker_id": self.worker_id,
+            "lease_expires_at": self.lease_expires_at,
+            "heartbeat_at": self.heartbeat_at,
+            "attempt": self.attempt,
+            "idempotency_key": self.idempotency_key,
+            "cancel_requested": self.cancel_requested,
+            "recovery_reason": self.recovery_reason,
+            "last_error": self.last_error,
+            "lease_origin_status": (
+                self.lease_origin_status.value if self.lease_origin_status else None
+            ),
+            **({"lease_token": self.lease_token} if include_lease_token else {}),
         }
 
 

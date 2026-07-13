@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 
@@ -30,9 +31,21 @@ class RecordingLocalRunner(LocalRunner):
         self.prepared_jobs.append(job_id)
         return super().prepare_workspace(job_id, manifest)
 
-    def execute_validation(self, job: Job, manifest: ProjectManifest) -> ValidationExecution:
+    def execute_validation(
+        self,
+        job: Job,
+        manifest: ProjectManifest,
+        *,
+        heartbeat: Callable[[], None] | None = None,
+        should_cancel: Callable[[], bool] | None = None,
+    ) -> ValidationExecution:
         self.validated_jobs.append(job.job_id)
-        return super().execute_validation(job, manifest)
+        return super().execute_validation(
+            job,
+            manifest,
+            heartbeat=heartbeat,
+            should_cancel=should_cancel,
+        )
 
 
 def _fixture_control_plane(
