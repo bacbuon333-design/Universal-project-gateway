@@ -1,0 +1,62 @@
+name: Verify Universal Project Gateway
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Set up Node.js fixture runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install -r requirements.lock
+          python -m pip install --no-deps -e ".[dev]"
+
+      - name: Lint and compile
+        run: |
+          python -m ruff check src scripts tests
+          python -m compileall -q src scripts tests
+
+      - name: Run unit and integration tests
+        run: python -m pytest tests/unit tests/integration
+
+      - name: Run security tests
+        run: python -m pytest tests/security
+
+      - name: Run end-to-end demo twice
+        run: |
+          python scripts/run_demo.py
+          python scripts/run_demo.py
+
+      - name: Verify latest evidence bundle
+        run: python scripts/verify_gateway.py --latest
+
+      - name: Check patch whitespace
+        run: git diff --check
+
+      - name: Upload demo evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: upg-demo-evidence-windows
+          path: artifacts/jobs/
+          if-no-files-found: error

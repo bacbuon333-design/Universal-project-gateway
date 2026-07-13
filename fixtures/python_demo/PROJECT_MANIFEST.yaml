@@ -1,0 +1,87 @@
+schema_version: "1.0"
+project_id: python-demo
+name: Python greeting fixture
+description: Dependency-free Python project used to prove an isolated Gateway edit.
+project_type: python
+
+sources:
+  local_path: "."
+  github_repository: null
+
+stack:
+  language: Python
+  minimum_version: "3.11"
+  dependency_manager: none
+
+important_paths:
+  - src/greeting.py
+  - tests/check_greeting.py
+
+entrypoints:
+  library: src/greeting.py
+
+memory_files:
+  - AGENTS.md
+
+commands:
+  install: null
+  lint:
+    argv:
+      - python
+      - -m
+      - compileall
+      - -q
+      - src
+      - tests
+  test:
+    argv:
+      - python
+      - -m
+      - unittest
+      - discover
+      - -s
+      - tests
+      - -p
+      - check_*.py
+      - -v
+  build:
+    argv:
+      - python
+      - -m
+      - compileall
+      - -q
+      - src
+  smoke_test:
+    argv:
+      - python
+      - -m
+      - unittest
+      - discover
+      - -s
+      - tests
+      - -p
+      - check_*.py
+
+permissions:
+  read: true
+  workspace_write: true
+  validation: true
+  git_publish: false
+
+protected_paths:
+  - .env
+  - secrets/
+  - credentials/
+
+validation_requirements:
+  - test
+
+publication_policy:
+  allow_local_branch: false
+  allow_push: false
+  allow_merge: false
+
+runtime_adapters:
+  - python
+
+state_file: null

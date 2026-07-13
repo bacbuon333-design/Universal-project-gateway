@@ -1,0 +1,67 @@
+schema_version: "1.0"
+project_id: node-demo
+name: Node greeting fixture
+description: Dependency-free Node.js project proving the Gateway is stack-neutral.
+project_type: node
+
+sources:
+  local_path: "."
+  github_repository: null
+
+stack:
+  language: JavaScript
+  minimum_version: "18"
+  dependency_manager: npm
+
+important_paths:
+  - src/greeting.js
+  - tests/greeting.test.js
+
+entrypoints:
+  library: src/greeting.js
+
+memory_files:
+  - AGENTS.md
+
+commands:
+  install: null
+  lint:
+    argv:
+      - node
+      - --check
+      - src/greeting.js
+  test:
+    argv:
+      - node
+      - --test
+      - tests/greeting.test.js
+  build: null
+  smoke_test:
+    argv:
+      - node
+      - --test
+      - tests/greeting.test.js
+
+permissions:
+  read: true
+  workspace_write: true
+  validation: true
+  git_publish: false
+
+protected_paths:
+  - .env
+  - secrets/
+  - credentials/
+
+validation_requirements:
+  - test
+
+publication_policy:
+  allow_local_branch: false
+  allow_push: false
+  allow_merge: false
+
+runtime_adapters:
+  - node
+
+state_file: null

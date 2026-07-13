@@ -1,0 +1,14 @@
+{
+  "name": "upg-node-greeting-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dependency-free Node.js fixture for Universal Project Gateway",
+  "type": "commonjs",
+  "scripts": {
+    "lint": "node --check src/greeting.js",
+    "test": "node --test tests/greeting.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
