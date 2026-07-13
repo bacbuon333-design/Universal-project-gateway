@@ -29,6 +29,7 @@ class GatewayConfig:
     command_timeout_seconds: int = DEFAULT_COMMAND_TIMEOUT_SECONDS
     context_max_files: int = DEFAULT_CONTEXT_MAX_FILES
     context_max_bytes: int = DEFAULT_CONTEXT_MAX_BYTES
+    intelligence_root: Path | None = None
 
     @classmethod
     def from_root(cls, root: str | os.PathLike[str]) -> GatewayConfig:
@@ -73,6 +74,13 @@ class GatewayConfig:
 
         return self.artifacts_root
 
+    @property
+    def intelligence_cache_root(self) -> Path:
+        """Gateway-owned cache state, separate from registered project sources."""
+
+        configured = self.intelligence_root or self.database_path.parent / "project_intelligence"
+        return configured.expanduser().resolve()
+
     def ensure_runtime_dirs(self) -> None:
         """Create only gateway-owned state directories."""
 
@@ -81,5 +89,6 @@ class GatewayConfig:
             self.database_path.parent,
             self.workspaces_root,
             self.artifacts_root,
+            self.intelligence_cache_root,
         ):
             directory.mkdir(parents=True, exist_ok=True)

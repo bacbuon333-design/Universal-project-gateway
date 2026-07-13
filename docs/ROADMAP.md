@@ -123,6 +123,32 @@ compatibility/refusal tests, both fixture flows, self-management validation,
 the complete regression/security suite, and independent evidence-chain
 verification.
 
+## Completed checkpoint: deterministic project intelligence cache
+
+`UPG-INTEL-001` adds bounded reusable structural metadata without adding an AI
+or execution authority:
+
+- `upg.project_intelligence/v1` describes project identity, relative paths,
+  entrypoints, allowlisted commands, adapter capabilities, dependency hints,
+  and compact module/test/docs summaries;
+- sorted, limit-aware Python/Node/generic scanning fingerprints safe files but
+  skips protected, sensitive, excluded, and linked paths before content access;
+- semantic cache and source hashes use canonical relative JSON and exclude host
+  paths; Gateway stores verified documents only in ignored runtime state;
+- context packs consume a compact cache subset instead of repeating a full
+  tree scan, while explicit CLI generation controls refresh;
+- read-only CLI/MCP retrieval does not rescan or execute project code;
+- validation evidence and the existing event chain retain sandbox/adapter
+  metadata and add the intelligence schema/cache hash without breaking the
+  compatibility files.
+
+This checkpoint does not add LLM summaries, repository ingestion, vector or
+embedding stores, dynamic adapters, dependency installation, remote workers,
+public endpoints, OS sandboxing, or a dashboard. Exit evidence requires UPG,
+Python, and Node cache tests; fingerprint refresh and protected-path refusal;
+CLI/MCP/context/evidence coverage; full verification; and an independently
+verified self-management bundle.
+
 ## Next: local hardening
 
 1. Add property and fuzz tests for Windows path normalization, reparse points,

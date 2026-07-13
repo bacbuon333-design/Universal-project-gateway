@@ -13,6 +13,7 @@ from universal_project_gateway.contracts import (
     EVIDENCE_CONTRACT_VERSION,
     EXECUTION_CONTRACT_VERSION,
     MANIFEST_CONTRACT_VERSION,
+    PROJECT_INTELLIGENCE_CONTRACT_VERSION,
     get_contract_schema,
 )
 from universal_project_gateway.manifests import load_manifest, validate_manifest_data
@@ -35,12 +36,14 @@ def test_versioned_contract_constants_have_isolated_schemas() -> None:
         "adapter": "upg.adapter/v1",
         "execution": "upg.execution/v1",
         "evidence": "upg.evidence/v1",
+        "project_intelligence": "upg.project_intelligence/v1",
     }
     for version in (
         MANIFEST_CONTRACT_VERSION,
         ADAPTER_CONTRACT_VERSION,
         EXECUTION_CONTRACT_VERSION,
         EVIDENCE_CONTRACT_VERSION,
+        PROJECT_INTELLIGENCE_CONTRACT_VERSION,
     ):
         schema = get_contract_schema(version)
         assert schema["$id"] == version

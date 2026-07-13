@@ -69,6 +69,12 @@ def create_mcp_server(
 
         return gateway.get_project(project_id)
 
+    @server.tool(annotations=READ_ONLY)
+    def gateway_get_project_intelligence(project_id: str) -> dict[str, Any]:
+        """Read a verified generated metadata cache without rescanning or executing code."""
+
+        return gateway.get_project_intelligence(project_id)
+
     @server.tool(annotations=SCOPED_WRITE)
     def gateway_prepare_task(
         project_id: str,

@@ -14,6 +14,7 @@ from .config import GatewayConfig
 from .context import ContextCompiler
 from .contracts import CONTRACT_VERSIONS
 from .git_controller import GitController
+from .intelligence import ProjectIntelligenceCache
 from .intent import IntentCompiler
 from .jobs import LEASE_GUARDED_STATUSES, JobStore
 from .models import GatewayError, Job, JobStatus, ProjectManifest, json_ready
@@ -64,6 +65,7 @@ class ControlPlane:
         self.policy = PolicyEngine()
         self.intent = IntentCompiler()
         self.runner = runner or LocalRunner(config)
+        self.intelligence = ProjectIntelligenceCache(config)
         self.worker_id = worker_id or f"local-{uuid.uuid4().hex}"
         if isinstance(lease_seconds, bool) or not isinstance(lease_seconds, int):
             raise ValueError("lease_seconds must be an integer")
@@ -98,6 +100,23 @@ class ControlPlane:
         record = self.registry.get(project_id)
         manifest = self.registry.get_manifest(project_id)
         return {"record": record.to_dict(), "manifest": manifest.to_dict(include_metadata=True)}
+
+    def generate_project_intelligence(self, project_id: str) -> dict[str, Any]:
+        """Refresh one cache from a registered manifest and bounded source scan."""
+
+        manifest = self.registry.get_manifest(project_id)
+        return self.intelligence.generate(manifest)
+
+    def list_project_intelligence(self) -> list[dict[str, Any]]:
+        """List verified cache metadata without scanning registered sources."""
+
+        return self.intelligence.list()
+
+    def get_project_intelligence(self, project_id: str) -> dict[str, Any]:
+        """Read one verified cache without scanning or executing project code."""
+
+        self.registry.get(project_id)
+        return self.intelligence.get(project_id)
 
     def _job(self, job_id: str) -> Job:
         return self.jobs.get(job_id)
@@ -267,6 +286,9 @@ class ControlPlane:
                     "Never access protected paths or credentials.",
                     "Run only manifest-declared validation actions.",
                     "R4 actions, merges, force pushes, and deployments are prohibited.",
+                ),
+                project_intelligence=ProjectIntelligenceCache.compact(
+                    self.intelligence.get_or_generate(manifest)
                 ),
             )
             evidence_path = self.runner.record_preparation(

@@ -8,6 +8,7 @@ from universal_project_gateway.contracts import (
     ADAPTER_CONTRACT_VERSION,
     EVIDENCE_CONTRACT_VERSION,
     EXECUTION_CONTRACT_VERSION,
+    PROJECT_INTELLIGENCE_CONTRACT_VERSION,
 )
 from universal_project_gateway.evidence import ALL_EVIDENCE_FILES
 from universal_project_gateway.service import GatewayService
@@ -113,10 +114,19 @@ def test_python_service_vertical_slice_isolated_diff_validation_and_evidence(
         (evidence_path / "attestation.json").read_text(encoding="utf-8")
     )
     assert validation_evidence["checks"][0]["adapter"]["adapter_id"] == "python"
+    intelligence = validation_evidence["project_intelligence"]
+    assert intelligence["schema_version"] == PROJECT_INTELLIGENCE_CONTRACT_VERSION
+    assert len(intelligence["cache_hash"]) == 64
+    context_pack = json.loads(
+        (evidence_path / "context_pack.json").read_text(encoding="utf-8")
+    )
+    assert context_pack["project_intelligence"]["cache_hash"] == intelligence["cache_hash"]
     assert environment_evidence["adapter_registry"]["contract_version"] == (
         ADAPTER_CONTRACT_VERSION
     )
+    assert environment_evidence["project_intelligence"] == intelligence
     assert attestation["contract_version"] == EVIDENCE_CONTRACT_VERSION
+    assert attestation["project_intelligence"] == intelligence
     assert source_target.read_bytes() == source_before
 
 

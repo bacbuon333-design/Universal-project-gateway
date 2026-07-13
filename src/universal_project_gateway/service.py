@@ -95,6 +95,15 @@ class GatewayService:
     def get_project(self, project_id: str) -> dict[str, Any]:
         return self.control_plane.get_project(project_id)
 
+    def generate_project_intelligence(self, project_id: str) -> dict[str, Any]:
+        return self.control_plane.generate_project_intelligence(project_id)
+
+    def list_project_intelligence(self) -> list[dict[str, Any]]:
+        return self.control_plane.list_project_intelligence()
+
+    def get_project_intelligence(self, project_id: str) -> dict[str, Any]:
+        return self.control_plane.get_project_intelligence(project_id)
+
     def prepare_task(
         self,
         project_id: str,

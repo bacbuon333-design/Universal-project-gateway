@@ -101,6 +101,22 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_commands = adapter.add_subparsers(dest="adapter_command", required=True)
     adapter_commands.add_parser("list", help="List versioned adapter capabilities")
 
+    intelligence = commands.add_parser(
+        "intelligence", help="Generate or inspect deterministic project metadata caches"
+    )
+    intelligence_commands = intelligence.add_subparsers(
+        dest="intelligence_command", required=True
+    )
+    generate = intelligence_commands.add_parser(
+        "generate", help="Refresh one registered project's bounded cache"
+    )
+    generate.add_argument("project_id")
+    intelligence_commands.add_parser("list", help="List generated verified caches")
+    show_intelligence = intelligence_commands.add_parser(
+        "show", help="Read one generated cache without rescanning the project"
+    )
+    show_intelligence.add_argument("project_id")
+
     task = commands.add_parser("task", help="Prepare and operate scoped jobs")
     task_commands = task.add_subparsers(dest="task_command", required=True)
     prepare = task_commands.add_parser(
@@ -166,6 +182,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         gateway = GatewayService(config)
         if args.command == "adapter":
             _json(gateway.list_adapters())
+            return 0
+        if args.command == "intelligence":
+            if args.intelligence_command == "generate":
+                _json(gateway.generate_project_intelligence(args.project_id))
+            elif args.intelligence_command == "list":
+                _json(gateway.list_project_intelligence())
+            else:
+                _json(gateway.get_project_intelligence(args.project_id))
             return 0
         if args.command == "project":
             if args.project_command == "register":

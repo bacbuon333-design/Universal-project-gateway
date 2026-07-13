@@ -474,6 +474,7 @@ def _build_attestation(
     snapshot = _read_json_mapping(job_path / "source_snapshot.json")
     environment = _read_json_mapping(job_path / "environment.json")
     validation = _read_json_mapping(job_path / "validation.json")
+    intelligence = validation.get("project_intelligence")
     sandbox = environment.get("sandbox")
     sandbox_mapping = sandbox if isinstance(sandbox, Mapping) else {}
     return {
@@ -498,6 +499,9 @@ def _build_attestation(
             else {},
             "cancelled": bool(validation.get("cancelled", False)),
         },
+        "project_intelligence": (
+            dict(intelligence) if isinstance(intelligence, Mapping) else {}
+        ),
         "final_event_hash": final_event_hash,
         "manifest_checksum": {
             "algorithm": HASH_ALGORITHM,

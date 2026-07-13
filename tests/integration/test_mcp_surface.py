@@ -12,6 +12,7 @@ EXPECTED_TOOLS = {
     "gateway_list_adapters",
     "gateway_register_project",
     "gateway_get_project",
+    "gateway_get_project_intelligence",
     "gateway_prepare_task",
     "gateway_get_job",
     "gateway_cancel_job",
@@ -51,6 +52,7 @@ def test_mcp_registers_only_explicit_high_level_gateway_tools(tmp_path: Path) ->
     assert all(tool.description and tool.inputSchema for tool in tools)
     assert by_name["gateway_get_status"].annotations.readOnlyHint is True
     assert by_name["gateway_list_adapters"].annotations.readOnlyHint is True
+    assert by_name["gateway_get_project_intelligence"].annotations.readOnlyHint is True
     assert by_name["gateway_read_workspace_file"].annotations.readOnlyHint is True
     assert by_name["gateway_write_workspace_file"].annotations.readOnlyHint is False
     assert by_name["gateway_request_delete"].annotations.destructiveHint is False

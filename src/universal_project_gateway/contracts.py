@@ -17,6 +17,7 @@ MANIFEST_CONTRACT_VERSION: Final = "upg.manifest/v1"
 ADAPTER_CONTRACT_VERSION: Final = "upg.adapter/v1"
 EXECUTION_CONTRACT_VERSION: Final = "upg.execution/v1"
 EVIDENCE_CONTRACT_VERSION: Final = "upg.evidence/v1"
+PROJECT_INTELLIGENCE_CONTRACT_VERSION: Final = "upg.project_intelligence/v1"
 
 CONTRACT_VERSIONS = MappingProxyType(
     {
@@ -24,6 +25,7 @@ CONTRACT_VERSIONS = MappingProxyType(
         "adapter": ADAPTER_CONTRACT_VERSION,
         "execution": EXECUTION_CONTRACT_VERSION,
         "evidence": EVIDENCE_CONTRACT_VERSION,
+        "project_intelligence": PROJECT_INTELLIGENCE_CONTRACT_VERSION,
     }
 )
 
@@ -173,6 +175,27 @@ _CONTRACT_SCHEMAS: dict[str, dict[str, Any]] = {
             "final_event_hash": {"type": "string"},
         },
     },
+    PROJECT_INTELLIGENCE_CONTRACT_VERSION: {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": PROJECT_INTELLIGENCE_CONTRACT_VERSION,
+        "type": "object",
+        "required": [
+            "schema_version",
+            "project_id",
+            "project_name",
+            "project_type",
+            "source_fingerprint",
+            "cache_hash",
+        ],
+        "properties": {
+            "schema_version": {"const": PROJECT_INTELLIGENCE_CONTRACT_VERSION},
+            "project_id": {"type": "string"},
+            "project_name": {"type": "string"},
+            "project_type": {"type": "string"},
+            "source_fingerprint": {"type": "string"},
+            "cache_hash": {"type": "string"},
+        },
+    },
 }
 
 
@@ -193,5 +216,6 @@ __all__ = [
     "EVIDENCE_CONTRACT_VERSION",
     "EXECUTION_CONTRACT_VERSION",
     "MANIFEST_CONTRACT_VERSION",
+    "PROJECT_INTELLIGENCE_CONTRACT_VERSION",
     "get_contract_schema",
 ]

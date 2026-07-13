@@ -6,6 +6,7 @@ never accepts a caller-supplied command line or an arbitrary source path.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -55,6 +56,20 @@ def _sandbox_execution_event(value: Any) -> dict[str, Any]:
         "network_policy": metadata.get("network_policy", "unrestricted"),
         "network_policy_enforced": bool(metadata.get("network_policy_enforced", False)),
     }
+
+
+def _project_intelligence_reference(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    schema_version = value.get("schema_version")
+    cache_hash = value.get("cache_hash")
+    source_fingerprint = value.get("source_fingerprint")
+    if not all(isinstance(item, str) and item for item in (schema_version, cache_hash)):
+        return {}
+    result = {"schema_version": schema_version, "cache_hash": cache_hash}
+    if isinstance(source_fingerprint, str) and source_fingerprint:
+        result["source_fingerprint"] = source_fingerprint
+    return result
 
 
 @dataclass(frozen=True, slots=True)
@@ -284,6 +299,9 @@ class LocalRunner:
         self.evidence.write(job_id, "context_pack.json", context_pack)
         self.evidence.write(job_id, "source_snapshot.json", snapshot)
         project_id = str(intent.get("project_id", "unknown-project"))
+        intelligence = _project_intelligence_reference(
+            context_pack.get("project_intelligence")
+        )
         self.record_evidence_event(
             job_id,
             project_id,
@@ -292,6 +310,7 @@ class LocalRunner:
                 "source_commit": snapshot.get("source_revision"),
                 "file_count": len(snapshot.get("files", [])),
                 "omitted_path_count": len(snapshot.get("omitted_paths", [])),
+                "project_intelligence": intelligence,
             },
             actor="local_runner",
         )
@@ -511,6 +530,7 @@ class LocalRunner:
     ) -> ValidationExecution:
         if job.workspace_path is None:
             raise RunnerError("Job has no workspace", code="WORKSPACE_NOT_READY")
+        intelligence = self._read_project_intelligence_reference(job.job_id)
         resolutions = [
             self.adapter_registry.resolve(manifest, action)
             for action in manifest.validation_requirements
@@ -526,6 +546,7 @@ class LocalRunner:
                 "adapter_resolutions": resolution_payload,
                 "sandbox_backend_id": self.sandbox_backend.backend_id,
                 "sandbox_safety_level": self.sandbox_backend.safety_level,
+                "project_intelligence": intelligence,
             },
             actor="local_runner",
         )
@@ -566,6 +587,7 @@ class LocalRunner:
                 "resolved": resolution_payload,
                 "inspections": inspections,
             }
+            environment["project_intelligence"] = intelligence
             results, stdout_parts, stderr_parts, cancelled, cancellation_reason = (
                 self._execute_validation_actions(
                     adapters,
@@ -604,6 +626,7 @@ class LocalRunner:
                     if str(result.get("status", "")).casefold() in {"not-run", "not_run"}
                 ),
             },
+            "project_intelligence": intelligence,
         }
         if cancelled:
             summary["cancelled"] = True
@@ -632,6 +655,7 @@ class LocalRunner:
                 "cancelled": cancelled,
                 "counts": dict(summary["counts"]),
                 "adapter_resolutions": resolution_payload,
+                "project_intelligence": intelligence,
             },
             actor="local_runner",
         )
@@ -643,6 +667,18 @@ class LocalRunner:
             cancelled=cancelled,
             cancellation_reason=cancellation_reason,
         )
+
+    def _read_project_intelligence_reference(self, job_id: str) -> dict[str, Any]:
+        path = self.evidence.job_path(job_id) / "context_pack.json"
+        try:
+            if path.stat().st_size > self.config.context_max_bytes * 2:
+                return {}
+            context_pack = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return {}
+        if not isinstance(context_pack, Mapping):
+            return {}
+        return _project_intelligence_reference(context_pack.get("project_intelligence"))
 
     def _execute_validation_actions(
         self,

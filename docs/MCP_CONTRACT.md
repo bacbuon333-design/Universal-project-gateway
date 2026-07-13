@@ -43,7 +43,7 @@ not protocol output.
 Returns Gateway version, runtime health summary, and supported capabilities.
 It does not install dependencies or modify the host.
 The additive `contracts` object reports the active manifest, adapter,
-execution, and evidence contract identifiers.
+execution, evidence, and project-intelligence contract identifiers.
 
 ### `gateway_list_projects` (read-only)
 
@@ -68,6 +68,15 @@ metadata.
 Input: exact `project_id`. Returns the validated project summary and allowed
 capabilities; protected content is never inlined.
 
+### `gateway_get_project_intelligence` (read-only)
+
+Input: exact registered `project_id`. Returns one already-generated,
+hash-verified `upg.project_intelligence/v1` document and its Gateway-owned cache
+path. It does not rescan project source, execute adapter actions, install
+dependencies, or access a network. If no cache exists, it returns
+`PROJECT_INTELLIGENCE_NOT_FOUND`; operators generate or refresh through the
+local CLI before retrying.
+
 ## Job tools
 
 ### `gateway_prepare_task`
@@ -87,6 +96,8 @@ Input:
 Creates a durable job, normalized intent, context pack, and isolated workspace.
 The result includes `job_id`, status, risk, workspace readiness, and whether AI
 planning is still required. It never edits registered source.
+If project intelligence is missing, preparation performs one safe bounded
+generation and embeds only the compact cache reference/summary in context.
 
 ### `gateway_get_job` (read-only)
 

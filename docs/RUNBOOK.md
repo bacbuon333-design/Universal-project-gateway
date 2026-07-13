@@ -143,6 +143,32 @@ Registration rejects duplicate IDs, malformed manifests, credentials, and
 untrusted paths. The versioned `registry/projects.yaml` seeds a new local
 registry; mutable registry and job state are persisted under ignored `var/`.
 
+## Generate and inspect project intelligence
+
+Refresh one registered project with a bounded, deterministic metadata scan,
+then list or show verified caches:
+
+```powershell
+upg intelligence generate universal-project-gateway
+upg intelligence list
+upg intelligence show universal-project-gateway
+```
+
+Cache files live at
+`var/project_intelligence/<project-id>.json`. `generate` reads only safe,
+non-linked, non-protected project files within configured file/byte bounds and
+hashes them without executing code. It records relative structure, dependency
+filenames, module/test/docs summaries, manifest commands, and installed adapter
+declarations. It does not install dependencies, invoke project commands, call a
+model or network service, or inspect protected content.
+
+`list`, `show`, and MCP `gateway_get_project_intelligence` verify the semantic
+cache hash and do not rescan source. Run `generate` explicitly when source or
+the manifest changes. A missing cache is created safely during first task
+preparation, and later preparations reuse it until an operator refreshes it.
+Treat the cache as an advisory context optimization, never as a replacement for
+manifest validation or current-source checks.
+
 ## Inspect adapter contracts and capabilities
 
 Adapter discovery is read-only and does not inspect executables or start a
@@ -209,6 +235,11 @@ $jobId = $prepared.job.job_id
 $prepared.workspace
 $prepared.evidence
 ```
+
+Preparation includes a compact `upg.project_intelligence/v1` reference in
+`context_pack.json`. After validation, the same cache hash is recorded in
+`validation.json`, `environment.json`, evidence-chain phase events, and
+`attestation.json`.
 
 The source checkout remains read-only during this job. Confirm the workspace is
 under `workspaces/jobs/$jobId/workspace`, then run the two mandatory named

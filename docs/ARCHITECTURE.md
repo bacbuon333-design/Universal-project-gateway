@@ -24,6 +24,7 @@ AI, MCP client, or CLI
           +---- registry + validated PROJECT_MANIFEST.yaml
           +---- intent compiler + R0-R4 policy
           +---- SQLite job, lease, event, and idempotency store
+          +---- ProjectIntelligenceCache (`upg.project_intelligence/v1`)
           +---- bounded context compiler
           +---- constrained Git publication
           |
@@ -78,6 +79,31 @@ original meaning. A manifest may additionally pin an installed adapter
 contract/version and require named capabilities; registration refuses an
 unknown adapter, incompatible project type/platform, unsupported capability,
 or unsatisfied exact version before a job is created.
+
+### Project intelligence cache
+
+`ProjectIntelligenceScanner` produces a deterministic, rule-based summary from
+a validated manifest and a bounded tree fingerprint. It records relative
+important/protected paths, entrypoints, allowlisted validation/build commands,
+adapter capabilities, dependency-file hints, and compact module/test/docs
+maps. Python and Node receive only filename/layout conventions; project modules
+are never imported, commands are never executed, and no model, network, vector
+store, embedding service, or dependency installation is involved.
+
+The walker sorts entries, refuses links/reparse points, skips manifest-protected
+and sensitive/default-excluded paths before content access, and enforces file,
+per-file byte, and total hash-byte limits. Source and cache hashes use canonical
+UTF-8 JSON and project-relative paths. `generated_at` and `cache_hash` are
+excluded from the semantic cache-hash material so unchanged source metadata has
+a stable hash while retaining an operational generation timestamp.
+
+Verified JSON documents live under Gateway-controlled ignored state at
+`var/project_intelligence/<project-id>.json`, never in a registered project's
+managed source paths. `intelligence generate` performs the bounded refresh;
+`intelligence show` and MCP reads verify and return the existing cache without
+rescanning. Job preparation safely creates a missing cache once, then injects
+only a compact subset into the context pack. The cache is advisory metadata;
+the current manifest remains the authority for policy and validation.
 
 ### Intent and policy
 
@@ -162,7 +188,9 @@ memory, optional project state, a bounded tree, requested targets, protected
 paths, validation requirements, publication policy, and Git metadata. It skips
 dependencies, VCS internals, outputs, caches, binaries, artifacts, and
 protected paths. Size and file-count limits are recorded along with omissions
-and truncation; the context pack never implies full-repository understanding.
+and truncation. A compact verified project-intelligence entry supplies the
+latest cache/source hashes and structural summaries without duplicating the
+full scan. The context pack never implies full-repository understanding.
 
 ### Isolated workspaces and scoped files
 
@@ -178,12 +206,12 @@ does not execute.
 
 ### Versioned contracts and adapter registry
 
-Four additive contract identifiers separate compatibility families from their
+Five additive contract identifiers separate compatibility families from their
 implementation schemas: `upg.manifest/v1`, `upg.adapter/v1`,
-`upg.execution/v1`, and `upg.evidence/v1`. Machine-readable schema descriptions
-live in `contracts.py`. Existing manifest schema `1.0` and evidence schema
-`2.0` remain intact; the contract identifiers do not silently renumber either
-format.
+`upg.execution/v1`, `upg.evidence/v1`, and
+`upg.project_intelligence/v1`. Machine-readable schema descriptions live in
+`contracts.py`. Existing manifest schema `1.0` and evidence schema `2.0` remain
+intact; the contract identifiers do not silently renumber either format.
 
 `AdapterRegistry` owns installed adapter declarations and deterministic action
 resolution. Each declaration records adapter ID/version/contract, supported
@@ -239,6 +267,12 @@ the attestation's `manifest_checksum` hashes the sorted digest map of the 12
 compatibility files. The final checksum manifest then covers all 14 evidence
 files, including the chain and attestation.
 
+When project intelligence is available, the context pack, validation result,
+environment record, phase events, and attestation carry its schema version and
+semantic cache hash (plus the source fingerprint where relevant). These fields
+are additive and do not change the 12-file compatibility bundle or chain
+verification rules.
+
 The local-development signer is explicitly unsigned (`signature_algorithm:
 none`). The chain detects ordinary deletion, insertion, reordering, and
 payload mutation, including cases where only the outer checksum is refreshed.
@@ -260,7 +294,8 @@ and implicit deployment are outside the authority model.
 ## End-to-end sequence
 
 1. Validate and register a project manifest.
-2. Compile intent and policy; atomically create or replay a queued job by its
+2. Generate or reuse verified bounded project intelligence, then compile intent
+   and policy; atomically create or replay a queued job by its
    optional prepare idempotency key.
 3. A local worker claims the job, enters `preparing`, and the Control Plane
    builds bounded context while the Runner copies the registered source into a
@@ -289,6 +324,7 @@ fixture manifest. Mutable runtime data lives under ignored directories:
 
 ```text
 var/                         SQLite and mutable runtime registry
+var/project_intelligence/    verified advisory project metadata caches
 workspaces/jobs/<job-id>/    isolated working copies
 artifacts/jobs/<job-id>/     evidence bundles
 ```

@@ -69,6 +69,7 @@ class ContextCompiler:
         *,
         target_paths: Iterable[str] = (),
         gateway_rules: Iterable[str] = (),
+        project_intelligence: Mapping[str, Any] | None = None,
         output_path: str | os.PathLike[str] | None = None,
     ) -> dict[str, Any]:
         source = Path(source_root).expanduser().resolve(strict=True)
@@ -84,32 +85,64 @@ class ContextCompiler:
         tree: list[dict[str, Any]] = []
         files_by_relative: dict[str, Path] = {}
         truncated = False
-
-        for path, reason in _walk_project(source, exclusions, protected):
-            relative = path.relative_to(source).as_posix()
-            if reason:
-                omitted.append({"path": relative, "reason": reason})
-                continue
-            if len(tree) >= self.max_files:
-                truncated = True
-                omitted.append({"path": ".", "reason": "file_limit_reached"})
-                break
-            try:
-                size = path.stat().st_size
-            except OSError:
-                omitted.append({"path": relative, "reason": "metadata_unavailable"})
-                continue
-            tree.append(
-                {
-                    "path": relative,
-                    "type": "file",
-                    "size": size,
-                    "text": _looks_text(path, min(size, self.max_file_bytes + 1)),
-                }
-            )
-            files_by_relative[relative] = path
-
         selected_requests = _selected_paths(manifest, manifest_data, intent, intent_data, target_paths)
+        if project_intelligence:
+            for relative in _intelligence_paths(project_intelligence):
+                if len(tree) >= self.max_files:
+                    truncated = True
+                    omitted.append({"path": ".", "reason": "file_limit_reached"})
+                    break
+                if path_matches(relative, protected):
+                    omitted.append({"path": relative, "reason": "protected"})
+                    continue
+                if path_matches(relative, exclusions):
+                    omitted.append({"path": relative, "reason": "excluded"})
+                    continue
+                path, reason = _safe_project_candidate(source, relative)
+                if path is None:
+                    omitted.append({"path": relative, "reason": reason})
+                    continue
+                try:
+                    size = path.stat().st_size if path.is_file() else 0
+                except OSError:
+                    omitted.append({"path": relative, "reason": "metadata_unavailable"})
+                    continue
+                tree.append(
+                    {
+                        "path": relative,
+                        "type": "file" if path.is_file() else "directory",
+                        "size": size,
+                        "text": path.is_file() and _likely_text_path(path),
+                        "source": "project_intelligence_cache",
+                    }
+                )
+                if path.is_file():
+                    files_by_relative[relative] = path
+        else:
+            for path, reason in _walk_project(source, exclusions, protected):
+                relative = path.relative_to(source).as_posix()
+                if reason:
+                    omitted.append({"path": relative, "reason": reason})
+                    continue
+                if len(tree) >= self.max_files:
+                    truncated = True
+                    omitted.append({"path": ".", "reason": "file_limit_reached"})
+                    break
+                try:
+                    size = path.stat().st_size
+                except OSError:
+                    omitted.append({"path": relative, "reason": "metadata_unavailable"})
+                    continue
+                tree.append(
+                    {
+                        "path": relative,
+                        "type": "file",
+                        "size": size,
+                        "text": _looks_text(path, min(size, self.max_file_bytes + 1)),
+                    }
+                )
+                files_by_relative[relative] = path
+
         selected_files: list[dict[str, Any]] = []
         selected_seen: set[str] = set()
         total_bytes = 0
@@ -130,14 +163,18 @@ class ContextCompiler:
             selected_seen.add(relative)
             path = files_by_relative.get(relative)
             if path is None:
-                candidate = source.joinpath(*relative.split("/"))
-                if candidate.is_dir() and not is_reparse_point(candidate):
+                candidate, reason = _safe_project_candidate(source, relative)
+                if candidate is not None and candidate.is_file():
+                    path = candidate
+                elif candidate is not None and candidate.is_dir():
                     # Directories remain represented by the bounded tree.  Do
                     # not recursively ingest them merely because they were named.
                     selected_files.append({"path": relative, "type": "directory", "content": None})
+                    continue
                 else:
-                    omitted.append({"path": relative, "reason": "not_found_or_not_regular"})
-                continue
+                    omitted.append({"path": relative, "reason": reason})
+                    continue
+            assert path is not None
             size = path.stat().st_size
             if size > self.max_file_bytes:
                 omitted.append({"path": relative, "reason": "per_file_byte_limit"})
@@ -197,6 +234,7 @@ class ContextCompiler:
                 if item["path"] in set(_sequence_field(manifest, manifest_data, "memory_files"))
             ],
             "project_state": _redact(project_state),
+            "project_intelligence": _redact(dict(project_intelligence or {})),
             "project_tree": tree,
             "selected_files": [_redact(item) for item in selected_files],
             "requested_target_paths": list(
@@ -320,6 +358,68 @@ def _walk_project(
                 yield path, "not_regular_file"
 
     yield from visit(root)
+
+
+def _intelligence_paths(intelligence: Mapping[str, Any]) -> tuple[str, ...]:
+    values: list[str] = []
+    for field in ("important_paths", "dependency_files"):
+        raw = intelligence.get(field, [])
+        if isinstance(raw, list):
+            values.extend(item for item in raw if isinstance(item, str))
+    entrypoints = intelligence.get("entrypoints", {})
+    if isinstance(entrypoints, Mapping):
+        values.extend(item for item in entrypoints.values() if isinstance(item, str))
+    for field in ("module_summary", "test_summary", "docs_summary"):
+        summary = intelligence.get(field, {})
+        if not isinstance(summary, Mapping):
+            continue
+        for path_field in ("module_paths", "paths"):
+            raw = summary.get(path_field, [])
+            if isinstance(raw, list):
+                values.extend(item for item in raw if isinstance(item, str))
+    normalized: list[str] = []
+    for value in values:
+        try:
+            relative = normalize_relative_path(value)
+        except ScopedFileError:
+            continue
+        if relative not in normalized:
+            normalized.append(relative)
+    return tuple(normalized)
+
+
+def _safe_project_candidate(root: Path, relative: str) -> tuple[Path | None, str]:
+    candidate = root
+    for part in relative.split("/"):
+        candidate = candidate / part
+        if candidate.exists() and is_reparse_point(candidate):
+            return None, "link_or_reparse_point"
+    try:
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(root)
+    except (OSError, ValueError):
+        return None, "not_found_or_not_regular"
+    if not resolved.is_file() and not resolved.is_dir():
+        return None, "not_found_or_not_regular"
+    return resolved, ""
+
+
+def _likely_text_path(path: Path) -> bool:
+    return path.suffix.casefold() not in {
+        ".bmp",
+        ".dll",
+        ".exe",
+        ".gif",
+        ".ico",
+        ".jpeg",
+        ".jpg",
+        ".pdf",
+        ".png",
+        ".pyc",
+        ".so",
+        ".webp",
+        ".zip",
+    }
 
 
 def _looks_text(path: Path, read_limit: int) -> bool:
