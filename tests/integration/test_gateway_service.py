@@ -4,7 +4,7 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
-from universal_project_gateway.evidence import EVIDENCE_FILES
+from universal_project_gateway.evidence import ALL_EVIDENCE_FILES
 from universal_project_gateway.service import GatewayService
 
 
@@ -74,13 +74,13 @@ def test_python_service_vertical_slice_isolated_diff_validation_and_evidence(
     evidence_path = Path(evidence["path"])
     assert evidence["verified"] is True
     assert {path.name for path in evidence_path.iterdir()} == {
-        *EVIDENCE_FILES,
+        *ALL_EVIDENCE_FILES,
         "manifest.sha256.json",
     }
     checksum_manifest = json.loads(
         (evidence_path / "manifest.sha256.json").read_text(encoding="utf-8")
     )
-    assert set(checksum_manifest["files"]) == set(EVIDENCE_FILES)
+    assert set(checksum_manifest["files"]) == set(ALL_EVIDENCE_FILES)
     assert (evidence_path / "patch.diff").read_text(encoding="utf-8") == diff["patch"]
     operations = json.loads((evidence_path / "operations.json").read_text(encoding="utf-8"))
     event_types = {event["event_type"] for event in operations}

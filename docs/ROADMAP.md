@@ -80,6 +80,26 @@ enforce network denial. Exit evidence requires focused sandbox/security tests,
 the full regression suite, two demos, manifest verification, and an
 independently verified evidence bundle.
 
+## Completed checkpoint: append-only evidence hash chain
+
+`UPG-EVD-002` adds evidence schema v2 while preserving every v1 compatibility
+file and legacy checksum verification:
+
+- canonical UTF-8 JSONL events link sequence, payload hash, previous hash, and
+  event hash across preparation, mutation, sandbox validation, patch, terminal,
+  and finalization phases;
+- unsigned `attestation.json` binds the final event to gateway, job, project,
+  source, sandbox, validation, and compatibility-manifest metadata;
+- both library and standalone verifiers reject missing, reordered, malformed,
+  or tampered events and final-attestation mismatches;
+- the checksum manifest covers all 14 evidence files while old 12-file bundles
+  remain accepted as checksum-only evidence.
+
+This checkpoint does not add trusted signing, immutable storage, remote
+attestation, or a trusted timestamp. Exit evidence requires tamper/reorder
+tests, the complete regression/security suite, two demos, self-management
+validation, and independent chain verification.
+
 ## Next: local hardening
 
 1. Add property and fuzz tests for Windows path normalization, reparse points,
@@ -89,7 +109,8 @@ independently verified evidence bundle.
 3. Implement and separately threat-model an OS/container backend with bounded
    CPU, memory, filesystem, process, user, and network capabilities.
 4. Define evidence retention, encryption-at-rest options, audit export, and
-   signed attestations.
+   external-key signed attestations with rotation, revocation, and trusted-time
+   semantics; do not store signing keys in the repository or evidence bundle.
 5. Version the service and MCP schemas and add compatibility tests.
 6. Add human review UX for patch, validation, and R3 approval.
 

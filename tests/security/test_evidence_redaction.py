@@ -30,7 +30,21 @@ def test_secrets_are_redacted_before_json_logs_and_checksums_are_persisted(
         "url=https://alice:hunter2@example.invalid/private\n"
         "key=AKIAABCDEFGHIJKLMNOP\n",
     )
-    ledger.finalize(job_id, final_report={"success": False, "status": "failed"})
+    ledger.append_event(
+        job_id,
+        "redaction-demo",
+        "validation_completed",
+        secrets,
+        actor="local_runner",
+    )
+    ledger.finalize(
+        job_id,
+        final_report={
+            "project_id": "redaction-demo",
+            "success": False,
+            "status": "failed",
+        },
+    )
 
     evidence_path = ledger.job_path(job_id)
     verification = ledger.verify(job_id)

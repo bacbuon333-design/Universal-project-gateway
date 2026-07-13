@@ -282,6 +282,13 @@ class ControlPlane:
                 details={"workspace_path": str(workspace_path)},
             )
             self.runner.record_task(job)
+            self.runner.record_evidence_event(
+                job.job_id,
+                job.project_id,
+                "job_prepared",
+                {"status": job.status.value, "risk_level": job.risk_level.value},
+                actor="control_plane",
+            )
             self._sync_operations(job.job_id)
             return {
                 "job": job.to_dict(),
@@ -359,6 +366,19 @@ class ControlPlane:
 
     def _event(self, job_id: str, event_type: str, details: Mapping[str, Any]) -> None:
         self.jobs.record_event(job_id, event_type, details)
+        if event_type in {
+            "workspace_file_written",
+            "workspace_text_replaced",
+            "workspace_file_moved",
+        }:
+            job = self.jobs.get(job_id)
+            self.runner.record_evidence_event(
+                job_id,
+                job.project_id,
+                "file_operation_applied",
+                {"operation": event_type, **dict(details)},
+                actor="control_plane",
+            )
         if self.jobs.get(job_id).status not in {
             JobStatus.COMPLETED,
             JobStatus.FAILED,

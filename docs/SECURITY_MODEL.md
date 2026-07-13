@@ -30,8 +30,9 @@ validation actions, with a reviewable patch and evidence trail.
 - **Child process:** receives an explicit environment, `shell=False`, a bounded
   timeout, and a contained workspace working directory. Local backends still
   run it under the current host identity.
-- **Evidence:** output is integrity-checked but must still be treated as
-  potentially sensitive until redaction and human review have succeeded.
+- **Evidence:** compatibility files are checksum-covered; ordered phase events
+  are hash-linked and referenced by an unsigned attestation. Output must still
+  be treated as potentially sensitive until redaction and review have succeeded.
 - **Publication:** local Git branch creation is a distinct, higher-risk gate.
 
 ## Canonical risk model
@@ -123,10 +124,21 @@ backend is implemented.
 ## Secrets and evidence
 
 Manifests must not contain credentials. Protected files are excluded from
-context and raw evidence. Structured data and process output pass through
-secret redaction before persistence. Evidence checksums detect modification;
-they do not encrypt data or authenticate an author. Runtime artifacts are local
-and ignored by Git.
+context and raw evidence. Structured data, event payloads, and process output
+pass through secret redaction before persistence. Event payloads also reject
+absolute host paths so their hashes do not depend on checkout location.
+
+The evidence chain detects missing, reordered, or changed events by recomputing
+canonical payload/event hashes and continuity. The final unsigned attestation
+binds the last event, compatibility-manifest digest, source commit when known,
+sandbox safety metadata, and validation summary. The outer checksum manifest
+covers all evidence files but not itself.
+
+These mechanisms detect accidental or partial tampering; they do not encrypt
+data, provide a trusted timestamp, authenticate an author, or stop a writer
+from recomputing the entire unsigned bundle. Runtime artifacts remain local and
+ignored by Git. A real signing key must later live outside source, manifests,
+logs, context, and evidence.
 
 Never put tokens, passwords, private keys, connection strings, or entire
 environment dumps in a task request. If protected data is encountered, stop,
@@ -150,6 +162,9 @@ model. An ad-hoc public tunnel is not an acceptable security design.
   the restricted local backend reduces ambient environment exposure but cannot
   stop filesystem or network access.
 - Redaction is pattern-based and cannot guarantee detection of every secret.
+- The evidence chain and local attestation are unsigned and stored beside the
+  files they describe; a full-bundle rewrite by an authorized filesystem writer
+  cannot be distinguished from legitimate generation.
 - SQLite is local durability, not a distributed queue or tamper-proof audit log.
 - Lease tokens prevent accidental concurrent ownership but are not remote
   authentication credentials and are not suitable for a multi-host queue.

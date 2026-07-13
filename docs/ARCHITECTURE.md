@@ -39,6 +39,8 @@ AI, MCP client, or CLI
           |                                  +--> UnsafeLocalSandboxBackend (default)
           |                                  +--> LocalProcessSandboxBackend (opt-in)
           +---- deterministic patch + evidence ledger
+                +---- 12 compatibility files + SHA-256 manifest
+                +---- append-only event chain + unsigned attestation
                                       |
                                       v
                                artifacts/jobs/<job-id>
@@ -190,8 +192,30 @@ or network isolation without platform facilities.
 
 Each terminal job writes task, intent, context, snapshot, operations, changed
 files, diff, validation, process logs, environment, and final-report evidence.
-`manifest.sha256.json` covers every evidence file except itself. Evidence is
-deterministically serialized where practical and secrets are redacted.
+The original 12 files and their field shapes remain compatibility contracts.
+`manifest.sha256.json` covers those files plus the additive
+`evidence_events.jsonl` and `attestation.json`; the manifest never covers
+itself. Pre-v2 bundles containing only the 12 compatibility files remain
+verifiable.
+
+The JSONL chain is byte-appended rather than rewritten. Every event records a
+monotonic sequence, UTC timestamp, job/project identity, component actor,
+canonical payload, payload hash, previous event hash, and event hash. Canonical
+JSON uses UTF-8, sorted keys, compact separators, finite numbers, and SHA-256.
+Event payloads reject absolute host paths; compatibility documents may still
+contain operational paths where the older schema requires them.
+
+The final `evidence_finalized` event is referenced by `attestation.json`, along
+with gateway/source/sandbox/validation metadata. To avoid a circular digest,
+the attestation's `manifest_checksum` hashes the sorted digest map of the 12
+compatibility files. The final checksum manifest then covers all 14 evidence
+files, including the chain and attestation.
+
+The local-development signer is explicitly unsigned (`signature_algorithm:
+none`). The chain detects ordinary deletion, insertion, reordering, and
+payload mutation, including cases where only the outer checksum is refreshed.
+It is not an immutable audit log and cannot prove authorship or resist an
+attacker who rewrites the complete chain, attestation, and checksum manifest.
 Mandatory validation must pass before a job can report success.
 
 ### Constrained Git publication
@@ -217,9 +241,10 @@ and implicit deployment are outside the authority model.
    before backend execution and at every action boundary.
 6. The Runner compares the workspace with its baseline and creates
    `patch.diff`.
-7. The Control Plane commits a terminal state and the Runner finalizes the
-   backward-compatible evidence ledger and checksums. Repeated validation with
-   the same key returns the recorded result.
+7. The Control Plane commits a terminal state. The Runner appends terminal and
+   evidence-finalized events, emits unsigned attestation metadata, then writes
+   checksums covering all compatibility and chain files. Repeated validation
+   with the same key returns the recorded result.
 8. Optionally claim the separately gated `publishing` phase. Repeated publish
    with the same key returns the original result without a second commit.
 

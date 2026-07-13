@@ -7,7 +7,7 @@ from pathlib import Path
 
 from universal_project_gateway.config import GatewayConfig
 from universal_project_gateway.control_plane import ControlPlane
-from universal_project_gateway.evidence import EVIDENCE_FILES
+from universal_project_gateway.evidence import ALL_EVIDENCE_FILES
 from universal_project_gateway.models import Job, ProjectManifest
 from universal_project_gateway.runner import (
     LocalRunner,
@@ -157,6 +157,6 @@ def test_local_runner_preserves_workspace_validation_evidence_and_source(
     evidence_path = Path(evidence["path"])
     assert evidence["verified"] is True
     assert {path.name for path in evidence_path.iterdir()} == {
-        *EVIDENCE_FILES,
+        *ALL_EVIDENCE_FILES,
         "manifest.sha256.json",
     }

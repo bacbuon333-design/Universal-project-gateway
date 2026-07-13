@@ -34,6 +34,27 @@ def _dict(value: Any) -> dict[str, Any]:
     raise TypeError(f"Expected a mapping-like result, got {type(value).__name__}")
 
 
+def _sandbox_execution_event(value: Any) -> dict[str, Any]:
+    """Select stable sandbox facts without hashing host-specific argv or cwd."""
+
+    if not isinstance(value, Mapping):
+        return {"status": "invalid"}
+    sandbox = value.get("sandbox")
+    metadata = sandbox if isinstance(sandbox, Mapping) else {}
+    return {
+        "runtime_action": value.get("action"),
+        "status": value.get("status"),
+        "return_code": value.get("returncode"),
+        "timeout_seconds": value.get("timeout_seconds"),
+        "timed_out": bool(value.get("timed_out", False)),
+        "cancelled": bool(value.get("cancelled", False)),
+        "shell_disabled": bool(metadata.get("shell_disabled", False)),
+        "environment_filtered": bool(metadata.get("environment_filtered", False)),
+        "network_policy": metadata.get("network_policy", "unrestricted"),
+        "network_policy_enforced": bool(metadata.get("network_policy_enforced", False)),
+    }
+
+
 @dataclass(frozen=True, slots=True)
 class WorkspacePreparation:
     """Workspace and snapshot metadata returned to the control plane."""
@@ -106,6 +127,16 @@ class Runner(Protocol):
     def record_task(self, job: Job) -> None: ...
 
     def record_operations(self, job_id: str, operations: Sequence[Mapping[str, Any]]) -> None: ...
+
+    def record_evidence_event(
+        self,
+        job_id: str,
+        project_id: str,
+        event_type: str,
+        payload: Mapping[str, Any],
+        *,
+        actor: str,
+    ) -> Mapping[str, Any]: ...
 
     def list_workspace_files(
         self, job: Job, manifest: ProjectManifest, path: str = "."
@@ -243,6 +274,18 @@ class LocalRunner:
         self.evidence.write(job_id, "intent.json", intent)
         self.evidence.write(job_id, "context_pack.json", context_pack)
         self.evidence.write(job_id, "source_snapshot.json", snapshot)
+        project_id = str(intent.get("project_id", "unknown-project"))
+        self.record_evidence_event(
+            job_id,
+            project_id,
+            "workspace_prepared",
+            {
+                "source_commit": snapshot.get("source_revision"),
+                "file_count": len(snapshot.get("files", [])),
+                "omitted_path_count": len(snapshot.get("omitted_paths", [])),
+            },
+            actor="local_runner",
+        )
         return evidence_path
 
     def evidence_path(self, job_id: str) -> Path:
@@ -273,6 +316,17 @@ class LocalRunner:
             },
         )
         self.record_operations(job.job_id, operations)
+        self.record_evidence_event(
+            job.job_id,
+            job.project_id,
+            "job_failed",
+            {
+                "phase": "preparing",
+                "status": job.status.value,
+                "error_code": error_code,
+            },
+            actor="control_plane",
+        )
         self.evidence.finalize(
             job.job_id,
             final_report={
@@ -313,6 +367,13 @@ class LocalRunner:
                 "counts": {"passed": 0, "failed": 0, "skipped": 0, "not_run": 1},
             },
         )
+        self.record_evidence_event(
+            job.job_id,
+            job.project_id,
+            "job_cancelled",
+            {"phase": phase, "status": job.status.value},
+            actor="control_plane",
+        )
         self.evidence.finalize(
             job.job_id,
             final_report={
@@ -329,6 +390,23 @@ class LocalRunner:
 
     def record_operations(self, job_id: str, operations: Sequence[Mapping[str, Any]]) -> None:
         self.evidence.write(job_id, "operations.json", list(operations))
+
+    def record_evidence_event(
+        self,
+        job_id: str,
+        project_id: str,
+        event_type: str,
+        payload: Mapping[str, Any],
+        *,
+        actor: str,
+    ) -> Mapping[str, Any]:
+        return self.evidence.append_event(
+            job_id,
+            project_id,
+            event_type,
+            payload,
+            actor=actor,
+        )
 
     def list_workspace_files(
         self, job: Job, manifest: ProjectManifest, path: str = "."
@@ -424,6 +502,17 @@ class LocalRunner:
     ) -> ValidationExecution:
         if job.workspace_path is None:
             raise RunnerError("Job has no workspace", code="WORKSPACE_NOT_READY")
+        self.record_evidence_event(
+            job.job_id,
+            job.project_id,
+            "validation_started",
+            {
+                "actions": list(manifest.validation_requirements),
+                "sandbox_backend_id": self.sandbox_backend.backend_id,
+                "sandbox_safety_level": self.sandbox_backend.safety_level,
+            },
+            actor="local_runner",
+        )
         sandbox_handle = self.sandbox_backend.prepare(
             job.workspace_path,
             snapshot={
@@ -482,6 +571,32 @@ class LocalRunner:
         if cancelled:
             summary["cancelled"] = True
             summary["cancellation_reason"] = cancellation_reason
+        sandbox = environment["sandbox"]
+        executions = sandbox.get("executions", []) if isinstance(sandbox, Mapping) else []
+        self.record_evidence_event(
+            job.job_id,
+            job.project_id,
+            "sandbox_execution_collected",
+            {
+                "backend_id": sandbox.get("backend_id", self.sandbox_backend.backend_id),
+                "safety_level": sandbox.get(
+                    "safety_level", self.sandbox_backend.safety_level
+                ),
+                "executions": [_sandbox_execution_event(item) for item in executions],
+            },
+            actor="sandbox_backend",
+        )
+        self.record_evidence_event(
+            job.job_id,
+            job.project_id,
+            "validation_completed",
+            {
+                "passed": mandatory_passed,
+                "cancelled": cancelled,
+                "counts": dict(summary["counts"]),
+            },
+            actor="local_runner",
+        )
         return ValidationExecution(
             summary=summary,
             environment=environment,
@@ -576,12 +691,38 @@ class LocalRunner:
         summary = dict(execution.summary)
         diff = self.generate_patch(job.job_id)
         self.record_patch(job.job_id, diff)
+        self.record_evidence_event(
+            job.job_id,
+            job.project_id,
+            "patch_generated",
+            {
+                "changed_count": len(diff.get("files_changed", [])),
+                "changed_paths": [
+                    item.get("path")
+                    for item in diff.get("files_changed", [])
+                    if isinstance(item, Mapping) and isinstance(item.get("path"), str)
+                ],
+                "stale_source": bool(diff.get("stale_source_warning")),
+            },
+            actor="local_runner",
+        )
         self.evidence.write(job.job_id, "validation.json", summary)
         self.evidence.write(job.job_id, "stdout.log", execution.stdout)
         self.evidence.write(job.job_id, "stderr.log", execution.stderr)
         self.evidence.write(job.job_id, "environment.json", execution.environment)
         self.record_task(job)
         self.record_operations(job.job_id, operations)
+        self.record_evidence_event(
+            job.job_id,
+            job.project_id,
+            f"job_{job.status.value}",
+            {
+                "status": job.status.value,
+                "success": bool(summary.get("passed")),
+                "error_code": job.error_code,
+            },
+            actor="control_plane",
+        )
         evidence_path = self.evidence.job_path(job.job_id)
         self.evidence.finalize(
             job.job_id,

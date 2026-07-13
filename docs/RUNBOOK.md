@@ -261,8 +261,31 @@ For the latest job:
 
 For a specific bundle, pass its directory if supported by the helper or use
 the CLI's evidence operation. Verification recalculates every recorded SHA-256
-digest and rejects missing, extra-required, or changed covered files. The
-checksum manifest does not cover itself by design.
+digest and rejects missing, extra-required, or changed covered files. For
+evidence schema v2 it also checks JSONL canonical form, sequence order, payload
+hashes, event hashes, previous-hash continuity, final-event/attestation binding,
+and the compatibility-file manifest digest. The checksum manifest does not
+cover itself by design.
+
+A current bundle contains the original 12 compatibility files plus:
+
+- `evidence_events.jsonl`: byte-appended canonical phase events;
+- `attestation.json`: final job/source/sandbox/validation metadata;
+- `manifest.sha256.json`: SHA-256 coverage for all 14 evidence files.
+
+The verifier still accepts a valid legacy bundle with only the original 12
+files and manifest, reporting `chain_checked: false`. A current bundle reports
+`chain_checked: true` and a positive `events_checked` count.
+
+Do not edit, reorder, remove, or manually regenerate individual event lines.
+If verification fails, preserve the entire bundle for diagnosis and create a
+new job. Refreshing only `manifest.sha256.json` cannot repair broken event
+continuity or an attestation mismatch.
+
+`attestation.json` currently declares the signer as
+`universal-project-gateway-local-development` with `signature_algorithm: none`.
+This is structured future-signing metadata, not proof of identity or a trusted
+timestamp. Do not describe it as cryptographically signed.
 
 Validation evidence distinguishes:
 

@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from universal_project_gateway.context import ContextCompiler
-from universal_project_gateway.evidence import EVIDENCE_FILES, EvidenceLedger
+from universal_project_gateway.evidence import ALL_EVIDENCE_FILES, EvidenceLedger
 from universal_project_gateway.models import CommandSpec
 from universal_project_gateway.runtime.node_adapter import NodeAdapter
 from universal_project_gateway.runtime.python_adapter import PythonAdapter
@@ -131,9 +131,9 @@ def test_evidence_finalize_creates_complete_verifiable_bundle(tmp_path: Path) ->
 
     evidence_path = ledger.job_path("job-evidence")
     assert {path.name for path in evidence_path.iterdir()} == {
-        *EVIDENCE_FILES,
+        *ALL_EVIDENCE_FILES,
         "manifest.sha256.json",
     }
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert list(manifest["files"]) == sorted(EVIDENCE_FILES)
+    assert list(manifest["files"]) == sorted(ALL_EVIDENCE_FILES)
     assert ledger.verify("job-evidence").valid is True
