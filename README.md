@@ -8,8 +8,11 @@ only manifest-declared validation actions, and writes a checksummed evidence
 bundle.
 
 The same Gateway manages the dependency-free Python and Node.js fixtures in
-this repository. No Animation, Trading, Revit, Auto Call, video, or other
-project-specific business logic belongs in the Gateway core.
+this repository. The repository also has a root `PROJECT_MANIFEST.yaml` and a
+portable seed registration, so UPG can prepare and validate changes to itself
+inside the same per-job workspace boundary. No Animation, Trading, Revit,
+Auto Call, video, or other project-specific business logic belongs in the
+Gateway core.
 
 > This MVP is not a production security boundary. It is a locally testable
 > architectural proof. It has no public endpoint, remote authentication,
@@ -24,6 +27,7 @@ Git enables publication tests and Node.js enables the second fixture test.
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.lock
 .\.venv\Scripts\python.exe -m pip install --no-deps -e ".[dev]"
+.\.venv\Scripts\python.exe scripts\verify_manifest.py PROJECT_MANIFEST.yaml
 .\.venv\Scripts\python.exe -m pytest
 .\.venv\Scripts\python.exe scripts\run_demo.py
 ```
@@ -46,6 +50,7 @@ After installation, these commands form the supported local interface:
 
 ```text
 upg doctor
+upg project show universal-project-gateway
 upg project register fixtures\python_demo\PROJECT_MANIFEST.yaml
 upg project list
 upg project show python-demo
@@ -60,6 +65,37 @@ upg mcp serve
 
 Run `upg --help` for the installed command surface. CLI and MCP operations
 return structured results; failures are not hidden behind a zero exit code.
+
+## Manage UPG with UPG
+
+`registry/projects.yaml` seeds `universal-project-gateway` into a fresh runtime
+registry. Its relative seed paths are resolved against the configured Gateway
+root, so the checkout remains portable. If `var/registry/projects.yaml` already
+predates this registration, register the root manifest once with
+`upg project register PROJECT_MANIFEST.yaml`.
+
+The smallest self-management workflow prepares an inspection job, creates an
+isolated snapshot, runs only the root manifest's mandatory `lint` and `test`
+actions, and verifies the resulting evidence:
+
+```powershell
+$python = ".\.venv\Scripts\python.exe"
+$prepared = & $python -m universal_project_gateway.cli task prepare `
+  --project universal-project-gateway `
+  --request "Inspect the UPG self-registration metadata." `
+  --target PROJECT_MANIFEST.yaml `
+  --target registry/projects.yaml `
+  --operation inspect | ConvertFrom-Json
+$jobId = $prepared.job.job_id
+& $python -m universal_project_gateway.cli task validate $jobId
+& $python -m universal_project_gateway.cli task evidence $jobId
+```
+
+The manifest's `stack.managed_path_groups` describes the source, documentation,
+test, and script groups managed by this project. Enforcement remains the
+current schema's canonical workspace containment, `protected_paths`,
+permissions, fixed action names, and Python adapter argv allowlist. The
+self-registration does not add a generic command runner.
 
 ## Local MCP server
 
@@ -83,8 +119,10 @@ independent security review. Do not expose this MVP through an ad-hoc tunnel.
 - `src/universal_project_gateway/`: policy, jobs, workspaces, adapters, evidence,
   CLI, and MCP server.
 - `fixtures/`: unrelated Python and Node.js managed projects.
-- `registry/projects.yaml`: versioned seed catalog; mutable registrations are
-  persisted under ignored `var/registry/`, while the demo uses `var/demo/`.
+- `PROJECT_MANIFEST.yaml`: the validated contract for managing UPG itself.
+- `registry/projects.yaml`: portable versioned seed catalog containing UPG;
+  mutable registrations are persisted under ignored `var/registry/`, while
+  the demo uses `var/demo/`.
 - `state/CURRENT_STATE.json`: conservative implementation and verification
   checkpoint.
 - `docs/`: architecture, trust model, manifest and MCP contracts, runbook,

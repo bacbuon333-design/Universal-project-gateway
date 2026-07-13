@@ -1,2 +1,9 @@
 schema_version: "1.0"
-projects: []
+projects:
+  - project_id: universal-project-gateway
+    name: Universal Project Gateway
+    project_type: python
+    manifest_path: PROJECT_MANIFEST.yaml
+    local_path: .
+    registered_at: "2026-07-13T18:23:03.665565Z"
+    manifest_sha256: 5b87c9690e2702e115f8fc06f1a586b0c4760af5129739d114242d2d73ea22c8

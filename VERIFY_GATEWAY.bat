@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 
-echo [1/10] Locating Python 3.11 or newer...
+echo [1/11] Locating Python 3.11 or newer...
 if exist ".venv\Scripts\python.exe" goto venv_ready
 
 where py >nul 2>nul
@@ -22,39 +22,43 @@ if errorlevel 1 exit /b %ERRORLEVEL%
 :venv_ready
 set "PYTHON=.venv\Scripts\python.exe"
 
-echo [2/10] Installing pinned project and development dependencies...
+echo [2/11] Installing pinned project and development dependencies...
 "%PYTHON%" -m pip install -r requirements.lock
 if errorlevel 1 exit /b %ERRORLEVEL%
 "%PYTHON%" -m pip install --no-deps -e ".[dev]"
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-echo [3/10] Running lint checks...
+echo [3/11] Running lint checks...
 "%PYTHON%" -m ruff check src scripts tests
 if errorlevel 1 exit /b %ERRORLEVEL%
 "%PYTHON%" -m compileall -q src scripts tests
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-echo [4/10] Running unit and integration tests...
+echo [4/11] Verifying project manifests...
+"%PYTHON%" scripts\verify_manifest.py PROJECT_MANIFEST.yaml fixtures\python_demo\PROJECT_MANIFEST.yaml fixtures\node_demo\PROJECT_MANIFEST.yaml
+if errorlevel 1 exit /b %ERRORLEVEL%
+
+echo [5/11] Running unit and integration tests...
 "%PYTHON%" -m pytest tests\unit tests\integration
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-echo [5/10] Running security tests...
+echo [6/11] Running security tests...
 "%PYTHON%" -m pytest tests\security
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-echo [6/10] Running the first end-to-end demo...
+echo [7/11] Running the first end-to-end demo...
 "%PYTHON%" scripts\run_demo.py
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-echo [7/10] Running the second end-to-end demo...
+echo [8/11] Running the second end-to-end demo...
 "%PYTHON%" scripts\run_demo.py
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-echo [8/10] Verifying the latest evidence bundle...
+echo [9/11] Verifying the latest evidence bundle...
 "%PYTHON%" scripts\verify_gateway.py --latest
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-echo [9/10] Checking patch whitespace...
+echo [10/11] Checking patch whitespace...
 where git >nul 2>nul
 if errorlevel 1 (
   echo ERROR: Git is required for complete verification. 1>&2
@@ -63,5 +67,5 @@ if errorlevel 1 (
 git diff --check
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-echo [10/10] Universal Project Gateway verification PASSED.
+echo [11/11] Universal Project Gateway verification PASSED.
 exit /b 0

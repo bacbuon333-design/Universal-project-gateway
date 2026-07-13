@@ -50,7 +50,14 @@ def _path_key(path: str | os.PathLike[str]) -> str:
     return os.path.normcase(resolved).casefold()
 
 
-def _record_from_data(data: Any) -> ProjectRecord:
+def _record_path(value: str, path_base: Path) -> Path:
+    candidate = Path(value).expanduser()
+    if not candidate.is_absolute():
+        candidate = path_base / candidate
+    return candidate.resolve()
+
+
+def _record_from_data(data: Any, *, path_base: Path) -> ProjectRecord:
     if not isinstance(data, dict):
         raise RegistryCorruptError("registry project records must be mappings")
     required = {
@@ -77,8 +84,8 @@ def _record_from_data(data: Any) -> ProjectRecord:
         project_id=data["project_id"],
         name=data["name"],
         project_type=data["project_type"],
-        manifest_path=Path(data["manifest_path"]).expanduser().resolve(),
-        local_path=Path(data["local_path"]).expanduser().resolve(),
+        manifest_path=_record_path(data["manifest_path"], path_base),
+        local_path=_record_path(data["local_path"], path_base),
         registered_at=data["registered_at"],
         manifest_sha256=digest,
     )
@@ -92,8 +99,14 @@ class ProjectRegistry:
         path: str | os.PathLike[str],
         *,
         loader: ManifestLoader | None = None,
+        path_base: str | os.PathLike[str] | None = None,
     ) -> None:
         self.path = Path(path).expanduser().resolve()
+        self.path_base = (
+            Path(path_base).expanduser().resolve()
+            if path_base is not None
+            else self.path.parent
+        )
         self.loader = loader or ManifestLoader()
         self._lock = threading.RLock()
 
@@ -127,7 +140,7 @@ class ProjectRegistry:
         records: dict[str, ProjectRecord] = {}
         seen_paths: set[str] = set()
         for raw_record in items:
-            record = _record_from_data(raw_record)
+            record = _record_from_data(raw_record, path_base=self.path_base)
             if record.project_id in records:
                 raise RegistryCorruptError(
                     "registry contains a duplicate project ID",

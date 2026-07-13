@@ -50,7 +50,10 @@ class GatewayService:
         registry_seed = config.root_dir / "registry" / "projects.yaml"
         if not config.registry_path.exists() and registry_seed.is_file():
             shutil.copy2(registry_seed, config.registry_path)
-        self.registry = ProjectRegistry(config.registry_path)
+        # The versioned seed registry may use repository-relative paths so a
+        # self-registration remains portable when the checkout moves. Runtime
+        # records written by the registry continue to use canonical paths.
+        self.registry = ProjectRegistry(config.registry_path, path_base=config.root_dir)
         self.jobs = JobStore(config.database_path)
         self.policy = PolicyEngine()
         self.intent = IntentCompiler()
