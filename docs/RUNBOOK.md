@@ -34,15 +34,18 @@ Run:
 VERIFY_GATEWAY.bat
 ```
 
-It creates or reuses `.venv`, installs the pinned local project, compiles
-Python sources, runs unit/integration and security tests, runs the deterministic
-demo twice, and verifies the newest evidence bundle. The first failing command
-stops the batch file with a nonzero exit code.
+It creates or reuses `.venv`, installs the pinned local project, runs Ruff and
+compile checks, verifies the root and fixture manifests, runs unit/integration
+and security tests, runs the deterministic demo twice, and verifies the newest
+evidence bundle. The first failing command stops the batch file with a nonzero
+exit code.
 
 Equivalent individual checks are:
 
 ```powershell
+.\.venv\Scripts\python.exe -m ruff check src scripts tests
 .\.venv\Scripts\python.exe -m compileall -q src scripts tests
+.\.venv\Scripts\python.exe scripts\verify_manifest.py PROJECT_MANIFEST.yaml fixtures\python_demo\PROJECT_MANIFEST.yaml fixtures\node_demo\PROJECT_MANIFEST.yaml
 .\.venv\Scripts\python.exe -m pytest tests\unit tests\integration
 .\.venv\Scripts\python.exe -m pytest tests\security
 .\.venv\Scripts\python.exe scripts\run_demo.py
@@ -101,6 +104,56 @@ upg project show python-demo
 Registration rejects duplicate IDs, malformed manifests, credentials, and
 untrusted paths. The versioned `registry/projects.yaml` seeds a new local
 registry; mutable registry and job state are persisted under ignored `var/`.
+
+## Prepare and validate a UPG self-management job
+
+The root `PROJECT_MANIFEST.yaml` registers this repository as
+`universal-project-gateway`. A fresh Gateway runtime copies its portable seed
+record from `registry/projects.yaml`; relative paths in that seed are resolved
+against the configured Gateway root. Check the active record first:
+
+```powershell
+$python = ".\.venv\Scripts\python.exe"
+& $python -m universal_project_gateway.cli project show universal-project-gateway
+```
+
+If the ignored `var/registry/projects.yaml` was created before self-registration
+was added, register the root manifest once. Do not repeat registration after it
+succeeds because duplicate project IDs are intentionally refused.
+
+```powershell
+& $python -m universal_project_gateway.cli project register PROJECT_MANIFEST.yaml
+```
+
+Prepare a read-only task with explicit workspace-relative targets, then capture
+the generated job ID:
+
+```powershell
+$prepared = & $python -m universal_project_gateway.cli task prepare `
+  --project universal-project-gateway `
+  --request "Inspect the UPG self-registration metadata." `
+  --target PROJECT_MANIFEST.yaml `
+  --target registry/projects.yaml `
+  --operation inspect | ConvertFrom-Json
+$jobId = $prepared.job.job_id
+$prepared.workspace
+$prepared.evidence
+```
+
+The source checkout remains read-only during this job. Confirm the workspace is
+under `workspaces/jobs/$jobId/workspace`, then run the two mandatory named
+actions from the manifest and verify the checksummed evidence:
+
+```powershell
+& $python -m universal_project_gateway.cli task validate $jobId
+& $python -m universal_project_gateway.cli task evidence $jobId
+& $python scripts\verify_gateway.py "artifacts\jobs\$jobId"
+```
+
+The recorded validation argv must resolve to the active Python executable plus
+`-m compileall ...` and `-m pytest ...`. Any caller-supplied executable, shell
+operator, appended flag, installation, push, merge, deployment, or R4 action
+remains outside this workflow.
 
 ## Start local MCP
 
