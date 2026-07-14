@@ -57,6 +57,8 @@ entrypoints:
   manifest_verification: scripts/verify_manifest.py
   evidence_verification: scripts/verify_gateway.py
   demo: scripts/run_demo.py
+  real_project_fixture: scripts/create_real_project_fixture.py
+  real_project_integration: scripts/validate_real_project_integration.py
   gateway_verification: VERIFY_GATEWAY.bat
   gateway_doctor: DOCTOR_GATEWAY.bat
   pull_and_verify: PULL_AND_VERIFY.bat

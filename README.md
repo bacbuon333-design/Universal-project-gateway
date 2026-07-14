@@ -56,6 +56,28 @@ Python-fixture job workspace, changes its greeting from `Hello` to
 verifies the ledger. The source fixture is not modified. Each run uses a new
 job ID and preserves prior evidence.
 
+## Controlled external-project proof
+
+UPG also has an integration harness for a real, separate local Git repository.
+Choose a new empty destination outside this repository, its workspaces, and its
+artifacts:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\validate_real_project_integration.py `
+  --project-root "Z:\UPG Test Projects\hello-web-app"
+```
+
+The harness creates a dependency-free Python WSGI app with its own manifest,
+tests, README, agent instructions, and clean `main`. It registers the absolute
+external path, generates intelligence only in Gateway-controlled state,
+prepares an isolated workspace, changes source plus its test, runs allowlisted
+`compileall` and `unittest` actions, verifies evidence, then explicitly creates
+one local `agent/<job-id>-...` branch and commit. It repeats publication with
+the same idempotency key and requires the result and commit count to remain
+unchanged. No remote is configured, nothing is pushed or merged, and cleanup
+is dry-run only. The destination must not already exist; use a new path for a
+new run rather than overwriting prior evidence or Git history.
+
 ## CLI
 
 After installation, these commands form the supported local interface:
@@ -152,6 +174,9 @@ independent security review. Do not expose this MVP through an ad-hoc tunnel.
 - `docs/`: architecture, trust model, manifest and MCP contracts, runbook,
   roadmap, and design decision record.
 - `scripts/`: demo and verification helpers.
+- `scripts/create_real_project_fixture.py` and
+  `scripts/validate_real_project_integration.py`: controlled external-project
+  creation and end-to-end proof; they are not production deployment tools.
 - `tests/`: unit, integration, and security tests.
 
 Generated job workspaces and evidence are intentionally ignored under

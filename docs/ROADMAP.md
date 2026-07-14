@@ -169,6 +169,26 @@ automatic dependency installation, or OS sandbox. Exit evidence requires the
 operations tests, full regression/security suites, both demos, independent
 evidence verification, and `git diff --check` through `VERIFY_GATEWAY.bat`.
 
+### Completed checkpoint: controlled real-project integration
+
+`UPG-REAL-001` proves the existing boundaries against a separate local Python
+Git repository rather than adding new Gateway authority:
+
+- safe fixture creation refuses existing, linked, in-repository, workspace,
+  artifact, and `.git` destinations and configures no remote;
+- exact registration, Gateway-owned intelligence, compact context, isolated
+  workspace mutation, adapter/sandbox validation, two-path patch, and evidence
+  verification run end to end;
+- source remains clean and unchanged until explicit R3 publication creates one
+  non-default local branch/commit;
+- an idempotency replay creates no duplicate commit, `main` remains unchanged,
+  and cleanup dry-run never includes the external source.
+
+This is a controlled local test using trusted dependency-free code and the
+default unsafe-local backend. It does not add a production integration,
+remote, push, merge, adapter, endpoint, dashboard, dependency installation, or
+OS isolation.
+
 1. Add property and fuzz tests for Windows path normalization, reparse points,
    size limits, registry corruption, and manifest argv validation.
 2. Add an operator-reviewed reconciliation workflow for jobs in

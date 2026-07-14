@@ -173,6 +173,53 @@ Registration rejects duplicate IDs, malformed manifests, credentials, and
 untrusted paths. The versioned `registry/projects.yaml` seeds a new local
 registry; mutable registry and job state are persisted under ignored `var/`.
 
+## Validate a controlled external Git project
+
+Use a new path that is clearly outside the UPG checkout, `workspaces/`,
+`artifacts/`, and every `.git` directory. The following command creates and
+tests a small dependency-free Python WSGI repository:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\validate_real_project_integration.py `
+  --gateway-root $PWD `
+  --project-root "Z:\UPG Test Projects\hello-web-app"
+```
+
+The destination must not exist. The creator refuses overwrite, links/reparse
+parents, paths inside UPG, and paths containing `.git`. It initializes a local
+repository with an invalid test-only email, a clean `main`, and no remotes.
+The integration then performs these gates:
+
+1. Register the exact external manifest and confirm arbitrary paths remain
+   untrusted.
+2. Generate `upg.project_intelligence/v1` under ignored Gateway state and
+   confirm no cache is written into the external project.
+3. Prepare a job whose workspace is contained by the configured workspace root
+   and disjoint from source.
+4. Replace the greeting and its exact test through scoped workspace methods;
+   require the patch to contain only those two paths.
+5. Run only manifest-declared `lint` (`compileall`) and `test` (`unittest`)
+   actions through the Python adapter and sandbox backend.
+6. Verify the 14-file evidence bundle, event chain, payloads, checksum manifest,
+   and final-attestation binding independently.
+7. Confirm source is byte-for-byte clean on `main`, then grant explicit R3 and
+   create one `agent/<job-id>-workspace-change` commit containing only the two
+   intended paths.
+8. Replay publication with the same key, require the same result and exactly
+   one commit, and confirm the `main` ref is unchanged.
+9. Run doctor/status against the isolated runtime and a cleanup dry-run that
+   must not include or delete the external project.
+
+The command intentionally leaves the external repository on its local review
+branch for inspection. It never configures a remote, pushes, merges, resets,
+installs dependencies, or removes the project. Preserve its reported runtime,
+job, workspace, intelligence, and evidence paths for review. For another run,
+choose another absent destination instead of deleting or rewriting the first.
+
+The full test suite exercises the same workflow in a disposable external temp
+directory. This is controlled trusted test code running through the default
+`unsafe-local` backend, not a production security or rollout claim.
+
 ## Generate and inspect project intelligence
 
 Refresh one registered project with a bounded, deterministic metadata scan,

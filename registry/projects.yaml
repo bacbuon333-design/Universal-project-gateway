@@ -6,4 +6,4 @@ projects:
     manifest_path: PROJECT_MANIFEST.yaml
     local_path: .
     registered_at: "2026-07-13T18:23:03.665565Z"
-    manifest_sha256: 09b80648b88385e1730e4e312df4b37d10b04318569a805e782fbc3af97bd45e
+    manifest_sha256: 03058de4b33f22022efb53014fe22e6ce80d9692556483fe8a2d13dd0f268ec2
