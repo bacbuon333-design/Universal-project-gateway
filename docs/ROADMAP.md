@@ -149,7 +149,7 @@ Python, and Node cache tests; fingerprint refresh and protected-path refusal;
 CLI/MCP/context/evidence coverage; full verification; and an independently
 verified self-management bundle.
 
-## Next: local hardening
+## Local hardening checkpoints
 
 ### Completed checkpoint: Windows local operations layer
 
@@ -188,6 +188,28 @@ This is a controlled local test using trusted dependency-free code and the
 default unsafe-local backend. It does not add a production integration,
 remote, push, merge, adapter, endpoint, dashboard, dependency installation, or
 OS isolation.
+
+### Completed checkpoint: local v0.2 readiness audit
+
+`UPG-AUDIT-001` reviews the complete local Windows path without expanding
+Gateway authority:
+
+- the full verification, doctor, status, cleanup, intelligence, evidence,
+  adapter, external-project, and MCP stdio paths are reviewed together;
+- doctor distinguishes an exact checkpoint from an untagged HEAD beyond an
+  older reachable tag, and status exposes the same distinction;
+- Windows verification rejects an old reused Python environment, while the
+  pull helper fails closed when Git status or branch discovery fails;
+- `docs/LOCAL_V02_READINESS.md` records the controlled-local verdict,
+  operator checklist, explicit non-goals, residual risk, and remote/public
+  prerequisites.
+
+The expected `v0.1.9` tag is absent from the audited history; this audit does
+not create or move tags. Local capability is ready for trusted-project use,
+while release bookkeeping remains conditional until a maintainer resolves or
+explicitly waives that missing intermediate tag.
+
+## Next local assurance milestones
 
 1. Add property and fuzz tests for Windows path normalization, reparse points,
    size limits, registry corruption, and manifest argv validation.

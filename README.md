@@ -18,6 +18,13 @@ Gateway core.
 > architectural proof. It has no public endpoint, remote authentication,
 > deployment path, or tested ChatGPT Web connection.
 
+The audited local readiness verdict is documented in
+[`docs/LOCAL_V02_READINESS.md`](docs/LOCAL_V02_READINESS.md). UPG is ready for
+controlled Windows use with trusted projects, but not for untrusted projects,
+remote/public operation, or production security. The audit also records that
+the expected `v0.1.9` tag is absent from the current history; no tag was
+created or moved by the audit.
+
 ## Quick start on Windows
 
 Python 3.11 or newer is required. Git and Node.js are optional for the core;
@@ -105,7 +112,9 @@ return structured results; failures are not hidden behind a zero exit code.
 
 `upg doctor` checks the checkout, registry, root manifest, SQLite schema,
 adapters, sandbox backends, cached intelligence, latest evidence, and MCP
-imports without starting a server. `upg status` reads registry/job/adapter and
+imports without starting a server. An exact HEAD tag passes the checkpoint
+check; a reachable older tag warns and reports the commit distance.
+`upg status` reads registry/job/adapter and
 cache summaries; its cache freshness is based on cache age only and does not
 rescan source. Cleanup is a plan by default. Actual removal requires
 `upg cleanup --execute`; even then, only immediate directories belonging to
@@ -172,7 +181,7 @@ independent security review. Do not expose this MVP through an ad-hoc tunnel.
 - `state/CURRENT_STATE.json`: conservative implementation and verification
   checkpoint.
 - `docs/`: architecture, trust model, manifest and MCP contracts, runbook,
-  roadmap, and design decision record.
+  roadmap, local-v0.2 readiness audit, and design decision record.
 - `scripts/`: demo and verification helpers.
 - `scripts/create_real_project_fixture.py` and
   `scripts/validate_real_project_integration.py`: controlled external-project
@@ -181,5 +190,6 @@ independent security review. Do not expose this MVP through an ad-hoc tunnel.
 
 Generated job workspaces and evidence are intentionally ignored under
 `workspaces/` and `artifacts/`. See [the runbook](docs/RUNBOOK.md) for recovery
-and verification, and [the security model](docs/SECURITY_MODEL.md) before
-extending any authority.
+and verification, [the local readiness audit](docs/LOCAL_V02_READINESS.md) for
+the release/operator checklist, and [the security model](docs/SECURITY_MODEL.md)
+before extending any authority.

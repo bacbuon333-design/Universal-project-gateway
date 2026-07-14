@@ -210,6 +210,17 @@ def _git_status(root: Path) -> dict[str, Any]:
         if nearest_tag_result is not None and nearest_tag_result.returncode == 0
         else None
     )
+    commits_since_nearest_tag = None
+    if nearest_tag:
+        distance_result = _run_git(root, "rev-list", "--count", f"{nearest_tag}..HEAD")
+        if distance_result is not None and distance_result.returncode == 0:
+            try:
+                commits_since_nearest_tag = int(distance_result.stdout.strip())
+            except ValueError:
+                commits_since_nearest_tag = None
+    checkpoint_status = (
+        "exact" if exact_tag else "ahead" if nearest_tag is not None else "unavailable"
+    )
     return {
         "available": True,
         "version": availability.stdout.strip(),
@@ -219,6 +230,8 @@ def _git_status(root: Path) -> dict[str, Any]:
         "origin": _safe_remote(origin_result.stdout) if origin_result and origin_result.returncode == 0 else None,
         "tag": exact_tag,
         "nearest_tag": nearest_tag,
+        "checkpoint_status": checkpoint_status,
+        "commits_since_nearest_tag": commits_since_nearest_tag,
     }
 
 
@@ -307,7 +320,27 @@ def doctor(config: GatewayConfig) -> dict[str, Any]:
     if git["available"]:
         add("git_worktree", "WARN" if git["dirty"] else "PASS", "working tree has changes" if git["dirty"] else "working tree is clean", branch=git["branch"], dirty_entry_count=git["dirty_entry_count"])
         add("git_origin", "PASS" if git["origin"] else "WARN", git["origin"] or "origin is not configured")
-        add("git_checkpoint", "PASS" if git["tag"] or git["nearest_tag"] else "WARN", git["tag"] or git["nearest_tag"] or "no reachable tag", exact=bool(git["tag"]))
+        if git["tag"]:
+            checkpoint_status = "PASS"
+            checkpoint_message = f"HEAD exactly matches checkpoint {git['tag']}"
+        elif git["nearest_tag"]:
+            checkpoint_status = "WARN"
+            distance = git["commits_since_nearest_tag"]
+            distance_text = f"{distance} commit(s)" if distance is not None else "one or more commits"
+            checkpoint_message = (
+                f"HEAD is {distance_text} beyond nearest checkpoint {git['nearest_tag']}"
+            )
+        else:
+            checkpoint_status = "WARN"
+            checkpoint_message = "no reachable checkpoint tag"
+        add(
+            "git_checkpoint",
+            checkpoint_status,
+            checkpoint_message,
+            exact=bool(git["tag"]),
+            nearest_tag=git["nearest_tag"],
+            commits_since_nearest_tag=git["commits_since_nearest_tag"],
+        )
 
     required = [
         config.root_dir / "PROJECT_MANIFEST.yaml",

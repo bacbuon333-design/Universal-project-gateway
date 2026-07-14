@@ -1,7 +1,7 @@
 {
   "system_id": "universal-project-gateway",
   "mvp_version": "0.1.0",
-  "checkpoint_status": "real_project_integration_verified",
+  "checkpoint_status": "local_v02_readiness_audited",
   "implemented_capabilities": [
     "Validated PROJECT_MANIFEST.yaml contracts and persistent project registry",
     "Deterministic intent compilation and canonical R0-R4 policy decisions",
@@ -51,11 +51,15 @@
     "Conservative cleanup planning with dry-run default, terminal-job retention, immediate-child containment, and registered-source/durable-path refusal",
     "Windows doctor and clean-main fast-forward pull-and-verify helpers with consistent nonzero failure propagation",
     "Safe external Python WSGI fixture creation outside UPG with an independent manifest, tests, README, agent guidance, clean main branch, and no Git remote",
-    "Controlled real-project workflow proving exact registration, Gateway-owned intelligence, compact context, isolated two-file mutation, allowlisted validation, evidence verification, explicit local branch publication, idempotent replay, and cleanup safety"
+    "Controlled real-project workflow proving exact registration, Gateway-owned intelligence, compact context, isolated two-file mutation, allowlisted validation, evidence verification, explicit local branch publication, idempotent replay, and cleanup safety",
+    "Exact-versus-nearest Git checkpoint diagnostics with commit-distance warnings for untagged HEAD",
+    "Windows verification rejects reused or fallback interpreters below Python 3.11 before installation and tests",
+    "Pull-and-verify fails closed when Git status or current-branch discovery cannot be trusted",
+    "Documented local-v0.2 controlled-use verdict, operator checklist, explicit non-ready boundaries, and remote/public prerequisites"
   ],
   "verified_capabilities": [
     "Ruff and compileall checks passed",
-    "72 unit and integration tests passed, including a separate external Git project registration/workspace/intelligence/validation/evidence/publication/cleanup proof, doctor/status coverage, both fixture flows, adapter contracts, lease/recovery, cancellation, and idempotency",
+    "73 unit and integration tests passed, including checkpoint-warning and Windows script regressions, a separate external Git project registration/workspace/intelligence/validation/evidence/publication/cleanup proof, doctor/status coverage, both fixture flows, adapter contracts, lease/recovery, cancellation, and idempotency",
     "58 security tests passed, including sandbox controls plus evidence chain creation, canonical hashing, tamper detection, reorder/missing-event refusal, attestation binding, legacy compatibility, and runner phase coverage; one symlink-escape test skipped because this Windows process lacks symlink privilege",
     "The root UPG manifest and both fixture manifests passed structured manifest verification",
     "A UPG self-management job completed both mandatory allowlisted actions and produced an independently verified evidence bundle",
@@ -66,7 +70,9 @@
     "A controlled external project outside UPG completed lint and test through the Python adapter and unsafe-local backend; its source stayed unchanged before publication, its main ref stayed unchanged afterward, and one local agent branch committed only two intended paths with no remote or push",
     "The external-project intelligence cache remained under Gateway-controlled state, its compact hash reached the context pack, doctor/status included the project, and cleanup dry-run deleted nothing",
     "The external project's 14-file evidence bundle independently verified its checksum manifest, 11-event chain, payload hashes, and final unsigned attestation binding",
-    "VERIFY_GATEWAY.bat completed with exit code 0 after real-project integration coverage was added, including manifest verification, 130 passing tests, two demos, independent chain verification, and git diff --check"
+    "VERIFY_GATEWAY.bat completed with exit code 0 for the local-v0.2 audit, including manifest verification, 131 passing tests, two demos, independent chain verification, Python version enforcement, and git diff --check",
+    "DOCTOR_GATEWAY.bat completed with zero FAIL checks; the untagged audited HEAD correctly produced checkpoint and dirty-worktree WARN checks before commit",
+    "Status, cleanup dry-run, UPG intelligence generation/show, adapter listing, latest evidence verification, and MCP stdio startup/EOF smoke completed successfully"
   ],
   "known_limitations": [
     "Both local sandbox backends remain application/process-level foundations and are not operating-system security boundaries",
@@ -95,8 +101,9 @@
     "Intelligence freshness in status is cache-age-only and does not prove that the registered source is unchanged",
     "Cleanup cannot terminate live processes and deletes nothing unless an operator supplies --execute after reviewing the dry-run plan",
     "The external sample is controlled trusted dependency-free test code; passing it does not establish safety for arbitrary or malicious projects under a non-OS sandbox",
-    "The real-project validator intentionally leaves its external repository on a local agent review branch and never pushes, merges, resets, overwrites, or removes it"
+    "The real-project validator intentionally leaves its external repository on a local agent review branch and never pushes, merges, resets, overwrites, or removes it",
+    "The audited main commit 9d1414e is one commit beyond v0.1.8, but the expected v0.1.9 tag is absent; release bookkeeping must be resolved or explicitly waived before v0.2.0-local is tagged"
   ],
-  "last_completed_checkpoint": "UPG-REAL-001 controlled external-project integration verified on Windows on 2026-07-14 from the v0.1.8 checkpoint with a separate local Git project, unchanged main ref, one idempotent review-branch commit, Gateway-owned intelligence, and verified evidence",
-  "next_recommended_checkpoint": "Keep real-project onboarding controlled and local; continue Windows path fuzzing and operator-reviewed recovery, then separately threat-model OS/container sandboxing and external evidence signing before any production or remote integration"
+  "last_completed_checkpoint": "UPG-AUDIT-001 local-v0.2 readiness audited on Windows on 2026-07-14 from main commit 9d1414e, with only bounded diagnostics/script/documentation fixes and no architecture or authority expansion",
+  "next_recommended_checkpoint": "Resolve or explicitly waive the missing v0.1.9 tag before v0.2.0-local; keep onboarding trusted and local, continue Windows path fuzzing and operator-reviewed recovery, then separately threat-model OS/container sandboxing and external evidence signing before any production or remote integration"
 }

@@ -114,6 +114,11 @@ database read-only: migration and runtime-directory creation remain normal
 Gateway startup responsibilities. Its MCP smoke check imports the server
 factory but never constructs a service or starts a transport.
 
+Doctor treats only an exact tag at `HEAD` as a passing Git checkpoint. When
+HEAD is beyond the nearest reachable tag it emits a warning with the commit
+distance, and status exposes the same additive checkpoint metadata so an
+operator cannot mistake an old tag for the current release.
+
 `status` is a read-only snapshot of the portable/runtime registry, schema-v2
 job metadata, built-in adapter declarations, cached intelligence age, default
 sandbox label, and evidence schema. It reports no lease tokens, request text,

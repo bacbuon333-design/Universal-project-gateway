@@ -21,6 +21,11 @@ if errorlevel 1 exit /b %ERRORLEVEL%
 
 :venv_ready
 set "PYTHON=.venv\Scripts\python.exe"
+"%PYTHON%" -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)" >nul 2>nul
+if errorlevel 1 (
+  echo ERROR: The selected virtual environment does not use Python 3.11 or newer. 1>&2
+  exit /b 1
+)
 
 echo [VERIFY 2/11] Installing pinned project and development dependencies...
 "%PYTHON%" -m pip install -r requirements.lock

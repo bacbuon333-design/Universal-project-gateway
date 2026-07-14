@@ -9,12 +9,16 @@ git rev-parse --is-inside-work-tree >nul 2>nul
 if errorlevel 1 goto not_repository
 
 echo [PULL 2/5] Refusing a dirty working tree...
+git status --porcelain --untracked-files=normal >nul 2>nul
+if errorlevel 1 goto status_failed
 set "DIRTY_TREE="
 for /f "delims=" %%A in ('git status --porcelain --untracked-files^=normal 2^>nul') do set "DIRTY_TREE=1"
 if defined DIRTY_TREE goto dirty_tree
 
 echo [PULL 3/5] Confirming the checked-out branch is main...
+set "CURRENT_BRANCH="
 for /f "delims=" %%B in ('git branch --show-current 2^>nul') do set "CURRENT_BRANCH=%%B"
+if not defined CURRENT_BRANCH goto branch_failed
 if /i not "%CURRENT_BRANCH%"=="main" goto wrong_branch
 
 echo [PULL 4/5] Pulling origin/main with fast-forward only...
@@ -37,6 +41,12 @@ exit /b 1
 :dirty_tree
 echo [PULL] REFUSED: The working tree is dirty. Commit or preserve changes first. 1>&2
 exit /b 2
+:status_failed
+echo [PULL] FAILED: Git status could not inspect the working tree. 1>&2
+exit /b 1
+:branch_failed
+echo [PULL] FAILED: The current Git branch could not be determined. 1>&2
+exit /b 1
 :wrong_branch
 echo [PULL] REFUSED: This helper only updates main; current branch is "%CURRENT_BRANCH%". 1>&2
 exit /b 2

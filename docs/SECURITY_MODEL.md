@@ -11,6 +11,22 @@ The safety objective is narrow: a caller may act only on a registered project,
 only within a fresh per-job copy, only through scoped file operations and named
 validation actions, with a reviewable patch and evidence trail.
 
+## Local v0.2 readiness boundary
+
+The local audit accepts UPG for controlled Windows operation only when projects
+and their validation code are trusted, the operator reviews warnings and
+patches, and publication stops at a non-default local branch/commit. A passing
+doctor or evidence checksum does not promote the default `unsafe-local`
+backend into an OS security boundary. An older reachable Git tag is reported
+as a warning rather than an exact checkpoint; tag presence has no effect on
+runtime authority.
+
+The accepted local flow and release checklist are recorded in
+[`LOCAL_V02_READINESS.md`](LOCAL_V02_READINESS.md). Remote/public use remains
+refused until kernel isolation, authenticated authorization, tenant isolation,
+encrypted and signed evidence, supervised recovery, and a separate production
+threat model exist.
+
 ## Trust boundaries
 
 - **Untrusted request:** natural language, target paths, MCP arguments, and

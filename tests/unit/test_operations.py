@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from universal_project_gateway import operations
 from universal_project_gateway.config import GatewayConfig
 from universal_project_gateway.jobs import JobStore
 from universal_project_gateway.operations import OperationsError, cleanup, doctor, status
@@ -44,6 +45,34 @@ def test_doctor_reports_pass_warn_and_fail_without_initializing_runtime(tmp_path
     assert not config.database_path.exists()
     assert not config.workspaces_root.exists()
     assert not config.artifacts_root.exists()
+
+
+def test_doctor_warns_when_head_is_beyond_nearest_checkpoint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        operations,
+        "_git_status",
+        lambda _root: {
+            "available": True,
+            "version": "git version test",
+            "branch": "audit/local-v02-readiness",
+            "dirty": False,
+            "dirty_entry_count": 0,
+            "origin": "https://example.invalid/repository",
+            "tag": None,
+            "nearest_tag": "v0.1.8",
+            "checkpoint_status": "ahead",
+            "commits_since_nearest_tag": 1,
+        },
+    )
+
+    result = doctor(GatewayConfig.from_root(tmp_path))
+    checkpoint = next(item for item in result["checks"] if item["name"] == "git_checkpoint")
+
+    assert checkpoint["status"] == "WARN"
+    assert "1 commit(s) beyond nearest checkpoint v0.1.8" in checkpoint["message"]
+    assert checkpoint["details"]["exact"] is False
 
 
 def test_status_summarizes_registry_jobs_adapters_and_intelligence(tmp_path: Path) -> None:
@@ -108,5 +137,11 @@ def test_windows_operator_scripts_exist_and_pull_helper_is_conservative() -> Non
     assert pull_script.is_file()
     content = pull_script.read_text(encoding="utf-8")
     assert "git status --porcelain" in content
+    assert "if errorlevel 1 goto status_failed" in content
+    assert 'set "CURRENT_BRANCH="' in content
+    assert "if not defined CURRENT_BRANCH goto branch_failed" in content
     assert "git pull --ff-only origin main" in content
     assert "call VERIFY_GATEWAY.bat" in content
+
+    verify_content = (REPOSITORY_ROOT / "VERIFY_GATEWAY.bat").read_text(encoding="utf-8")
+    assert "sys.version_info >= (3, 11)" in verify_content

@@ -30,6 +30,12 @@ caches, latest evidence verification, and MCP imports. It does not create
 runtime directories, initialize/migrate SQLite, refresh caches, install
 packages, or start a transport.
 
+An exact tag at `HEAD` is a passing checkpoint. A reachable older tag is only
+a `WARN` and includes the number of commits since that checkpoint. Do not treat
+the nearest tag as the current release. For the complete local-v0.2 verdict,
+limitations, and pre-tag checklist, see
+[`LOCAL_V02_READINESS.md`](LOCAL_V02_READINESS.md).
+
 ## Inspect local status
 
 Use the human summary interactively or request stable JSON for automation:
@@ -40,7 +46,8 @@ upg status --json
 ```
 
 The report includes registered projects, job counts by state, the latest
-completed and failed jobs, reachable Git checkpoint, adapter declarations,
+completed and failed jobs, exact or nearest Git checkpoint status and distance,
+adapter declarations,
 the default sandbox safety label, and evidence contract/schema versions.
 Intelligence freshness is explicitly `cache_age_only_no_source_rescan`: recent
 means generated within 24 hours, not proof that source is unchanged. Run the
@@ -68,7 +75,32 @@ PULL_AND_VERIFY.bat
 
 The helper refuses dirty worktrees and non-`main` branches, uses
 `git pull --ff-only origin main`, and never stashes, resets, merges, or
-force-pushes operator work.
+force-pushes operator work. It fails closed if Git cannot inspect status or
+determine the current branch. `VERIFY_GATEWAY.bat` also verifies that the
+selected/reused virtual environment runs Python 3.11 or newer before package
+installation or test execution.
+
+## Local v0.2 pre-tag audit flow
+
+From a clean, non-default audit branch/worktree:
+
+```powershell
+cmd /c VERIFY_GATEWAY.bat
+upg intelligence generate universal-project-gateway
+cmd /c DOCTOR_GATEWAY.bat
+upg status --json
+upg cleanup --dry-run --keep-last 10
+upg adapter list
+.\.venv\Scripts\python.exe scripts\verify_gateway.py --latest
+cmd /c ".venv\Scripts\python.exe -m universal_project_gateway.mcp_server --transport stdio < nul"
+```
+
+The final MCP command is a local startup/EOF smoke test, not a public binding.
+Require zero `FAIL` doctor checks, inspect all warnings, confirm cleanup reports
+`dry_run: true` and `deleted_count: 0`, and preserve the latest evidence path.
+On the audited history, `v0.1.9` is missing even though `main` contains the
+real-project checkpoint; a maintainer must resolve or explicitly waive that
+release-bookkeeping gap before creating `v0.2.0-local`.
 
 Equivalent individual checks are:
 

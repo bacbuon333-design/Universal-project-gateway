@@ -31,7 +31,13 @@ def _print_status(result: dict[str, Any]) -> None:
     registry = result["registry"]
     intelligence = result["intelligence"]
     print(f"Universal Project Gateway {result['version']}")
-    print(f"Checkpoint: {result['checkpoint'] or 'unavailable'}")
+    checkpoint = result["checkpoint"] or "unavailable"
+    checkpoint_state = result["git"].get("checkpoint_status")
+    if checkpoint_state == "ahead":
+        distance = result["git"].get("commits_since_nearest_tag")
+        suffix = f"; HEAD is {distance} commit(s) ahead" if distance is not None else "; HEAD is ahead"
+        checkpoint = f"{checkpoint} (nearest{suffix})"
+    print(f"Checkpoint: {checkpoint}")
     print(f"Projects: {registry['project_count']}")
     print(f"Jobs: {jobs['total']} ({json.dumps(jobs['by_state'], sort_keys=True)})")
     print(f"Adapters: {result['adapters']['count']}")
