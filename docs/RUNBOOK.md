@@ -98,9 +98,12 @@ cmd /c ".venv\Scripts\python.exe -m universal_project_gateway.mcp_server --trans
 The final MCP command is a local startup/EOF smoke test, not a public binding.
 Require zero `FAIL` doctor checks, inspect all warnings, confirm cleanup reports
 `dry_run: true` and `deleted_count: 0`, and preserve the latest evidence path.
-On the audited history, `v0.1.9` is missing even though `main` contains the
-real-project checkpoint; a maintainer must resolve or explicitly waive that
-release-bookkeeping gap before creating `v0.2.0-local`.
+The release-candidate review confirmed that `v0.1.9` resolves exactly to the
+real-project checkpoint `9d1414ef3056888ff5c651466ea688f53317fb65`.
+The package version for the local-v0.2 candidate is `0.2.0+local`; the release
+tag name is `v0.2.0-local`. Verification must never create, move, or delete a
+tag. Reconcile any existing tag that does not identify the reviewed release
+commit through a separately authorized maintainer procedure.
 
 Equivalent individual checks are:
 

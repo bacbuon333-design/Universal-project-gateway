@@ -7,12 +7,13 @@ trusted projects** at the `v0.2.0-local` capability boundary. It is not a
 production security boundary and is not ready for remote, public, multi-user,
 or untrusted-project operation.
 
-Release bookkeeping is conditional. The audited `main` commit is `9d1414e`
-(`Add real project integration test`), one commit after `v0.1.8`, but the
-expected `v0.1.9` tag is not present locally or on `origin` after fetching
-tags. This audit does not create or move tags. Before tagging
-`v0.2.0-local`, a maintainer must either tag `9d1414e` as `v0.1.9` or record an
-explicit decision that the intermediate tag was skipped.
+The release-candidate review subsequently confirmed that `v0.1.9` resolves to
+`9d1414ef3056888ff5c651466ea688f53317fb65` (`Add real project integration
+test`), exactly the intended `UPG-REAL-001` checkpoint. The original audit did
+not create or move that tag. Package and release-candidate details are recorded
+in [`RELEASE_NOTES_v0.2.0-local.md`](RELEASE_NOTES_v0.2.0-local.md); tag
+operations remain a separate maintainer action and do not change runtime
+authority.
 
 ## Audit scope and evidence
 
@@ -105,9 +106,10 @@ contract was expanded.
 10. Preview cleanup with `upg cleanup --dry-run`; use `--execute` only after
     reviewing every candidate and closing related processes.
 
-## Operator checklist before `v0.2.0-local`
+## Release operator checklist for `v0.2.0-local`
 
-- [ ] Resolve or explicitly waive the missing `v0.1.9` tag on `9d1414e`.
+- [x] Confirm `v0.1.9` resolves exactly to
+      `9d1414ef3056888ff5c651466ea688f53317fb65` without changing the tag.
 - [ ] Confirm the release commit is on a non-default review branch and the
       working tree is clean.
 - [ ] Run `VERIFY_GATEWAY.bat` with zero failures.

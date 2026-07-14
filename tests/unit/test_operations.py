@@ -75,6 +75,34 @@ def test_doctor_warns_when_head_is_beyond_nearest_checkpoint(
     assert checkpoint["details"]["exact"] is False
 
 
+def test_doctor_passes_when_head_exactly_matches_checkpoint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        operations,
+        "_git_status",
+        lambda _root: {
+            "available": True,
+            "version": "git version test",
+            "branch": "main",
+            "dirty": False,
+            "dirty_entry_count": 0,
+            "origin": "https://example.invalid/repository",
+            "tag": "v0.2.0-local",
+            "nearest_tag": "v0.2.0-local",
+            "checkpoint_status": "exact",
+            "commits_since_nearest_tag": 0,
+        },
+    )
+
+    result = doctor(GatewayConfig.from_root(tmp_path))
+    checkpoint = next(item for item in result["checks"] if item["name"] == "git_checkpoint")
+
+    assert checkpoint["status"] == "PASS"
+    assert checkpoint["message"] == "HEAD exactly matches checkpoint v0.2.0-local"
+    assert checkpoint["details"]["exact"] is True
+
+
 def test_status_summarizes_registry_jobs_adapters_and_intelligence(tmp_path: Path) -> None:
     config = _runtime_config(tmp_path)
     store = JobStore(config.database_path)

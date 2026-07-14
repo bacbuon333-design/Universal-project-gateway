@@ -19,7 +19,8 @@ patches, and publication stops at a non-default local branch/commit. A passing
 doctor or evidence checksum does not promote the default `unsafe-local`
 backend into an OS security boundary. An older reachable Git tag is reported
 as a warning rather than an exact checkpoint; tag presence has no effect on
-runtime authority.
+runtime authority. Package versions and release tags are bookkeeping and never
+expand project, filesystem, process, network, or publication permissions.
 
 The accepted local flow and release checklist are recorded in
 [`LOCAL_V02_READINESS.md`](LOCAL_V02_READINESS.md). Remote/public use remains

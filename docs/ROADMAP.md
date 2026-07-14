@@ -204,10 +204,19 @@ Gateway authority:
   operator checklist, explicit non-goals, residual risk, and remote/public
   prerequisites.
 
-The expected `v0.1.9` tag is absent from the audited history; this audit does
-not create or move tags. Local capability is ready for trusted-project use,
-while release bookkeeping remains conditional until a maintainer resolves or
-explicitly waives that missing intermediate tag.
+The later release-candidate review confirmed that `v0.1.9` resolves exactly to
+the intended `UPG-REAL-001` commit
+`9d1414ef3056888ff5c651466ea688f53317fb65`. Neither audit nor verification
+creates or moves release tags.
+
+### Release candidate: v0.2.0-local
+
+`UPG-V02-RC-001` aligns the PEP 440 package version to `0.2.0+local`, adds
+release notes and consistency checks, and repeats the complete local Windows
+verification gate without expanding Gateway authority. The reviewed Git tag
+name is `v0.2.0-local`; tagging, merging, and pushing remain separately
+authorized maintainer actions. See
+[`RELEASE_NOTES_v0.2.0-local.md`](RELEASE_NOTES_v0.2.0-local.md).
 
 ## Next local assurance milestones
 

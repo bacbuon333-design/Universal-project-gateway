@@ -48,4 +48,4 @@ __all__ = [
     "get_contract_schema",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0+local"

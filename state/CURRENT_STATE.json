@@ -1,7 +1,18 @@
 {
   "system_id": "universal-project-gateway",
-  "mvp_version": "0.1.0",
-  "checkpoint_status": "local_v02_readiness_audited",
+  "mvp_version": "0.2.0+local",
+  "checkpoint_status": "local_v02_release_candidate",
+  "release_candidate": {
+    "package_version": "0.2.0+local",
+    "reserved_git_tag": "v0.2.0-local",
+    "tag_policy": "do_not_create_move_or_delete_in_upg_v02_rc_001",
+    "candidate_branch": "release/v0.2.0-local",
+    "base_main_commit": "dc4e01b2bc1f2595f2fbb3628b1f7ef024bf1557",
+    "v0_1_9_tag_target": "9d1414ef3056888ff5c651466ea688f53317fb65",
+    "v0_1_9_verified": true,
+    "preexisting_v0_2_tag_target": "dc4e01b2bc1f2595f2fbb3628b1f7ef024bf1557",
+    "preexisting_v0_2_tag_status": "audit_commit_not_release_candidate"
+  },
   "implemented_capabilities": [
     "Validated PROJECT_MANIFEST.yaml contracts and persistent project registry",
     "Deterministic intent compilation and canonical R0-R4 policy decisions",
@@ -55,11 +66,13 @@
     "Exact-versus-nearest Git checkpoint diagnostics with commit-distance warnings for untagged HEAD",
     "Windows verification rejects reused or fallback interpreters below Python 3.11 before installation and tests",
     "Pull-and-verify fails closed when Git status or current-branch discovery cannot be trusted",
-    "Documented local-v0.2 controlled-use verdict, operator checklist, explicit non-ready boundaries, and remote/public prerequisites"
+    "Documented local-v0.2 controlled-use verdict, operator checklist, explicit non-ready boundaries, and remote/public prerequisites",
+    "PEP 440 package version 0.2.0+local aligned across build metadata, package exports, durable state, release notes, and regression checks",
+    "Release history diagnostics preserve exact v0.1.9 provenance and report the externally created v0.2.0-local tag without mutating tags"
   ],
   "verified_capabilities": [
     "Ruff and compileall checks passed",
-    "73 unit and integration tests passed, including checkpoint-warning and Windows script regressions, a separate external Git project registration/workspace/intelligence/validation/evidence/publication/cleanup proof, doctor/status coverage, both fixture flows, adapter contracts, lease/recovery, cancellation, and idempotency",
+    "76 unit and integration tests passed, including release-version and exact-checkpoint consistency, checkpoint-warning and Windows script regressions, a separate external Git project registration/workspace/intelligence/validation/evidence/publication/cleanup proof, doctor/status coverage, both fixture flows, adapter contracts, lease/recovery, cancellation, and idempotency",
     "58 security tests passed, including sandbox controls plus evidence chain creation, canonical hashing, tamper detection, reorder/missing-event refusal, attestation binding, legacy compatibility, and runner phase coverage; one symlink-escape test skipped because this Windows process lacks symlink privilege",
     "The root UPG manifest and both fixture manifests passed structured manifest verification",
     "A UPG self-management job completed both mandatory allowlisted actions and produced an independently verified evidence bundle",
@@ -70,8 +83,8 @@
     "A controlled external project outside UPG completed lint and test through the Python adapter and unsafe-local backend; its source stayed unchanged before publication, its main ref stayed unchanged afterward, and one local agent branch committed only two intended paths with no remote or push",
     "The external-project intelligence cache remained under Gateway-controlled state, its compact hash reached the context pack, doctor/status included the project, and cleanup dry-run deleted nothing",
     "The external project's 14-file evidence bundle independently verified its checksum manifest, 11-event chain, payload hashes, and final unsigned attestation binding",
-    "VERIFY_GATEWAY.bat completed with exit code 0 for the local-v0.2 audit, including manifest verification, 131 passing tests, two demos, independent chain verification, Python version enforcement, and git diff --check",
-    "DOCTOR_GATEWAY.bat completed with zero FAIL checks; the untagged audited HEAD correctly produced checkpoint and dirty-worktree WARN checks before commit",
+    "VERIFY_GATEWAY.bat completed with exit code 0 for the local-v0.2 release candidate, including manifest verification, 134 passing tests, one expected privilege-dependent skip, two demos, independent chain verification, Python version enforcement, and git diff --check",
+    "DOCTOR_GATEWAY.bat completed with zero FAIL checks; package 0.2.0+local, registry, manifest, SQLite, adapters, sandbox, refreshed intelligence, self-job evidence, and MCP imports passed, with only the expected dirty-worktree warning before commit",
     "Status, cleanup dry-run, UPG intelligence generation/show, adapter listing, latest evidence verification, and MCP stdio startup/EOF smoke completed successfully"
   ],
   "known_limitations": [
@@ -102,8 +115,8 @@
     "Cleanup cannot terminate live processes and deletes nothing unless an operator supplies --execute after reviewing the dry-run plan",
     "The external sample is controlled trusted dependency-free test code; passing it does not establish safety for arbitrary or malicious projects under a non-OS sandbox",
     "The real-project validator intentionally leaves its external repository on a local agent review branch and never pushes, merges, resets, overwrites, or removes it",
-    "The audited main commit 9d1414e is one commit beyond v0.1.8, but the expected v0.1.9 tag is absent; release bookkeeping must be resolved or explicitly waived before v0.2.0-local is tagged"
+    "The v0.2.0-local tag appeared locally and on origin during release-candidate preparation at the earlier audit commit dc4e01b; it was not created by this task, is not the later release-candidate commit, and requires separately authorized maintainer reconciliation"
   ],
-  "last_completed_checkpoint": "UPG-AUDIT-001 local-v0.2 readiness audited on Windows on 2026-07-14 from main commit 9d1414e, with only bounded diagnostics/script/documentation fixes and no architecture or authority expansion",
-  "next_recommended_checkpoint": "Resolve or explicitly waive the missing v0.1.9 tag before v0.2.0-local; keep onboarding trusted and local, continue Windows path fuzzing and operator-reviewed recovery, then separately threat-model OS/container sandboxing and external evidence signing before any production or remote integration"
+  "last_completed_checkpoint": "UPG-V02-RC-001 prepared the v0.2.0-local release candidate on Windows on 2026-07-14 from audited main commit dc4e01b, with version, documentation, and verification consistency only and no architecture or authority expansion",
+  "next_recommended_checkpoint": "After human review, reconcile the pre-existing v0.2.0-local audit-commit tag through a separately authorized release procedure; then onboard Voip24h Auto read-only before designing authenticated local MCP, workspace tools, and a separately threat-modeled Agent VM boundary"
 }

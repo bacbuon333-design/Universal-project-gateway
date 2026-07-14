@@ -21,9 +21,11 @@ Gateway core.
 The audited local readiness verdict is documented in
 [`docs/LOCAL_V02_READINESS.md`](docs/LOCAL_V02_READINESS.md). UPG is ready for
 controlled Windows use with trusted projects, but not for untrusted projects,
-remote/public operation, or production security. The audit also records that
-the expected `v0.1.9` tag is absent from the current history; no tag was
-created or moved by the audit.
+remote/public operation, or production security. The package release-candidate
+version is `0.2.0+local`; see
+[`docs/RELEASE_NOTES_v0.2.0-local.md`](docs/RELEASE_NOTES_v0.2.0-local.md).
+`v0.1.9` resolves to the intended real-project checkpoint. Release tags do not
+grant runtime authority and are never created or changed by verification.
 
 ## Quick start on Windows
 
@@ -181,7 +183,8 @@ independent security review. Do not expose this MVP through an ad-hoc tunnel.
 - `state/CURRENT_STATE.json`: conservative implementation and verification
   checkpoint.
 - `docs/`: architecture, trust model, manifest and MCP contracts, runbook,
-  roadmap, local-v0.2 readiness audit, and design decision record.
+  roadmap, local-v0.2 readiness audit, release notes, and design decision
+  records.
 - `scripts/`: demo and verification helpers.
 - `scripts/create_real_project_fixture.py` and
   `scripts/validate_real_project_integration.py`: controlled external-project
@@ -191,5 +194,7 @@ independent security review. Do not expose this MVP through an ad-hoc tunnel.
 Generated job workspaces and evidence are intentionally ignored under
 `workspaces/` and `artifacts/`. See [the runbook](docs/RUNBOOK.md) for recovery
 and verification, [the local readiness audit](docs/LOCAL_V02_READINESS.md) for
-the release/operator checklist, and [the security model](docs/SECURITY_MODEL.md)
-before extending any authority.
+the release/operator checklist,
+[the v0.2.0-local release notes](docs/RELEASE_NOTES_v0.2.0-local.md) for the
+candidate boundary, and [the security model](docs/SECURITY_MODEL.md) before
+extending any authority.
