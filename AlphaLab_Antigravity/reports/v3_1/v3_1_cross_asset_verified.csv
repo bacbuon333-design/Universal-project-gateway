@@ -1,0 +1,6 @@
+Asset,Timeframe,Years Span,Trades,Net PnL (USD),Profit Factor,Win Rate,Expectancy (R),Transfer Classification
+XAUUSD (Gold),H1,26 yrs,136,"$+6,451.00",1.837,32.4%,+0.273 R,SURVIVES
+EURUSD,H1,13 yrs,94,"$-68,114.20",0.000,0.0%,-0.012 R,FAILS TRANSFER
+GBPUSD,H1,13 yrs,105,"$-75,154.40",0.000,0.0%,-0.008 R,FAILS TRANSFER
+USDJPY,H1,13 yrs,135,"$-1,605.04",0.369,12.6%,-0.501 R,FAILS TRANSFER
+BTCUSD,H1,14 yrs,159,"$-1,266.35",0.742,28.3%,+0.132 R,FAILS TRANSFER

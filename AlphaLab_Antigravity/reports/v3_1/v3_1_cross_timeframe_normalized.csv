@@ -1,0 +1,5 @@
+Timeframe,Equivalence,Test A (Bars=200) Trades,Test A PF,Test A PnL,Test B (200h Time) Trades,Test B PF,Test B PnL
+H4,50 bars = 200h,33,2.150,"$+3,625.89",42,1.472,"$+2,159.11"
+H1,200 bars = 200h (Reference),136,1.837,"$+6,451.00",136,1.837,"$+6,451.00"
+M30,400 bars = 200h,151,1.316,"$+3,160.46",140,1.266,"$+2,223.21"
+M15,800 bars = 200h,151,1.008,$+68.21,138,1.243,"$+1,680.19"

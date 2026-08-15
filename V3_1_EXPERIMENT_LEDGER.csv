@@ -1,0 +1,5 @@
+experiment_id,timestamp,hypothesis_id,family,parameters_tested,data_used,metrics_viewed,result_status,decision_notes
+EXP-200,2026-08-15T23:45:00+07:00,H-200,M30 Squeeze Intraday,"bb=20,mult=2.0,kelt=1.2,macro=50,sl=1.5,rr=2.5",GOLD M30 2018-2026,"PF=1.255, Trades=289, Min/Q=5, Rolling4Q=73.3%",REJECTED,Passed Gate 12A but failed Gate 14 (max share 5.2%) and Gate 15 (top 3 Q PnL 89.1%)
+EXP-201,2026-08-15T23:45:00+07:00,H-201,H1 Range Compression,"comp=0.70*ATR,lookback=3,ema=100,sl=1.5,rr=2.5",GOLD H1 2001-2026,"PF=0.972, Trades=535, Min/Q=0, ZeroQ=32",REJECTED,Failed Gate 12A (32 zero-trade quarters in 2001-2011) and PF < 1.0
+EXP-202,2026-08-15T23:45:00+07:00,H-202,H1 Adaptive Donchian,"donch=20,atr_ratio=0.85,ema=200,sl=1.5,rr=2.5",GOLD H1 2001-2026,"PF=1.288, Trades=410, Min/Q=0, ZeroQ=35",REJECTED,Failed Gate 12A (35 zero-trade quarters in 2001-2011)
+EXP-203,2026-08-15T23:45:00+07:00,H-203,H1 London ORB Breakout,"asian=0-7,orb=8-14,sl=1.5,rr=2.0",GOLD H1 2001-2026,"PF=1.471, Trades=546, Min/Q=0, ZeroQ=47",REJECTED,Failed Gate 12A (47 zero-trade quarters in 2001-2011)

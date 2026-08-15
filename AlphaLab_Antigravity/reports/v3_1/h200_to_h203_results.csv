@@ -1,0 +1,5 @@
+Hypothesis,Complete Quarters,Total Trades,Min Trades/Q,Median Trades/Q,Max Trades/Q,Trade Gini,Zero-Trade Qs,Net PnL ($),Profit Factor,Win Rate,Expectancy (R),Gate 12A Status,Overall Classification
+H-200 (M30 Squeeze+EMA50),33,297,5,8.0,15,0.157,0,"$+11,063.40",1.255,55.2%,+0.001 R,PASSED,HISTORICAL DISTRIBUTED SURVIVOR
+H-201 (H1 Range Compression),100,535,0,9.0,11,0.470,32,"$-2,853.80",0.972,48.4%,+0.001 R,"FAILED (Min=0, 53/100 quarters >= 5)",REJECTED
+H-202 (H1 Adaptive Donchian),100,410,0,5.0,9,0.493,35,"$+17,154.10",1.288,51.0%,+0.003 R,"FAILED (Min=0, 53/100 quarters >= 5)",REJECTED
+H-203 (H1 London ORB Breakout),100,546,0,9.0,12,0.492,47,"$+35,877.60",1.471,54.0%,+0.003 R,"FAILED (Min=0, 53/100 quarters >= 5)",REJECTED
