@@ -1,0 +1,23 @@
+{
+  "candidate_id": "CAND-002",
+  "strategy_name": "ALAB_MINIMAL_SQUEEZE_V1",
+  "asset": "GOLD",
+  "timeframe": "H1",
+  "bb_period": 20,
+  "bb_mult": 2.0,
+  "kelt_mult": 1.2,
+  "macro_ema_len": 200,
+  "sl_atr_mult": 2.0,
+  "tp_rr_ratio": 3.0,
+  "use_squeeze": true,
+  "use_macro": true,
+  "use_er": false,
+  "use_macd": false,
+  "spread_pips": 25.0,
+  "commission_per_lot": 7.0,
+  "pessimistic_ambiguous_bars": true,
+  "historical_data_cutoff": "2026-07-24 23:00:00",
+  "freeze_timestamp": "2026-08-16T00:15:00+07:00",
+  "classification": "HISTORICAL SURVIVOR CANDIDATE",
+  "sha256": "c8b417932cfae89dfb61b2a9261a8686134b22c710fa53cfcf871d33cb4112e4"
+}

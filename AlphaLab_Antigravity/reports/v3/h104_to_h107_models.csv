@@ -1,0 +1,6 @@
+Model / Hypothesis,Trades,Net PnL ($),Profit Factor,Win Rate,Expectancy (R),Active Q-Pass,Full Q-Pass
+CAND-001 Benchmark (Squeeze + Macro + ER + MACD),136,"$+6,451.00",1.837,32.4%,+0.273 R,45.0%,8.8%
+H-104A: Unconditional BB Breakout (No Squeeze/Filters),2372,"$+10,136.04",1.050,27.9%,+0.073 R,26.6%,16.7%
+H-104B: Pure Squeeze Only (No Directional Filters),239,"$+8,633.10",1.598,30.1%,+0.164 R,42.9%,17.6%
+H-104C: Pure Macro Trend Following (No Squeeze),1874,"$+16,669.89",1.109,28.8%,+0.111 R,34.5%,19.6%
+H-105: Minimalist Squeeze + Macro EMA (No ER/MACD),144,"$+6,169.71",1.752,31.9%,+0.233 R,45.8%,10.8%

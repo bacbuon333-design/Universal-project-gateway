@@ -1,0 +1,145 @@
+[
+  {
+    "filename":"BTCUSD_H1.csv",
+    "rows":70823,
+    "start_timestamp":"2013-01-02 00:00:00",
+    "latest_timestamp":"2026-07-31 00:00:00",
+    "first_quarter":"2013Q1",
+    "last_quarter":"2026Q3",
+    "total_quarters":55,
+    "years_count":14,
+    "years_range":"2013 - 2026"
+  },
+  {
+    "filename":"EURUSD_H1.csv",
+    "rows":75000,
+    "start_timestamp":"2014-07-01 10:00:00",
+    "latest_timestamp":"2026-07-31 00:00:00",
+    "first_quarter":"2014Q3",
+    "last_quarter":"2026Q3",
+    "total_quarters":49,
+    "years_count":13,
+    "years_range":"2014 - 2026"
+  },
+  {
+    "filename":"GBPUSD_H1.csv",
+    "rows":75000,
+    "start_timestamp":"2014-07-01 10:00:00",
+    "latest_timestamp":"2026-07-31 00:00:00",
+    "first_quarter":"2014Q3",
+    "last_quarter":"2026Q3",
+    "total_quarters":49,
+    "years_count":13,
+    "years_range":"2014 - 2026"
+  },
+  {
+    "filename":"GOLD_D1_2001_2026.csv",
+    "rows":6538,
+    "start_timestamp":"2001-06-04 00:00:00",
+    "latest_timestamp":"2026-07-24 00:00:00",
+    "first_quarter":"2001Q2",
+    "last_quarter":"2026Q3",
+    "total_quarters":102,
+    "years_count":26,
+    "years_range":"2001 - 2026"
+  },
+  {
+    "filename":"GOLD_H1_2001_2026.csv",
+    "rows":81463,
+    "start_timestamp":"2001-06-04 01:00:00",
+    "latest_timestamp":"2026-07-24 23:00:00",
+    "first_quarter":"2001Q2",
+    "last_quarter":"2026Q3",
+    "total_quarters":102,
+    "years_count":26,
+    "years_range":"2001 - 2026"
+  },
+  {
+    "filename":"GOLD_H1_2010_2026.csv",
+    "rows":79288,
+    "start_timestamp":"2010-01-04 00:00:00",
+    "latest_timestamp":"2026-07-30 13:00:00",
+    "first_quarter":"2010Q1",
+    "last_quarter":"2026Q3",
+    "total_quarters":67,
+    "years_count":17,
+    "years_range":"2010 - 2026"
+  },
+  {
+    "filename":"GOLD_H4.csv",
+    "rows":23493,
+    "start_timestamp":"2001-06-04 00:00:00",
+    "latest_timestamp":"2026-07-24 20:00:00",
+    "first_quarter":"2001Q2",
+    "last_quarter":"2026Q3",
+    "total_quarters":102,
+    "years_count":26,
+    "years_range":"2001 - 2026"
+  },
+  {
+    "filename":"GOLD_M15.csv",
+    "rows":99999,
+    "start_timestamp":"2022-05-02 03:45:00",
+    "latest_timestamp":"2026-07-24 23:45:00",
+    "first_quarter":"2022Q2",
+    "last_quarter":"2026Q3",
+    "total_quarters":18,
+    "years_count":5,
+    "years_range":"2022 - 2026"
+  },
+  {
+    "filename":"GOLD_M1_2001_2026.csv",
+    "rows":99999,
+    "start_timestamp":"2026-04-15 01:12:00",
+    "latest_timestamp":"2026-07-24 23:57:00",
+    "first_quarter":"2026Q2",
+    "last_quarter":"2026Q3",
+    "total_quarters":2,
+    "years_count":1,
+    "years_range":"2026 - 2026"
+  },
+  {
+    "filename":"GOLD_M30.csv",
+    "rows":99999,
+    "start_timestamp":"2018-02-01 15:00:00",
+    "latest_timestamp":"2026-07-24 23:30:00",
+    "first_quarter":"2018Q1",
+    "last_quarter":"2026Q3",
+    "total_quarters":35,
+    "years_count":9,
+    "years_range":"2018 - 2026"
+  },
+  {
+    "filename":"GOLD_M5.csv",
+    "rows":99999,
+    "start_timestamp":"2025-02-25 08:15:00",
+    "latest_timestamp":"2026-07-24 23:55:00",
+    "first_quarter":"2025Q1",
+    "last_quarter":"2026Q3",
+    "total_quarters":7,
+    "years_count":2,
+    "years_range":"2025 - 2026"
+  },
+  {
+    "filename":"GOLD_W1.csv",
+    "rows":1312,
+    "start_timestamp":"2001-06-03 00:00:00",
+    "latest_timestamp":"2026-07-19 00:00:00",
+    "first_quarter":"2001Q2",
+    "last_quarter":"2026Q3",
+    "total_quarters":102,
+    "years_count":26,
+    "years_range":"2001 - 2026"
+  },
+  {
+    "filename":"USDJPY_H1.csv",
+    "rows":75000,
+    "start_timestamp":"2014-07-01 10:00:00",
+    "latest_timestamp":"2026-07-31 00:00:00",
+    "first_quarter":"2014Q3",
+    "last_quarter":"2026Q3",
+    "total_quarters":49,
+    "years_count":13,
+    "years_range":"2014 - 2026"
+  }
+]
