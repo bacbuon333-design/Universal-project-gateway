@@ -1,0 +1,13 @@
+{
+  "config_id": "H-210-C3",
+  "mechanism_family": "EDMR",
+  "description": "Displacement MR (EMA50 Dist > 3.0 ATR, SL1.5, TP2.25)",
+  "total_positive_quarter_pnl": 2217.971428571381,
+  "top1_positive_q_share": 50.03598848368631,
+  "top3_positive_q_share": 89.54836465753786,
+  "top5_positive_q_share": 100.0,
+  "top10_positive_q_share": 100.0,
+  "profit_pool_applicable": true,
+  "primary_failure_reason": "Gate E1 (PF = 0.885 < 1.25)",
+  "final_status": "REJECTED"
+}

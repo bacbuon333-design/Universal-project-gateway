@@ -1,0 +1,13 @@
+{
+  "config_id": "H-212-C4",
+  "mechanism_family": "SORE",
+  "description": "Session Expansion (Asian 00-07, Lon 08-16 + EMA100, SL1.5, TP3.75)",
+  "total_positive_quarter_pnl": 10967.257142857137,
+  "top1_positive_q_share": 29.394753604234896,
+  "top3_positive_q_share": 62.95562570664865,
+  "top5_positive_q_share": 82.31158526418888,
+  "top10_positive_q_share": 99.24116656332829,
+  "profit_pool_applicable": true,
+  "primary_failure_reason": "Gate E1 (PF = 0.983 < 1.25)",
+  "final_status": "REJECTED"
+}

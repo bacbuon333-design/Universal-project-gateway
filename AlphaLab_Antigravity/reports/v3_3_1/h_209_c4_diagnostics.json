@@ -1,0 +1,13 @@
+{
+  "config_id": "H-209-C4",
+  "mechanism_family": "MHTP",
+  "description": "Trend Persistence (EMA50/100, EMA20 Pullback, SL2.0, TP5.0)",
+  "total_positive_quarter_pnl": 16979.32142857155,
+  "top1_positive_q_share": 18.525222907696502,
+  "top3_positive_q_share": 44.84543173313756,
+  "top5_positive_q_share": 65.05762261237936,
+  "top10_positive_q_share": 92.9804110462093,
+  "profit_pool_applicable": true,
+  "primary_failure_reason": "Gate E1 (PF = 0.988 < 1.25)",
+  "final_status": "REJECTED"
+}

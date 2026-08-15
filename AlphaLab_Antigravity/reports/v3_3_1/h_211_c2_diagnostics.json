@@ -1,0 +1,13 @@
+{
+  "config_id": "H-211-C2",
+  "mechanism_family": "FBRLT",
+  "description": "Failed Breakout Trap (Donchian 20, SL1.5, TP3.75)",
+  "total_positive_quarter_pnl": 3650.7553571428252,
+  "top1_positive_q_share": 29.165295049018486,
+  "top3_positive_q_share": 62.474448780903316,
+  "top5_positive_q_share": 88.482960718012,
+  "top10_positive_q_share": 99.99999999999999,
+  "profit_pool_applicable": true,
+  "primary_failure_reason": "Gate E1 (PF = 0.865 < 1.25)",
+  "final_status": "REJECTED"
+}

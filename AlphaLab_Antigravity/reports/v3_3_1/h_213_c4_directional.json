@@ -1,0 +1,14 @@
+{
+  "long_trades": 2066,
+  "long_gross_profit": 118905.86071428568,
+  "long_gross_loss": 100786.39642857149,
+  "long_pf": 1.1797808526526263,
+  "long_net_pnl": 18119.46428571418,
+  "long_expectancy": 8.770311851749362,
+  "short_trades": 1518,
+  "short_gross_profit": 87435.24642857138,
+  "short_gross_loss": 93504.18571428562,
+  "short_pf": 0.9350944640675373,
+  "short_net_pnl": -6068.939285714236,
+  "short_expectancy": -3.9979837191793384
+}

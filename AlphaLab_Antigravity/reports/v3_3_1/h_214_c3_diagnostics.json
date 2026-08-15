@@ -1,0 +1,13 @@
+{
+  "config_id": "H-214-C3",
+  "mechanism_family": "VRA",
+  "description": "Vol Acceleration (ATR7/28 > 1.30 + 3b Breakout + EMA50, SL1.5, TP3.0)",
+  "total_positive_quarter_pnl": 9110.249999999949,
+  "top1_positive_q_share": 17.58549044051608,
+  "top3_positive_q_share": 43.67407982374612,
+  "top5_positive_q_share": 65.68190460509493,
+  "top10_positive_q_share": 93.90290371520277,
+  "profit_pool_applicable": true,
+  "primary_failure_reason": "Gate E1 (PF = 0.996 < 1.25)",
+  "final_status": "REJECTED"
+}

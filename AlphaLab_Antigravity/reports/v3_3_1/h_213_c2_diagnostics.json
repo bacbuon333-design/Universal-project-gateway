@@ -1,0 +1,13 @@
+{
+  "config_id": "H-213-C2",
+  "mechanism_family": "MRLM",
+  "description": "Range Loc Momentum (Channel 50, Th 0.75/0.25, SL1.5, TP3.75)",
+  "total_positive_quarter_pnl": 20896.705357142913,
+  "top1_positive_q_share": 38.85901357484997,
+  "top3_positive_q_share": 67.49022722737811,
+  "top5_positive_q_share": 81.13101390299468,
+  "top10_positive_q_share": 98.6466680709665,
+  "profit_pool_applicable": true,
+  "primary_failure_reason": "Gate E1 (PF = 1.037 < 1.25)",
+  "final_status": "REJECTED"
+}
