@@ -1,0 +1,11 @@
+{
+  "config_id": "H-213-C4",
+  "mechanism_family": "MRLM",
+  "description": "Range Loc Momentum (Channel 100, Th 0.80/0.20, SL1.5, TP3.75)",
+  "long_trades": 2113,
+  "long_pf": 1.185334581971101,
+  "short_trades": 1568,
+  "short_pf": 0.9311051018124938,
+  "failure_reason": "Gate E1 (PF = 1.063 < 1.25)",
+  "final_status": "REJECTED"
+}

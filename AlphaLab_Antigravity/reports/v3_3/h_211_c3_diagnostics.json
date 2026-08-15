@@ -1,0 +1,11 @@
+{
+  "config_id": "H-211-C3",
+  "mechanism_family": "FBRLT",
+  "description": "Failed Breakout Trap (Donchian 40, SL1.5, TP3.0)",
+  "long_trades": 1886,
+  "long_pf": 0.9367543897911746,
+  "short_trades": 2249,
+  "short_pf": 0.7784192251744391,
+  "failure_reason": "Gate E1 (PF = 0.853 < 1.25)",
+  "final_status": "REJECTED"
+}

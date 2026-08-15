@@ -1,0 +1,11 @@
+{
+  "config_id": "H-209-C2",
+  "mechanism_family": "MHTP",
+  "description": "Trend Persistence (EMA50/100, EMA20 Pullback, SL1.5, TP3.75)",
+  "long_trades": 2018,
+  "long_pf": 1.0343131768909954,
+  "short_trades": 1638,
+  "short_pf": 0.9116519837990829,
+  "failure_reason": "Gate E1 (PF = 0.977 < 1.25)",
+  "final_status": "REJECTED"
+}

@@ -1,0 +1,11 @@
+{
+  "config_id": "H-210-C4",
+  "mechanism_family": "EDMR",
+  "description": "Displacement MR (EMA50 Dist > 3.0 ATR, SL1.5, TP3.0)",
+  "long_trades": 1727,
+  "long_pf": 0.960456735147776,
+  "short_trades": 2301,
+  "short_pf": 0.8170115474891342,
+  "failure_reason": "Gate E1 (PF = 0.883 < 1.25)",
+  "final_status": "REJECTED"
+}

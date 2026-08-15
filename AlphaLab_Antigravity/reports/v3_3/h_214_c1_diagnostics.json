@@ -1,0 +1,11 @@
+{
+  "config_id": "H-214-C1",
+  "mechanism_family": "VRA",
+  "description": "Vol Acceleration (ATR7/28 > 1.20 + 3b Breakout + EMA50, SL1.5, TP3.0)",
+  "long_trades": 1916,
+  "long_pf": 1.023643282800093,
+  "short_trades": 1780,
+  "short_pf": 0.8497263817486537,
+  "failure_reason": "Gate E1 (PF = 0.932 < 1.25)",
+  "final_status": "REJECTED"
+}

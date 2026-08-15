@@ -1,0 +1,11 @@
+{
+  "config_id": "H-212-C3",
+  "mechanism_family": "SORE",
+  "description": "Session Expansion (Asian 00-07, Lon 08-16 + EMA100, SL1.5, TP3.0)",
+  "long_trades": 1987,
+  "long_pf": 0.9705110618787848,
+  "short_trades": 1815,
+  "short_pf": 1.0000001363014406,
+  "failure_reason": "Gate E1 (PF = 0.985 < 1.25)",
+  "final_status": "REJECTED"
+}
