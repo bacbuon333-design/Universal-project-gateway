@@ -1,0 +1,9 @@
+{
+  "hypothesis_id": "H-206",
+  "description": "Range Compression (3-bar Breakout + EMA50, TP=2.5x)",
+  "rolling_8q_pos_pct": 23.076923076923077,
+  "rolling_8q_pf12_pct": 7.6923076923076925,
+  "profitable_full_years_pct": 42.857142857142854,
+  "profitable_years_ratio": "3/7",
+  "spread_100_stress_pf": 0.9701470861851623
+}
