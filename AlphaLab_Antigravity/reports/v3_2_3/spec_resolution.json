@@ -1,0 +1,33 @@
+{
+  "audit_version": "V3.2.3",
+  "resolution_timestamp": "2026-08-16T00:27:30+07:00",
+  "authoritative_precommit_commit": "f5be62deba702fd737149c64b5faca3599f0daca",
+  "issue_1_duration_semantics": {
+    "historical_convention_proven": true,
+    "squeeze_duration_convention": "2-of-3 bars (rolling 3 sum >= 2)",
+    "range_compression_convention": "2 consecutive bars (rolling 2 sum >= 2)",
+    "evidence_files": [
+      "AlphaLab_Antigravity/src/experiment_h101_directionality_and_trigger_study.py",
+      "AlphaLab_Antigravity/src/experiment_h200_to_h203_high_frequency.py"
+    ]
+  },
+  "issue_2_ema50_slope_horizon": {
+    "historical_convention_proven": false,
+    "status": "SPECIFICATION AMBIGUOUS — EXACT REPRODUCTION IMPOSSIBLE",
+    "affected_hypotheses": ["H-208A", "H-208B"]
+  },
+  "issue_3_h208c_entry_filter": {
+    "historical_convention_proven": false,
+    "status": "SPECIFICATION AMBIGUOUS — EXACT REPRODUCTION IMPOSSIBLE",
+    "affected_hypotheses": ["H-208C"]
+  },
+  "hypothesis_resolution": {
+    "H-204": "VALIDLY REPRODUCED — REJECTED",
+    "H-205": "VALIDLY REPRODUCED — REJECTED",
+    "H-206": "VALIDLY REPRODUCED — REJECTED",
+    "H-207": "VALIDLY REPRODUCED — REJECTED",
+    "H-208A": "SPECIFICATION AMBIGUOUS — EXACT REPRODUCTION IMPOSSIBLE",
+    "H-208B": "SPECIFICATION AMBIGUOUS — EXACT REPRODUCTION IMPOSSIBLE",
+    "H-208C": "SPECIFICATION AMBIGUOUS — EXACT REPRODUCTION IMPOSSIBLE"
+  }
+}
