@@ -1,17 +1,18 @@
-# V3.2 RESEARCH STATE & GOVERNANCE RECORD
+# V3.2.1 RESEARCH STATE & GOVERNANCE RECORD
 
 ## 1. REPOSITORY GOVERNANCE & BRANCH TOPOLOGY
 - **Execution Mode**: Single continuous research agent.
-- **Base Commit**: `ee40ec8f22d95700e1c880acbf9c3575a765a0c9` (`research/quant-v3.1-audit-distribution`).
-- **Active Branch**: `research/quant-v3.2-distributed-edge`.
+- **Base Commit**: `dcec04d347c3e66096f9169f299d3e59a15ce81b` (`research/quant-v3.2-distributed-edge`).
+- **Active Branch**: `research/quant-v3.2.1-interface-repair`.
 - **Benchmark Lane A**: `CAND-001` (Status: `REJECTED UNDER V3.1/V3.2 GATES`).
 - **Benchmark Lane B**: `CAND-002` (Status: `REJECTED UNDER V3.1/V3.2 GATES`).
 - **Benchmark Lane C**: `H-200` to `H-208` (Status: `ALL REJECTED`).
 
 ## 2. ENGINE REPAIR & CROSS-ASSET STATUS
-- Native `InstrumentSpec` implemented and verified via 5/5 unit tests in `test_engine_asset_aware.py`.
-- H-103 Retest: Verified that Volatility Squeeze + Macro Trend successfully transfers to **Gold ($PF = 1.837$)** and **USDJPY ($PF = 1.622$)**, but fails on EURUSD, GBPUSD, and BTCUSD.
+- Native `InstrumentSpec` implemented and verified via 5/5 unit & integration tests in `test_engine_asset_aware.py`.
+- Net-cost $1R$ calculation implemented in `DeepQuantEngine`.
+- H-103 Retest: Verified that Volatility Squeeze + Macro Trend successfully transfers to **Gold ($PF = 1.837$)** and **USDJPY ($PF = 1.622$)**. Reclassified USDJPY as: `POSITIVE HISTORICAL ZERO-TUNING TRANSFER — NOT A DISTRIBUTED SURVIVOR` (107 trades across 13 years does not meet the $\ge 5$ trades/quarter gate).
 
-## 3. FINAL V3.2 RESEARCH VERDICT
-- `H-204` to `H-208`: All rejected due to failing either Gate 12A ($\text{Min trades/Q} \ge 5$), Gate 15 (Profit concentration $\le 40\%$), or Gate 16 (Rolling 4Q consistency $\ge 65\%$).
+## 3. FINAL V3.2.1 RESEARCH VERDICT
+- `H-204` to `H-208`: All 7 hypotheses cleanly re-evaluated after repairing the SL/TP distance interface.
 - **Overall Mandate Outcome**: `NO HISTORICAL CANDIDATE PASSED V3.2 DISTRIBUTED EDGE STANDARD`.

@@ -1,6 +1,6 @@
 """
-GLM-5.3 DEEP QUANT RESEARCH ENGINE (ASSET-AWARE V3.2)
-======================================================
+GLM-5.3 DEEP QUANT RESEARCH ENGINE (ASSET-AWARE V3.2.1)
+========================================================
 A high-throughput, vectorized, quarter-aware quantitative backtesting engine.
 Features:
 1. Strict Temporal Causality (No lookahead leakage)
@@ -8,6 +8,7 @@ Features:
 3. Truly Asset-Aware Instrument Economics (InstrumentSpec architecture):
    - Supports XAUUSD, EURUSD, GBPUSD, USDJPY (dynamic contemporaneous JPY/USD conversion), BTCUSD
    - Trade-level exact account currency (USD) PnL calculation during execution
+   - Net-cost adjusted R calculation (including spread & commission in 1R denominator)
 4. Symmetrically Sound Execution Model:
    - OHLC represents Bid
    - BUY Entry: Ask = Open + spread + slippage
@@ -125,9 +126,7 @@ def calculate_trade_pnl(spec: InstrumentSpec, direction: int, entry_price: float
     if spec.asset_class in ["COMMODITY", "FOREX_USD_QUOTE", "CRYPTO"]:
         gross_pnl_usd = price_diff * vol
     elif spec.asset_class == "FOREX_USD_BASE": # e.g. USDJPY
-        # Gross PnL in JPY = price_diff * contract units (USD)
         gross_pnl_jpy = price_diff * vol
-        # Convert to USD at contemporaneous exit price
         eff_exit = exit_price if exit_price > 0 else entry_price
         gross_pnl_usd = gross_pnl_jpy / eff_exit
     else:
@@ -185,42 +184,44 @@ class QuarterResult:
     verdict: str  # 'PASS', 'FAIL', 'INCONCLUSIVE', 'NO_TRADE'
 
 class DeepQuantEngine:
-    def __init__(self, data_file: str = "GOLD_H1_2001_2026.csv", spec: Optional[InstrumentSpec] = None,
-                 pip_size: Optional[float] = None, point_val: Optional[float] = None):
+    def __init__(self, data_file: Optional[str] = "GOLD_H1_2001_2026.csv", 
+                 df: Optional[pd.DataFrame] = None,
+                 spec: Optional[InstrumentSpec] = None,
+                 pip_size: Optional[float] = None, 
+                 point_val: Optional[float] = None):
         self.data_file = data_file
-        self.resolved_path = resolve_data_path(data_file)
-        self.spec = spec if spec is not None else get_instrument_spec(data_file)
+        if df is not None:
+            self.resolved_path = "SYNTHETIC_DATAFRAME"
+            self.spec = spec if spec is not None else STANDARD_SPECS["XAUUSD"]
+            self.df = self._prepare_dataframe(df.copy())
+        else:
+            self.resolved_path = resolve_data_path(data_file)
+            self.spec = spec if spec is not None else get_instrument_spec(data_file)
+            self.df = self._load_and_prepare_data(self.resolved_path)
+            
         self.pip_size = pip_size if pip_size is not None else self.spec.pip_size
         
-        self.df = self._load_and_prepare_data(self.resolved_path)
-        
-    def _load_and_prepare_data(self, path: str) -> pd.DataFrame:
-        df = pd.read_csv(path)
-        
-        # Standardize datetime column
+    def _prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         dt_col = None
-        for c in ['datetime_str', 'dt', 'time', 'timestamp', 'date']:
+        for c in ['datetime_str', 'dt', 'time', 'timestamp', 'date', 'datetime']:
             if c in df.columns:
                 dt_col = c
                 break
-                
         if dt_col is None:
-            # Fallback to index or first column
             dt_col = df.columns[0]
             
         df['datetime'] = pd.to_datetime(df[dt_col])
         df = df.sort_values('datetime').reset_index(drop=True)
-        
-        # Extract chronological quarter and year
         df['year'] = df['datetime'].dt.year
         df['quarter'] = df['datetime'].dt.to_period('Q').astype(str)
-        
-        # Ensure OHLC are float
         for col in ['open', 'high', 'low', 'close']:
             if col in df.columns:
                 df[col] = df[col].astype(float)
-                
         return df
+
+    def _load_and_prepare_data(self, path: str) -> pd.DataFrame:
+        df = pd.read_csv(path)
+        return self._prepare_dataframe(df)
 
     def run_strategy(self, 
                      signal_fn: Callable[[pd.DataFrame], Tuple[np.ndarray, np.ndarray, np.ndarray]], 
@@ -232,6 +233,7 @@ class DeepQuantEngine:
                      max_holding_bars: int = 120) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
         """
         Executes a causal vector backtest with native asset-aware execution.
+        signal_fn must return: (signals, sl_dists, tp_dists)
         """
         df = self.df
         n = len(df)
@@ -332,8 +334,10 @@ class DeepQuantEngine:
                     pnl_pts = pnl_dict['pnl_pips']
                     
                     balance += pnl_usd
-                    sl_risk_pts = abs(entry_p - sl_p) / self.pip_size
-                    pnl_r = pnl_pts / sl_risk_pts if sl_risk_pts > 0 else 0.0
+                    # Exact 1R risk in USD (loss when hitting initial SL, net of costs)
+                    sl_risk_dict = calculate_trade_pnl(self.spec, dir_int, entry_p, sl_p, lots=fixed_lot, commission_per_lot=comm_rate)
+                    sl_risk_usd = abs(sl_risk_dict['net_pnl_usd'])
+                    pnl_r = (pnl_usd / sl_risk_usd) if sl_risk_usd > 0 else 0.0
                     
                     t = Trade(
                         id=trade_id,

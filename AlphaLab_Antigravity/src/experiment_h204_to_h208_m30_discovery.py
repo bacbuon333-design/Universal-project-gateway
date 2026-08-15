@@ -1,14 +1,15 @@
 """
-EXPERIMENTS H-204 TO H-208: M30 DISTRIBUTED EDGE MECHANISM RESEARCH
-===================================================================
-Executes precommitted hypotheses on Gold M30 (2018Q2 to 2026Q2, 33 complete quarters):
+EXPERIMENTS H-204 TO H-208: M30 DISTRIBUTED EDGE DISCOVERY (REPAIRED V3.2.1)
+=============================================================================
+Executes precommitted hypotheses on Gold M30 (2018Q2 to 2026Q2, 33 complete quarters)
+using the CORRECT distance interface for sl_dists and tp_dists:
 - H-204: Light Trend Squeeze (EMA 20 vs EMA 50)
 - H-205: Volatility Ratio Contraction Breakout (ATR14 / ATR50 <= 0.80)
 - H-206: Normalized Range Compression (Range <= 0.65 * ATR14)
 - H-207: Session-Aware Squeeze (London/NY 07:00-17:00 UTC)
 - H-208A: Long-Only Squeeze + Bull Trend
 - H-208B: Short-Only Squeeze + Bear Trend
-- H-208C: Asymmetric Squeeze (Long RR=2, Short RR=3)
+- H-208C: Asymmetric Squeeze (Long RR=2.0, Short RR=3.0)
 
 Generates exact machine-readable outputs for quarters, years, rolling windows, and summary tables.
 """
@@ -27,7 +28,7 @@ def gini(x):
     return 0.5 * rmad
 
 # -------------------------------------------------------------
-# SIGNAL GENERATORS
+# SIGNAL GENERATORS WITH REPAIRED DISTANCE INTERFACE
 # -------------------------------------------------------------
 def make_h204_signals(df):
     # H-204: Light Trend Squeeze (EMA 20 vs EMA 50)
@@ -54,20 +55,20 @@ def make_h204_signals(df):
     bear = (ema20 < ema50) & (c < ema20)
     
     sig = np.zeros(n, dtype=int)
-    sl = np.zeros(n, dtype=float)
-    tp = np.zeros(n, dtype=float)
+    sl_dists = np.zeros(n, dtype=float)
+    tp_dists = np.zeros(n, dtype=float)
     
     for i in range(50, n):
         cur_atr = max(atr14[i], 0.50)
         if was_sqz[i] and bull[i] and c[i] > bb_u[i]:
             sig[i] = 1
-            sl[i] = c[i] - 1.5 * cur_atr
-            tp[i] = c[i] + 3.75 * cur_atr
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.75 * cur_atr # 2.5 * SL
         elif was_sqz[i] and bear[i] and c[i] < bb_l[i]:
             sig[i] = -1
-            sl[i] = c[i] + 1.5 * cur_atr
-            tp[i] = c[i] - 3.75 * cur_atr
-    return sig, sl, tp
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.75 * cur_atr # 2.5 * SL
+    return sig, sl_dists, tp_dists
 
 def make_h205_signals(df):
     # H-205: Volatility Ratio Contraction Breakout (ATR14 / ATR50 <= 0.80)
@@ -89,20 +90,20 @@ def make_h205_signals(df):
     bear = (c < ema50)
     
     sig = np.zeros(n, dtype=int)
-    sl = np.zeros(n, dtype=float)
-    tp = np.zeros(n, dtype=float)
+    sl_dists = np.zeros(n, dtype=float)
+    tp_dists = np.zeros(n, dtype=float)
     
     for i in range(50, n):
         cur_atr = max(atr14[i], 0.50)
         if was_contracted[i] and bull[i] and c[i] > donch10_h[i]:
             sig[i] = 1
-            sl[i] = c[i] - 1.5 * cur_atr
-            tp[i] = c[i] + 3.75 * cur_atr
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.75 * cur_atr
         elif was_contracted[i] and bear[i] and c[i] < donch10_l[i]:
             sig[i] = -1
-            sl[i] = c[i] + 1.5 * cur_atr
-            tp[i] = c[i] - 3.75 * cur_atr
-    return sig, sl, tp
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.75 * cur_atr
+    return sig, sl_dists, tp_dists
 
 def make_h206_signals(df):
     # H-206: Normalized Range Compression (Range <= 0.65 * ATR14)
@@ -123,20 +124,20 @@ def make_h206_signals(df):
     bear = (c < ema50) & (ema50 < pd.Series(ema50).shift(3).values)
     
     sig = np.zeros(n, dtype=int)
-    sl = np.zeros(n, dtype=float)
-    tp = np.zeros(n, dtype=float)
+    sl_dists = np.zeros(n, dtype=float)
+    tp_dists = np.zeros(n, dtype=float)
     
     for i in range(50, n):
         cur_atr = max(atr14[i], 0.50)
         if was_comp[i] and bull[i] and c[i] > h3[i]:
             sig[i] = 1
-            sl[i] = c[i] - 1.5 * cur_atr
-            tp[i] = c[i] + 3.75 * cur_atr
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.75 * cur_atr
         elif was_comp[i] and bear[i] and c[i] < l3[i]:
             sig[i] = -1
-            sl[i] = c[i] + 1.5 * cur_atr
-            tp[i] = c[i] - 3.75 * cur_atr
-    return sig, sl, tp
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.75 * cur_atr
+    return sig, sl_dists, tp_dists
 
 def make_h207_signals(df):
     # H-207: Session-Aware Squeeze Breakout (London/NY 07:00-17:00 UTC)
@@ -165,20 +166,20 @@ def make_h207_signals(df):
     in_session = (hour >= 7) & (hour <= 17)
     
     sig = np.zeros(n, dtype=int)
-    sl = np.zeros(n, dtype=float)
-    tp = np.zeros(n, dtype=float)
+    sl_dists = np.zeros(n, dtype=float)
+    tp_dists = np.zeros(n, dtype=float)
     
     for i in range(50, n):
         cur_atr = max(atr14[i], 0.50)
         if was_sqz[i] and in_session[i] and bull[i] and c[i] > bb_u[i]:
             sig[i] = 1
-            sl[i] = c[i] - 1.5 * cur_atr
-            tp[i] = c[i] + 3.75 * cur_atr
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.75 * cur_atr
         elif was_sqz[i] and in_session[i] and bear[i] and c[i] < bb_l[i]:
             sig[i] = -1
-            sl[i] = c[i] + 1.5 * cur_atr
-            tp[i] = c[i] - 3.75 * cur_atr
-    return sig, sl, tp
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.75 * cur_atr
+    return sig, sl_dists, tp_dists
 
 def make_h208a_signals(df):
     # H-208A: Long-Only Squeeze + Bull Trend
@@ -193,7 +194,7 @@ def make_h208b_signals(df):
     return sig, sl, tp
 
 def make_h208c_signals(df):
-    # H-208C: Asymmetric Squeeze (Long RR=2, Short RR=3)
+    # H-208C: Asymmetric Squeeze (Long RR=2.0, Short RR=3.0)
     c, h, l = df['close'].values, df['high'].values, df['low'].values
     n = len(c)
     c_s = pd.Series(c)
@@ -216,24 +217,24 @@ def make_h208c_signals(df):
     bear = (c < ema50) & (ema50 < pd.Series(ema50).shift(3).values)
     
     sig = np.zeros(n, dtype=int)
-    sl = np.zeros(n, dtype=float)
-    tp = np.zeros(n, dtype=float)
+    sl_dists = np.zeros(n, dtype=float)
+    tp_dists = np.zeros(n, dtype=float)
     
     for i in range(50, n):
         cur_atr = max(atr14[i], 0.50)
         if was_sqz[i] and bull[i] and c[i] > bb_u[i]:
             sig[i] = 1
-            sl[i] = c[i] - 1.5 * cur_atr
-            tp[i] = c[i] + 3.0 * cur_atr # 2.0 * SL
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 3.0 * cur_atr # 2.0 * SL
         elif was_sqz[i] and bear[i] and c[i] < bb_l[i]:
             sig[i] = -1
-            sl[i] = c[i] + 1.5 * cur_atr
-            tp[i] = c[i] - 4.5 * cur_atr # 3.0 * SL
-    return sig, sl, tp
+            sl_dists[i] = 1.5 * cur_atr
+            tp_dists[i] = 4.5 * cur_atr # 3.0 * SL
+    return sig, sl_dists, tp_dists
 
 def run_all_m30_experiments():
     print("=" * 95)
-    print("🚀 EXECUTING EXPERIMENTS H-204 TO H-208 ON GOLD M30 (33 COMPLETE QUARTERS)")
+    print("🚀 EXECUTING EXPERIMENTS H-204 TO H-208 ON GOLD M30 (REPAIRED V3.2.1 DISTANCE INTERFACE)")
     print("=" * 95)
     
     eng = DeepQuantEngine("GOLD_M30.csv")
@@ -354,7 +355,7 @@ def run_all_m30_experiments():
             'Win Rate': f"{summ['overall_wr_pct']:.1f}%",
             'Expectancy (R)': f"{summ['avg_expectancy_r']:+.3f} R",
             '100-Pip Stress PF': f"{sum_stress['overall_pf']:.3f}",
-            'V3.2 Classification': classification
+            'V3.2.1 Classification': classification
         })
         
         # Save detailed CSV files for each hypothesis
@@ -370,12 +371,12 @@ def run_all_m30_experiments():
         r_df.to_csv(os.path.join(out_dir, f"{h_id.lower()}_rolling.csv"), index=False)
         
     sum_df = pd.DataFrame(summary_records)
-    print("\n--- V3.2 M30 DISCOVERY SUMMARY MATRIX ---")
-    print(sum_df[['Hypothesis', 'Total Trades', 'Min Trades/Q', 'Max/Med Ratio', 'Trade Gini', 'Rolling 4Q Pos', 'Rolling 4Q PF>=1.2', 'Profit Factor', 'V3.2 Classification']].to_string(index=False))
+    print("\n--- V3.2.1 REPAIRED M30 DISCOVERY SUMMARY MATRIX ---")
+    print(sum_df[['Hypothesis', 'Total Trades', 'Min Trades/Q', 'Max/Med Ratio', 'Trade Gini', 'Rolling 4Q Pos', 'Rolling 4Q PF>=1.2', 'Profit Factor', 'Win Rate', 'V3.2.1 Classification']].to_string(index=False))
     
     sum_csv = os.path.join(out_dir, "h204_to_h208_summary.csv")
     sum_df.to_csv(sum_csv, index=False)
-    print(f"\nSaved complete summary to {sum_csv}")
+    print(f"\nSaved repaired summary to {sum_csv}")
     return sum_df
 
 if __name__ == '__main__':
