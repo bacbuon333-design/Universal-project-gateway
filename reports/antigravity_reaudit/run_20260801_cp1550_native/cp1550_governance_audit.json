@@ -1,0 +1,72 @@
+{
+  "architecture_name": "ALAB_CP1550_MasterFlagshipEA",
+  "source_mq5_sha256": "93b0d8c574ac0c450b834b0a458a3d31759b2c479d44bcf2a4194962caeb8268",
+  "binary_ex5_sha256": "8be61cc9a407e6058cf4671c11c08485c27320ccbf3fe0c53f7a181b27060553",
+  "ini_config_sha256": "d5f8f3f2739f5015d5ea911f00a7332db2ce5916b1ea0d9aa37c679067fa8e4e",
+  "report_htm_sha256": "ae36dfa14502278426743fe850fa86a938d0f2fdf7a1fab5dd5a8db5e3a3c6c8",
+  "native_tester_contract": {
+    "terminal_path": "C:\\Program Files\\XM Global MT5\\terminal64.exe",
+    "compiler_path": "C:\\Program Files\\XM Global MT5\\metaeditor64.exe",
+    "symbol": "GOLD",
+    "period": "M15",
+    "model": 4,
+    "model_description": "Model=4 Real Ticks",
+    "ticks_processed": 181116678,
+    "history_quality_pct": 100.0,
+    "from_date": "2023.11.17",
+    "to_date": "2026.07.27",
+    "deposit_usd": 1000.0,
+    "leverage": "1:500"
+  },
+  "metrics_observed": {
+    "net_profit_usd": 1412.85,
+    "profit_factor": 1.54,
+    "win_rate_pct": 37.39,
+    "equity_drawdown_pct": 17.93,
+    "total_trades": 115,
+    "payoff_ratio": 2.57,
+    "sharpe_ratio": 11.51,
+    "recovery_factor": 2.73,
+    "lr_correlation": 0.89
+  },
+  "target_gate_evaluation": {
+    "net_profit_usd": {
+      "value": 1412.85,
+      "target": "> 1000.0",
+      "passed": true
+    },
+    "profit_factor": {
+      "value": 1.54,
+      "target": ">= 1.50",
+      "passed": true
+    },
+    "equity_drawdown_pct": {
+      "value": 17.93,
+      "target": "<= 20.0",
+      "passed": true
+    },
+    "history_quality_pct": {
+      "value": 100.0,
+      "target": ">= 99.0",
+      "passed": true
+    },
+    "payoff_ratio": {
+      "value": 2.57,
+      "target": ">= 2.00",
+      "passed": true
+    },
+    "lr_correlation": {
+      "value": 0.89,
+      "target": ">= 0.80",
+      "passed": true
+    },
+    "model_4_real_ticks": {
+      "value": true,
+      "target": true,
+      "passed": true
+    }
+  },
+  "classification": "PASSED_ALL_TARGET_GATES",
+  "decision": "PROMOTED_CANDIDATE",
+  "live_trading_authorized": true
+}

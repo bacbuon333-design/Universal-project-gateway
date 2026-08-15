@@ -1,0 +1,46 @@
+# Python Caches & Virtual Envs
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Secrets & Environment Variables
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.pfx
+
+# MetaTrader 5 Generated Temporary Logs & Cache Directories
+Tester/
+bases/
+logs/
+temp/
+liveupdate/
+*.log
+
+# MT5 Batch INI configs & helper runs
+*.ini
+loop_ini/
+official_ini/
+official_auth_ini/
+Z..ai/
+
+# Large Compiled Binaries & HTML/Image Reports
+*.ex5
+*.exe
+*.dll
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.htm
+*.html
+*.db
+
+# OS specific
+.DS_Store
+Thumbs.db

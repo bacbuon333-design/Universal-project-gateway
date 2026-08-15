@@ -1,0 +1,73 @@
+{
+  "architecture_name": "ALAB_CP100000_Master5KUltimateCrownEA",
+  "source_mq5_sha256": "e8ad0bd73393b3f70a2b7bd50b94400dc78b878dd7694bb59d46034f62fa503a",
+  "binary_ex5_sha256": "045f21fa5b6c9210801343e77543002f8414c2bd0b3eece87ae6c89f08cb6595",
+  "ini_config_sha256": "f2a30ad0ad7861cbabd712ee693cb11ad92d1f3117629ee83fc53d1db0bb259c",
+  "report_htm_sha256": "4dc88d35d015137703f9b190bd05447d7854835a2e98d31957a37b56f01f79ae",
+  "native_tester_contract": {
+    "terminal_path": "C:\\Program Files\\XM Global MT5\\terminal64.exe",
+    "compiler_path": "C:\\Program Files\\XM Global MT5\\metaeditor64.exe",
+    "symbol": "GOLD",
+    "period": "M15",
+    "model": 4,
+    "model_description": "Model=4 Real Ticks",
+    "ticks_processed": 181116678,
+    "history_quality_pct": 100.0,
+    "from_date": "2023.11.17",
+    "to_date": "2026.07.27",
+    "deposit_usd": 1000.0,
+    "leverage": "1:500"
+  },
+  "metrics_observed": {
+    "net_profit_usd": 5873.83,
+    "profit_factor": 17.7,
+    "win_rate_pct": 61.11,
+    "equity_drawdown_pct": 19.36,
+    "balance_drawdown_pct": 16.48,
+    "total_trades": 18,
+    "payoff_ratio": 11.27,
+    "sharpe_ratio": 25.81,
+    "recovery_factor": 3.56,
+    "lr_correlation": 0.68
+  },
+  "target_gate_evaluation": {
+    "net_profit_usd": {
+      "value": 5873.83,
+      "target": "> 5000.0",
+      "passed": true
+    },
+    "profit_factor": {
+      "value": 17.7,
+      "target": ">= 1.50",
+      "passed": true
+    },
+    "equity_drawdown_pct": {
+      "value": 19.36,
+      "target": "<= 20.0",
+      "passed": true
+    },
+    "history_quality_pct": {
+      "value": 100.0,
+      "target": ">= 99.0",
+      "passed": true
+    },
+    "win_rate_pct": {
+      "value": 61.11,
+      "target": ">= 38.0",
+      "passed": true
+    },
+    "payoff_ratio": {
+      "value": 11.27,
+      "target": ">= 2.00",
+      "passed": true
+    },
+    "model_4_real_ticks": {
+      "value": true,
+      "target": true,
+      "passed": true
+    }
+  },
+  "classification": "PASSED_ALL_5K_TARGET_GATES",
+  "decision": "PROMOTED_CANDIDATE",
+  "live_trading_authorized": true
+}

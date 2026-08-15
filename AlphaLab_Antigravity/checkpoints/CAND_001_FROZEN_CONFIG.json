@@ -1,0 +1,17 @@
+{
+  "candidate_id": "CAND-001",
+  "strategy_name": "ALAB_SQUEEZE_REGIME_V1",
+  "asset": "GOLD",
+  "timeframe": "H1",
+  "bb_period": 20,
+  "bb_mult": 2.0,
+  "kelt_mult": 1.2,
+  "macro_ema_len": 200,
+  "min_er": 0.2,
+  "sl_atr_mult": 2.0,
+  "tp_rr_ratio": 3.0,
+  "spread_pips": 25.0,
+  "commission_per_lot": 7.0,
+  "pessimistic_ambiguous_bars": true,
+  "sha256": "addf9673bb779c865e4425e7c397cd8af11aa9152ca045cd5955bfd4641104f5"
+}

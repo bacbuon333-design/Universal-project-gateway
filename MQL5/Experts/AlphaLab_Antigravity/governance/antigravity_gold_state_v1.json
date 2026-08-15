@@ -1,0 +1,30 @@
+{
+  "schema_version": "alphalab.antigravity-gold-state.v1",
+  "generated_at_utc": "2026-07-24T16:08:00Z",
+  "authority": {
+    "status": "AUTHORITATIVE_ISOLATED_TERRITORY",
+    "territory_owner": "Antigravity AI (Google DeepMind Team)",
+    "target_asset": "GOLD (XAUUSD)",
+    "mainline_codex_territory": "AlphaLab/"
+  },
+  "project": {
+    "name": "AlphaLab_Antigravity_Gold_Arena",
+    "state": "ACTIVE_GOLD_RESEARCH",
+    "completed_phase": "PHASE_0_SETUP",
+    "next_phase": "AGOLD-001_TICK_EVENT_ARENA",
+    "promoted_strategy_count": 0
+  },
+  "capital_objective": {
+    "initial_capital_usd": 1000.0,
+    "exact_12m_total_return_hurdle_pct": 200.0,
+    "exact_12m_terminal_capital_usd": 3000.0,
+    "maximum_drawdown_pct": 35.0,
+    "max_concurrent_positions": 1
+  },
+  "hardware_governor": {
+    "cpu_reservation_cores": 2,
+    "max_ram_usage_pct": 80.0,
+    "heap_compaction_trigger_mb": 2048,
+    "crash_safe_mode": "ACTIVE"
+  }
+}

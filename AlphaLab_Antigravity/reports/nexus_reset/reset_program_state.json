@@ -1,0 +1,20 @@
+{
+    "NEXUS_v22": "UNVERIFIED_CANDIDATE",
+    "NEXUS_v31": "FAILED_CANDIDATE",
+    "shadow_execution": "NOT_ARMED",
+    "live_execution": "FORBIDDEN",
+    "critical_bugs_found": [
+        "pivot_future_leak",
+        "no_bankruptcy_floor",
+        "entry_timing_unrealistic",
+        "stop_fill_optimistic",
+        "fixed_spread_assumption"
+    ],
+    "unresolved_risks": [
+        "multiple_testing_uncorrected",
+        "no_walk_forward_purging",
+        "concentration_2024_2025",
+        "long_only_bias_uncorrected",
+        "no_null_comparison"
+    ]
+}

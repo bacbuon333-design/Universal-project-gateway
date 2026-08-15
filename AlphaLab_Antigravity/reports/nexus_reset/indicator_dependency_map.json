@@ -1,0 +1,35 @@
+{
+    "MACD": {
+        "formula": "EMA(fast) - EMA(slow)",
+        "lookback": 26,
+        "threshold": 0,
+        "role": "primary signal",
+        "variants_tested": 10,
+        "data_period_seen": "2022-2024"
+    },
+    "RSI": {
+        "formula": "100 - (100 / (1 + RS))",
+        "lookback": 14,
+        "threshold": 30,
+        "role": "filter",
+        "variants_tested": 5,
+        "data_period_seen": "2022-2024"
+    },
+    "ATR": {
+        "formula": "TR average",
+        "lookback": 14,
+        "threshold": 1.5,
+        "role": "sizing",
+        "variants_tested": 4,
+        "data_period_seen": "2022-2024"
+    },
+    "Pivot": {
+        "formula": "max(h[i-5:i+6])",
+        "lookback": 5,
+        "forward_leak": 5,
+        "threshold": 0,
+        "role": "filter",
+        "variants_tested": 1,
+        "data_period_seen": "2022-2024"
+    }
+}

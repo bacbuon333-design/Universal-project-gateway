@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "architecture_name": "ALAB_CP760_DualRegimeEA",
+  "hypothesis": "Causal dual-timeframe momentum trend alignment (H1 EMA20/50 direction + M15 EMA9/20 crossover and RSI filter) with symmetric BUY and SELL execution. 100% causal closed-bar signals (shift 1), per-tick hard equity drawdown protection, and exact risk budget sizing using OrderCalcProfit.",
+  "target_asset": "GOLD",
+  "period": "M15",
+  "from_date": "2022.05.01",
+  "to_date": "2026.07.27",
+  "initial_deposit": 1000.0,
+  "leverage": "1:500",
+  "tester_model": 4,
+  "model_name": "Model=4 Real Ticks",
+  "target_gates": {
+    "min_net_profit_usd": 5000.0,
+    "min_profit_factor": 1.5,
+    "min_win_rate_pct": 45.0,
+    "max_equity_drawdown_pct": 20.0,
+    "absolute_equity_dd_ceiling_pct": 25.0,
+    "min_history_quality_pct": 99.0
+  },
+  "risk_parameters": {
+    "base_risk_pct": 4.5,
+    "hard_equity_dd_cutoff_pct": 20.0,
+    "max_open_positions": 1,
+    "stop_loss_atr_mult": 1.2,
+    "take_profit_atr_mult": 2.4
+  },
+  "directional_rules": {
+    "buy_leg_enabled": true,
+    "sell_leg_enabled": true,
+    "buy_condition": "H1 EMA20 > EMA50 AND M15 EMA9 > EMA20 AND Close > EMA9_M15 AND RSI > 50.0",
+    "sell_condition": "H1 EMA20 < EMA50 AND M15 EMA9 < EMA20 AND Close < EMA9_M15 AND RSI < 50.0"
+  },
+  "execution_contract": {
+    "shift_index": 1,
+    "hard_dd_check_freq": "EVERY_TICK",
+    "volume_calculation": "OrderCalcProfit",
+    "margin_check": "OrderCalcMargin",
+    "order_check_required": true,
+    "magic_number": 2026760
+  }
+}
