@@ -1,0 +1,8 @@
+hypothesis,mechanism_family,failure_gate,failure_reason,important_observation,do_not_repeat
+H-204,BB Keltner Squeeze Light Trend,Gate A1 (Min Trades/Q) + Gate D2 (Rolling PF),Produced min 4 trades/Q and rolling PF 53.3%,Squeeze duration on M30 is too sparse in quiet quarters,Do not rely on tight squeeze duration filters on M30
+H-205,Volatility Ratio Contraction,Specification Ambiguity / Economics,PF 0.962 and ambiguous duration semantics,ATR ratio contraction alone has negative expectancy on Gold M30,Do not trade naive Donchian breakout on ATR ratio contraction
+H-206,Range Compression Breakout,Gate E1 (PF < 1.25),PF 1.087 insufficient after spread and commission,High trade frequency (1623 trades) but edge eroded by cost,Do not trade 3-bar range breakout without strong regime filter
+H-207,Session-Aware Squeeze,Gate A1 (Min Trades/Q < 5),Session filter combined with squeeze reduced trade count to 2 trades/Q,Double filtering destroys opportunity density,Do not combine narrow session windows with tight multi-bar squeeze
+H-208A,Long-Only Squeeze EMA50 Slope,Specification Ambiguity / Gate A1,Min 2 trades/Q and unspecified slope horizon,Directional squeeze suffers severe quiet-period voids,Do not precommit vague indicator slope horizons
+H-208B,Short-Only Squeeze EMA50 Slope,Specification Ambiguity / Gate E1,PF 0.889 and min 1 trade/Q,Short-only gold squeeze failed economically,Do not trade short-only breakout without macro trend alignment
+H-208C,Asymmetric Squeeze,Specification Ambiguity / Gate D2,Rolling PF 33.3% and ambiguous precommit entry filter,Asymmetric exits cannot fix low edge,Do not precommit unwritten entry filters
