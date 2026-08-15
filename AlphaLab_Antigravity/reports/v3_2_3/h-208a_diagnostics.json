@@ -1,0 +1,10 @@
+{
+  "hypothesis_id": "H-208A",
+  "description": "Long-Only Squeeze + Bullish EMA50 Slope (TP=2.0x)",
+  "rolling_8q_pos_pct": 88.46153846153845,
+  "rolling_8q_pf12_pct": 57.692307692307686,
+  "profitable_full_years_pct": 71.42857142857143,
+  "profitable_years_ratio": "5/7",
+  "spread_100_stress_pf": 1.2535768843289725,
+  "final_status": "SPECIFICATION AMBIGUOUS \u2014 EXACT REPRODUCTION IMPOSSIBLE"
+}

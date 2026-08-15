@@ -1,0 +1,10 @@
+{
+  "hypothesis_id": "H-205",
+  "description": "Volatility Ratio Contraction (Donchian 10, TP=2.5x)",
+  "rolling_8q_pos_pct": 7.6923076923076925,
+  "rolling_8q_pf12_pct": 0.0,
+  "profitable_full_years_pct": 0.0,
+  "profitable_years_ratio": "0/7",
+  "spread_100_stress_pf": 0.7399756973084601,
+  "final_status": "VALIDLY REPRODUCED \u2014 REJECTED"
+}

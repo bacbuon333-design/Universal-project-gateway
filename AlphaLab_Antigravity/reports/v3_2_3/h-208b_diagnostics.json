@@ -1,0 +1,10 @@
+{
+  "hypothesis_id": "H-208B",
+  "description": "Short-Only Squeeze + Bearish EMA50 Slope (TP=3.0x)",
+  "rolling_8q_pos_pct": 42.30769230769231,
+  "rolling_8q_pf12_pct": 26.923076923076923,
+  "profitable_full_years_pct": 42.857142857142854,
+  "profitable_years_ratio": "3/7",
+  "spread_100_stress_pf": 0.7733255808199532,
+  "final_status": "SPECIFICATION AMBIGUOUS \u2014 EXACT REPRODUCTION IMPOSSIBLE"
+}
