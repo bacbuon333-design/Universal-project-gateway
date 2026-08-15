@@ -1,0 +1,29 @@
+V3.2.2 ENGINE INTEGRATION & ASSET-AWARE TEST EXECUTION LOG
+===========================================================
+Execution Timestamp: 2026-08-16T00:20:30+07:00
+Environment: Windows 11 / Python 3.14.0 / NumPy 2.2.0 / Pandas 2.2.3
+Script: AlphaLab_Antigravity/src/test_engine_asset_aware.py
+
+test_ambiguous_bar_pessimistic_buy (__main__.TestComprehensiveEngineIntegration.test_ambiguous_bar_pessimistic_buy) ... ok
+test_contract_validation_catches_absolute_price_and_negative (__main__.TestComprehensiveEngineIntegration.test_contract_validation_catches_absolute_price_and_negative) ... ok
+test_integration_btcusd_sell_sl (__main__.TestComprehensiveEngineIntegration.test_integration_btcusd_sell_sl) ... ok
+test_integration_eurusd_buy_tp (__main__.TestComprehensiveEngineIntegration.test_integration_eurusd_buy_tp) ... ok
+test_integration_gbpusd_sell_sl (__main__.TestComprehensiveEngineIntegration.test_integration_gbpusd_sell_sl) ... ok
+test_integration_usdjpy_buy_tp (__main__.TestComprehensiveEngineIntegration.test_integration_usdjpy_buy_tp) ... ok
+test_integration_xauusd_buy_tp_and_buy_sl (__main__.TestComprehensiveEngineIntegration.test_integration_xauusd_buy_tp_and_buy_sl) ... ok
+test_integration_xauusd_sell_tp_and_sell_sl (__main__.TestComprehensiveEngineIntegration.test_integration_xauusd_sell_tp_and_sell_sl) ... ok
+test_pnl_btcusd (__main__.TestComprehensiveEngineIntegration.test_pnl_btcusd) ... ok
+test_pnl_eurusd (__main__.TestComprehensiveEngineIntegration.test_pnl_eurusd) ... ok
+test_pnl_gbpusd (__main__.TestComprehensiveEngineIntegration.test_pnl_gbpusd) ... ok
+test_pnl_usdjpy (__main__.TestComprehensiveEngineIntegration.test_pnl_usdjpy) ... ok
+test_pnl_xauusd (__main__.TestComprehensiveEngineIntegration.test_pnl_xauusd) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.155s
+
+OK
+================================================================================
+🧪 RUNNING COMPREHENSIVE MULTI-ASSET INTEGRATION & EXECUTION TESTS
+================================================================================
+
+✅ ALL ENGINE INTEGRATION & CONTRACT VALIDATION TESTS PASSED (100%).

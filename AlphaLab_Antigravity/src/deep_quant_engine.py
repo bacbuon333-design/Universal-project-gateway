@@ -1,5 +1,5 @@
 """
-GLM-5.3 DEEP QUANT RESEARCH ENGINE (ASSET-AWARE V3.2.1)
+GLM-5.3 DEEP QUANT RESEARCH ENGINE (ASSET-AWARE V3.2.2)
 ========================================================
 A high-throughput, vectorized, quarter-aware quantitative backtesting engine.
 Features:
@@ -9,15 +9,16 @@ Features:
    - Supports XAUUSD, EURUSD, GBPUSD, USDJPY (dynamic contemporaneous JPY/USD conversion), BTCUSD
    - Trade-level exact account currency (USD) PnL calculation during execution
    - Net-cost adjusted R calculation (including spread & commission in 1R denominator)
-4. Symmetrically Sound Execution Model:
+4. Runtime Strategy Output Contract Validation (validate_strategy_output)
+5. Symmetrically Sound Execution Model:
    - OHLC represents Bid
    - BUY Entry: Ask = Open + spread + slippage
    - BUY Exit: Bid - slippage
    - SELL Entry: Bid = Open - slippage
    - SELL Exit: Ask = Target + spread + slippage
    - Symmetrical 1 round-trip spread paid by both BUY and SELL
-5. Symmetrical Pessimistic Intra-Bar Execution (SL preferred on ambiguous bars for both BUY and SELL)
-6. Full 100-Quarter Distribution Accounting (Total, Active, Inactive, Inconclusive quarters)
+6. Symmetrical Pessimistic Intra-Bar Execution (SL preferred on ambiguous bars for both BUY and SELL)
+7. Full 100-Quarter Distribution Accounting (Total, Active, Inactive, Inconclusive quarters)
 """
 
 import os
@@ -143,6 +144,32 @@ def calculate_trade_pnl(spec: InstrumentSpec, direction: int, entry_price: float
         'is_win': net_pnl_usd > 0
     }
 
+def validate_strategy_output(df: pd.DataFrame, signals: np.ndarray, sl_dists: np.ndarray, tp_dists: np.ndarray) -> None:
+    """
+    Authoritative runtime contract validator asserting strategy output conformity.
+    Raises ValueError immediately if any interface invariant is breached.
+    """
+    n = len(df)
+    if len(signals) != n or len(sl_dists) != n or len(tp_dists) != n:
+        raise ValueError(f"Array length mismatch: df={n}, signals={len(signals)}, sl_dists={len(sl_dists)}, tp_dists={len(tp_dists)}")
+        
+    valid_sigs = {-1, 0, 1}
+    unique_sigs = set(np.unique(signals))
+    if not unique_sigs.issubset(valid_sigs):
+        raise ValueError(f"Invalid signal values: {unique_sigs - valid_sigs}. Allowed: {-1, 0, 1}")
+        
+    active_idx = np.where(signals != 0)[0]
+    if len(active_idx) > 0:
+        if np.isnan(sl_dists[active_idx]).any() or np.isnan(tp_dists[active_idx]).any():
+            raise ValueError("NaN detected in active sl_dists or tp_dists")
+            
+        if (sl_dists[active_idx] <= 0).any() or (tp_dists[active_idx] <= 0).any():
+            raise ValueError("Non-positive distance detected in active sl_dists or tp_dists")
+            
+        close_vals = df['close'].values[active_idx]
+        if (sl_dists[active_idx] > 0.50 * close_vals).any():
+            raise ValueError("Unreasonably large sl_dist detected (>50% of market price). Possible absolute price passed instead of distance!")
+
 @dataclass
 class Trade:
     id: int
@@ -245,6 +272,9 @@ class DeepQuantEngine:
         slippage_price = slippage_pips * self.pip_size
         
         signals, sl_dists, tp_dists = signal_fn(df)
+        
+        # Authoritative strategy contract validation
+        validate_strategy_output(df, signals, sl_dists, tp_dists)
         
         trades: List[Trade] = []
         active_trade = None
