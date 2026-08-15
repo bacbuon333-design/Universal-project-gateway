@@ -1,0 +1,118 @@
+{
+  "candidate_id": "CAND-001",
+  "overall_trades": 136,
+  "overall_pnl_usd": 6451.000000000004,
+  "overall_pf": 1.8369087178840897,
+  "overall_wr_pct": 32.35294117647059,
+  "expectancy_r": 0.2729657872318883,
+  "data_partitions": [
+    {
+      "label": "Full History (2001-2026)",
+      "trades": 136,
+      "pnl": 6451.000000000004,
+      "pf": 1.8369087178840897,
+      "wr": 32.35294117647059,
+      "exp_r": 0.2729657872318883,
+      "exp_usd": 47.43382352941179
+    },
+    {
+      "label": "Development Data (2001-2021)",
+      "trades": 98,
+      "pnl": 1208.2142857142633,
+      "pf": 1.2756618981965804,
+      "wr": 30.612244897959183,
+      "exp_r": 0.20685870928152983,
+      "exp_usd": 12.328717201165952
+    },
+    {
+      "label": "Contaminated Validation (2022-2025Q2)",
+      "trades": 25,
+      "pnl": 83.38571428572783,
+      "pf": 1.0491156325204976,
+      "wr": 28.000000000000004,
+      "exp_r": 0.1199999999999999,
+      "exp_usd": 3.335428571429113
+    },
+    {
+      "label": "Candidate Holdout (2025Q3-2026Q2)",
+      "trades": 13,
+      "pnl": 5159.400000000013,
+      "pf": 4.170277387640466,
+      "wr": 53.84615384615385,
+      "exp_r": 1.0654764272266841,
+      "exp_usd": 396.8769230769241
+    }
+  ],
+  "directional_breakdown": {
+    "long": {
+      "label": "Corrected Long-Only Leg",
+      "trades": 64,
+      "pnl": 2717.55714285715,
+      "pf": 1.6817144188213407,
+      "wr": 28.125,
+      "exp_r": 0.11787333542020323,
+      "exp_usd": 42.46183035714297
+    },
+    "short": {
+      "label": "Corrected Short-Only Leg",
+      "trades": 72,
+      "pnl": 3733.4428571428543,
+      "pf": 2.0031359874714028,
+      "wr": 36.11111111111111,
+      "exp_r": 0.4108257443978307,
+      "exp_usd": 51.853373015872975
+    }
+  },
+  "quarter_summary": {
+    "total_trades": 136,
+    "total_pnl_usd": 6451.000000000004,
+    "overall_pf": 1.8369087178840897,
+    "overall_wr_pct": 32.35294117647059,
+    "total_calendar_quarters": 102,
+    "no_trade_quarters": 50,
+    "low_trade_quarters": 32,
+    "active_quarters": 20,
+    "pass_quarters": 9,
+    "fail_quarters": 9,
+    "inconclusive_quarters": 34,
+    "active_quarter_pass_pct": 45.0,
+    "full_calendar_pass_pct": 8.823529411764707,
+    "avg_expectancy_usd": 47.43382352941179,
+    "avg_expectancy_r": 0.2729657872318883
+  },
+  "bootstrap": {
+    "iid_trade": {
+      "mean_ci": [
+        5.378064600840465,
+        93.67631039915989
+      ],
+      "pf_ci": [
+        1.0850322379612931,
+        2.879269990004459
+      ],
+      "prob_pos": 98.9
+    },
+    "quarter_block": {
+      "mean_ci": [
+        3.2176553481241603,
+        102.1211067537188
+      ],
+      "pf_ci": [
+        1.0616629664203552,
+        2.7026196781895857
+      ],
+      "prob_pos": 98.35000000000001
+    },
+    "temporal_block": {
+      "mean_ci": [
+        2.2807116596638304,
+        103.16436712184884
+      ],
+      "pf_ci": [
+        1.041382906851478,
+        2.824365737519191
+      ],
+      "prob_pos": 98.4
+    }
+  }
+}
