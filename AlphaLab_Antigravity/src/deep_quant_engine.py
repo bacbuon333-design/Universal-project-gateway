@@ -1,13 +1,20 @@
 """
-GLM-5.3 DEEP QUANT RESEARCH ENGINE
-===================================
-A high-throughput, vectorized, quarter-aware quantitative backtesting and research engine.
-Enforces:
+GLM-5.3 DEEP QUANT RESEARCH ENGINE (CORRECTED AUDIT V2)
+========================================================
+A high-throughput, vectorized, quarter-aware quantitative backtesting engine.
+Features:
 1. Strict Temporal Causality (No lookahead leakage)
-2. Quarter-as-Primary-Unit Evaluation (Independent Q1, Q2, Q3, Q4 metrics)
-3. Pessimistic Intra-Bar Execution (SL hit first on ambiguous bars)
-4. Full Cost Stress (Spread, Commission, Slippage modeling)
-5. Multi-Timeframe Causal Resampling
+2. Platform-Independent Data Path Resolution (No hardcoded paths)
+3. Symmetrically Sound Execution Model:
+   - OHLC represents Bid
+   - BUY Entry: Ask = Open + spread + slippage
+   - BUY Exit: Bid - slippage
+   - SELL Entry: Bid = Open - slippage
+   - SELL Exit: Ask = Target + spread + slippage
+   - Symmetrical 1 round-trip spread paid by both BUY and SELL
+4. Symmetrical Pessimistic Intra-Bar Execution (SL preferred on ambiguous bars for both BUY and SELL)
+5. Exact Institutional Cost Accounting ($7/lot round-turn commission, pip & point scaling)
+6. Full 100-Quarter Distribution Accounting (Total, Active, Inactive, Inconclusive quarters)
 """
 
 import os
@@ -19,7 +26,32 @@ from typing import List, Dict, Tuple, Optional, Callable
 
 sys.stdout.reconfigure(encoding='utf-8') if sys.platform == 'win32' else None
 
-DATA_DIR = r"C:\Users\gugul\AppData\Roaming\MetaQuotes\Terminal\BB16F565FAAA6B23A20C26C49416FF05\AlphaLab_Antigravity\data"
+def resolve_data_path(filename: str) -> str:
+    """Resolves data file location cleanly across any machine, OS, or environment."""
+    if os.path.isabs(filename) and os.path.exists(filename):
+        return filename
+    
+    # Check environment variable if specified
+    if "ALPHALAB_DATA_DIR" in os.environ:
+        env_path = os.path.join(os.environ["ALPHALAB_DATA_DIR"], filename)
+        if os.path.exists(env_path):
+            return env_path
+            
+    # Check relative to script directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.abspath(os.path.join(script_dir, "..", "data", filename)),
+        os.path.abspath(os.path.join(script_dir, "data", filename)),
+        os.path.abspath(os.path.join(os.getcwd(), "AlphaLab_Antigravity", "data", filename)),
+        os.path.abspath(os.path.join(os.getcwd(), "data", filename)),
+        os.path.abspath(os.path.join(os.getcwd(), filename))
+    ]
+    
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+            
+    raise FileNotFoundError(f"Market dataset '{filename}' not found. Searched paths:\n" + "\n".join(candidates))
 
 @dataclass
 class Trade:
@@ -59,27 +91,21 @@ class QuarterResult:
     expectancy_r: float
     payoff_ratio: float
     tail_loss_usd: float
-    verdict: str  # 'PASS', 'FAIL', 'INCONCLUSIVE'
+    verdict: str  # 'PASS', 'FAIL', 'INCONCLUSIVE', 'NO_TRADE'
 
 class DeepQuantEngine:
     def __init__(self, data_file: str = "GOLD_H1_2001_2026.csv", pip_size: float = 0.01, point_val: float = 0.01):
         self.data_file = data_file
         self.pip_size = pip_size
         self.point_val = point_val
-        self.df = self._load_data(data_file)
+        self.resolved_path = resolve_data_path(data_file)
+        self.df = self._load_data(self.resolved_path)
         
-    def _load_data(self, filename: str) -> pd.DataFrame:
-        if os.path.isabs(filename) and os.path.exists(filename):
-            path = filename
-        else:
-            path = os.path.join(DATA_DIR, filename)
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"Data file not found: {path}")
+    def _load_data(self, path: str) -> pd.DataFrame:
         df = pd.read_csv(path)
         dt_col = 'datetime_str' if 'datetime_str' in df.columns else ('dt' if 'dt' in df.columns else 'time')
         df['dt'] = pd.to_datetime(df[dt_col])
         df = df.sort_values('dt').reset_index(drop=True)
-        # Ensure quarters and years are assigned
         df['quarter'] = df['dt'].dt.to_period('Q').astype(str)
         df['year'] = df['dt'].dt.year
         return df
@@ -113,15 +139,14 @@ class DeepQuantEngine:
         
         spread_price = spread_pips * self.pip_size
         slippage_price = slippage_pips * self.pip_size
-        comm_usd_per_trade = (fixed_lot / 0.01) * (commission_per_lot / 100.0) # $7 per 1.0 lot ($0.07 per 0.01 lot)
+        # Commission: $7.00 per 1.0 standard lot round-turn ($0.70 per 0.10 lot)
+        comm_usd_per_trade = (fixed_lot / 0.01) * (commission_per_lot / 100.0)
         
         trades: List[Trade] = []
         active_trade: Optional[Dict] = None
         trade_id = 0
         
         balance = initial_deposit
-        peak_balance = initial_deposit
-        equity_curve = [initial_deposit]
         
         for i in range(len(df) - 1):
             # 1. Manage existing open trade during bar i
@@ -164,8 +189,11 @@ class DeepQuantEngine:
                         pnl_pts = (exit_price - entry_p) / self.pip_size
                         pnl_usd = (pnl_pts * self.point_val * (fixed_lot / 0.01)) - comm_usd_per_trade
                 else: # SELL
-                    hit_sl = (h[i] >= sl_p)
-                    hit_tp = (l[i] <= tp_p)
+                    # For SELL, buying back to exit is done at Ask = Bid + spread
+                    # Stop loss is triggered if Ask >= sl_p (i.e. High + spread >= sl_p)
+                    # Take profit is triggered if Ask <= tp_p (i.e. Low + spread <= tp_p)
+                    hit_sl = (h[i] + spread_price >= sl_p)
+                    hit_tp = (l[i] + spread_price <= tp_p)
                     
                     if hit_sl and hit_tp:
                         if pessimistic_ambiguous_bars:
@@ -184,7 +212,7 @@ class DeepQuantEngine:
                         exit_reason = 'TP'
                         closed = True
                     elif i - active_trade['entry_bar'] >= max_holding_bars:
-                        exit_price = c[i] + slippage_price
+                        exit_price = c[i] + spread_price + slippage_price
                         exit_reason = 'TIME_EXIT'
                         closed = True
                         
@@ -229,13 +257,14 @@ class DeepQuantEngine:
                     tp_dist = tp_dists[i]
                     
                     if sig == 1: # BUY
-                        # Pay spread at entry: Ask = Open + spread
+                        # Pay spread at entry: Ask = Open + spread + slippage
                         entry_p = o[i+1] + spread_price + slippage_price
                         sl_p = entry_p - sl_dist
                         tp_p = entry_p + tp_dist
                         d = 'BUY'
                     elif sig == -1: # SELL
                         # Sell at Bid = Open - slippage
+                        # sl_p and tp_p are the target Ask prices where trade will buy back
                         entry_p = o[i+1] - slippage_price
                         sl_p = entry_p + sl_dist
                         tp_p = entry_p - tp_dist
@@ -258,122 +287,136 @@ class DeepQuantEngine:
         trades_data = [t.__dict__ for t in trades]
         tdf = pd.DataFrame(trades_data)
         
-        # Calculate Quarter Results
+        # Quarter-by-quarter full calendar accounting (including zero-trade quarters)
+        unique_quarters = df['quarter'].unique()
         q_results: List[QuarterResult] = []
-        all_quarters = df['quarter'].unique()
         
-        for q in all_quarters:
+        for q in unique_quarters:
             yr = int(q[:4])
-            if len(tdf) > 0:
-                q_trades = tdf[tdf['quarter'] == q]
-            else:
-                q_trades = pd.DataFrame()
+            if len(tdf) > 0 and q in tdf['quarter'].values:
+                qtdf = tdf[tdf['quarter'] == q]
+                n_t = len(qtdf)
+                wins = len(qtdf[qtdf['pnl_usd'] > 0])
+                losses = len(qtdf[qtdf['pnl_usd'] <= 0])
+                wr = (wins / n_t) * 100.0 if n_t > 0 else 0.0
+                net_pnl = qtdf['pnl_usd'].sum()
+                gp = qtdf[qtdf['pnl_usd'] > 0]['pnl_usd'].sum() if wins > 0 else 0.0
+                gl = abs(qtdf[qtdf['pnl_usd'] < 0]['pnl_usd'].sum()) if losses > 0 else 0.0
+                pf = (gp / gl) if gl > 0 else (999.0 if gp > 0 else 0.0)
                 
-            q_n = len(q_trades)
-            if q_n == 0:
-                q_results.append(QuarterResult(
-                    quarter=q, year=yr, trades=0, wins=0, losses=0,
-                    win_rate_pct=0.0, net_pnl_usd=0.0, gross_profit_usd=0.0,
-                    gross_loss_usd=0.0, profit_factor=0.0, max_drawdown_pct=0.0,
-                    expectancy_usd=0.0, expectancy_r=0.0, payoff_ratio=0.0,
-                    tail_loss_usd=0.0, verdict='INCONCLUSIVE'
-                ))
-                continue
+                cum_pnl = qtdf['pnl_usd'].cumsum()
+                peak = np.maximum.accumulate(cum_pnl)
+                dd = peak - cum_pnl
+                max_dd_usd = np.max(dd) if len(dd) > 0 else 0.0
+                max_dd_pct = (max_dd_usd / initial_deposit) * 100.0
                 
-            q_wins = q_trades[q_trades['pnl_usd'] > 0]
-            q_losses = q_trades[q_trades['pnl_usd'] < 0]
-            n_w = len(q_wins)
-            n_l = len(q_losses)
-            wr = (n_w / q_n) * 100.0
-            
-            pnl_net = q_trades['pnl_usd'].sum()
-            gross_p = q_wins['pnl_usd'].sum() if n_w > 0 else 0.0
-            gross_l = abs(q_losses['pnl_usd'].sum()) if n_l > 0 else 0.0
-            pf = gross_p / gross_l if gross_l > 0 else (999.0 if gross_p > 0 else 0.0)
-            
-            # Drawdown within quarter
-            cum_pnl = q_trades['pnl_usd'].cumsum()
-            peak = np.maximum.accumulate(cum_pnl)
-            dd = peak - cum_pnl
-            max_dd_usd = dd.max() if len(dd) > 0 else 0.0
-            max_dd_pct = (max_dd_usd / initial_deposit) * 100.0
-            
-            exp_usd = q_trades['pnl_usd'].mean()
-            exp_r = q_trades['pnl_r'].mean()
-            
-            avg_win = q_wins['pnl_usd'].mean() if n_w > 0 else 0.0
-            avg_loss = abs(q_losses['pnl_usd'].mean()) if n_l > 0 else 1e-9
-            payoff = avg_win / avg_loss if avg_loss > 0 else 0.0
-            
-            # Tail loss: 5th percentile worst trade
-            tail_loss = np.percentile(q_trades['pnl_usd'], 5) if q_n >= 5 else (q_trades['pnl_usd'].min() if q_n > 0 else 0.0)
-            
-            # Quarter Verdict
-            if q_n >= 3 and pnl_net > 0 and pf >= 1.20:
-                verdict = 'PASS'
-            elif q_n >= 3 and pnl_net <= 0:
-                verdict = 'FAIL'
+                exp_usd = qtdf['pnl_usd'].mean() if n_t > 0 else 0.0
+                exp_r = qtdf['pnl_r'].mean() if n_t > 0 else 0.0
+                
+                avg_win = qtdf[qtdf['pnl_usd'] > 0]['pnl_usd'].mean() if wins > 0 else 0.0
+                avg_loss = abs(qtdf[qtdf['pnl_usd'] < 0]['pnl_usd'].mean()) if losses > 0 else 0.0
+                payoff = (avg_win / avg_loss) if avg_loss > 0 else 0.0
+                tail_loss = qtdf['pnl_usd'].min() if n_t > 0 else 0.0
+                
+                # Minimum sample criteria for PASS: trades >= 3, PF >= 1.25, net PnL > 0
+                if n_t >= 3:
+                    if pf >= 1.25 and net_pnl > 0:
+                        verdict = 'PASS'
+                    elif pf < 0.90 or net_pnl < 0:
+                        verdict = 'FAIL'
+                    else:
+                        verdict = 'INCONCLUSIVE'
+                else:
+                    verdict = 'INCONCLUSIVE'
             else:
-                verdict = 'INCONCLUSIVE'
+                n_t = 0
+                wins = 0
+                losses = 0
+                wr = 0.0
+                net_pnl = 0.0
+                gp = 0.0
+                gl = 0.0
+                pf = 0.0
+                max_dd_pct = 0.0
+                exp_usd = 0.0
+                exp_r = 0.0
+                payoff = 0.0
+                tail_loss = 0.0
+                verdict = 'NO_TRADE'
                 
             q_results.append(QuarterResult(
-                quarter=q, year=yr, trades=q_n, wins=n_w, losses=n_l,
-                win_rate_pct=wr, net_pnl_usd=pnl_net, gross_profit_usd=gross_p,
-                gross_loss_usd=gross_l, profit_factor=pf, max_drawdown_pct=max_dd_pct,
-                expectancy_usd=exp_usd, expectancy_r=exp_r, payoff_ratio=payoff,
-                tail_loss_usd=tail_loss, verdict=verdict
+                quarter=q,
+                year=yr,
+                trades=n_t,
+                wins=wins,
+                losses=losses,
+                win_rate_pct=wr,
+                net_pnl_usd=net_pnl,
+                gross_profit_usd=gp,
+                gross_loss_usd=gl,
+                profit_factor=pf,
+                max_drawdown_pct=max_dd_pct,
+                expectancy_usd=exp_usd,
+                expectancy_r=exp_r,
+                payoff_ratio=payoff,
+                tail_loss_usd=tail_loss,
+                verdict=verdict
             ))
             
-        qdf = pd.DataFrame([r.__dict__ for r in q_results])
+        qdf = pd.DataFrame([qr.__dict__ for qr in q_results])
         
-        # Summary metrics
-        total_trades = len(tdf)
-        total_pnl = tdf['pnl_usd'].sum() if total_trades > 0 else 0.0
-        total_wins = len(tdf[tdf['pnl_usd'] > 0]) if total_trades > 0 else 0
-        total_losses = len(tdf[tdf['pnl_usd'] < 0]) if total_trades > 0 else 0
-        overall_wr = (total_wins / total_trades * 100.0) if total_trades > 0 else 0.0
+        # Overall Summary
+        tot_trades = len(tdf)
+        tot_pnl = tdf['pnl_usd'].sum() if tot_trades > 0 else 0.0
+        tot_wins = len(tdf[tdf['pnl_usd'] > 0]) if tot_trades > 0 else 0
+        tot_wr = (tot_wins / tot_trades) * 100.0 if tot_trades > 0 else 0.0
+        tot_gp = tdf[tdf['pnl_usd'] > 0]['pnl_usd'].sum() if tot_wins > 0 else 0.0
+        tot_gl = abs(tdf[tdf['pnl_usd'] < 0]['pnl_usd'].sum()) if (tot_trades - tot_wins) > 0 else 0.0
+        overall_pf = (tot_gp / tot_gl) if tot_gl > 0 else (999.0 if tot_gp > 0 else 0.0)
         
-        tot_gp = tdf[tdf['pnl_usd'] > 0]['pnl_usd'].sum() if total_wins > 0 else 0.0
-        tot_gl = abs(tdf[tdf['pnl_usd'] < 0]['pnl_usd'].sum()) if total_losses > 0 else 0.0
-        overall_pf = tot_gp / tot_gl if tot_gl > 0 else (999.0 if tot_gp > 0 else 0.0)
+        total_qs = len(qdf)
+        no_trade_qs = len(qdf[qdf['verdict'] == 'NO_TRADE'])
+        low_trade_qs = len(qdf[(qdf['trades'] > 0) & (qdf['trades'] < 3)])
+        active_qs = len(qdf[qdf['trades'] >= 3])
+        pass_qs = len(qdf[qdf['verdict'] == 'PASS'])
+        fail_qs = len(qdf[qdf['verdict'] == 'FAIL'])
+        inconcl_qs = len(qdf[qdf['verdict'] == 'INCONCLUSIVE'])
         
-        # Robustness ratio: % of active quarters that passed
-        active_qs = qdf[qdf['trades'] >= 3]
-        n_active_qs = len(active_qs)
-        passed_qs = len(active_qs[active_qs['verdict'] == 'PASS'])
-        robustness_ratio = (passed_qs / n_active_qs * 100.0) if n_active_qs > 0 else 0.0
+        active_pass_ratio = (pass_qs / active_qs * 100.0) if active_qs > 0 else 0.0
+        full_pass_ratio = (pass_qs / total_qs * 100.0) if total_qs > 0 else 0.0
         
         summary = {
-            'total_trades': total_trades,
-            'total_pnl_usd': total_pnl,
-            'overall_wr_pct': overall_wr,
+            'total_trades': tot_trades,
+            'total_pnl_usd': tot_pnl,
             'overall_pf': overall_pf,
-            'active_quarters': n_active_qs,
-            'passed_quarters': passed_qs,
-            'robustness_ratio_pct': robustness_ratio,
-            'avg_expectancy_r': tdf['pnl_r'].mean() if total_trades > 0 else 0.0,
-            'avg_expectancy_usd': tdf['pnl_usd'].mean() if total_trades > 0 else 0.0
+            'overall_wr_pct': tot_wr,
+            'total_calendar_quarters': total_qs,
+            'no_trade_quarters': no_trade_qs,
+            'low_trade_quarters': low_trade_qs,
+            'active_quarters': active_qs,
+            'pass_quarters': pass_qs,
+            'fail_quarters': fail_qs,
+            'inconclusive_quarters': inconcl_qs,
+            'active_quarter_pass_pct': active_pass_ratio,
+            'full_calendar_pass_pct': full_pass_ratio,
+            'avg_expectancy_usd': tdf['pnl_usd'].mean() if tot_trades > 0 else 0.0,
+            'avg_expectancy_r': tdf['pnl_r'].mean() if tot_trades > 0 else 0.0
         }
         
         return tdf, qdf, summary
 
 def print_backtest_report(title: str, tdf: pd.DataFrame, qdf: pd.DataFrame, summary: Dict):
-    print(f"\n{'='*95}")
-    print(f"📊 SYSTEMATIC EVALUATION: {title}")
-    print(f"{'='*95}")
-    print(f"Total Trades        : {summary['total_trades']:,}")
-    print(f"Net PnL (USD)       : ${summary['total_pnl_usd']:+,.2f}")
-    print(f"Win Rate (%)        : {summary['overall_wr_pct']:.2f}%")
-    print(f"Profit Factor       : {summary['overall_pf']:.3f}")
-    print(f"Expectancy (USD/tr) : ${summary['avg_expectancy_usd']:+.2f}")
-    print(f"Expectancy (R/tr)   : {summary['avg_expectancy_r']:+.3f} R")
-    print(f"Quarter Robustness  : {summary['passed_quarters']}/{summary['active_quarters']} Active Quarters Passed ({summary['robustness_ratio_pct']:.1f}%)")
-    print(f"{'-'*95}")
-    
-    # Print recent and notable quarters table
-    if len(qdf) > 0:
-        active_qdf = qdf[qdf['trades'] > 0]
-        print(f"\n--- QUARTERLY RESULTS TABLE (Active Quarters: {len(active_qdf)}) ---")
-        display_cols = ['quarter', 'trades', 'win_rate_pct', 'net_pnl_usd', 'profit_factor', 'expectancy_r', 'verdict']
-        print(active_qdf[display_cols].to_string(index=False))
-    print(f"{'='*95}\n")
+    print("=" * 95)
+    print(f"📊 {title.upper()}")
+    print("=" * 95)
+    print(f"  Total Trades        : {summary['total_trades']}")
+    print(f"  Net PnL (USD)       : ${summary['total_pnl_usd']:+,.2f}")
+    print(f"  Win Rate (%)        : {summary['overall_wr_pct']:.2f}%")
+    print(f"  Profit Factor       : {summary['overall_pf']:.3f}")
+    print(f"  Expectancy (USD)    : ${summary['avg_expectancy_usd']:+.2f} / trade")
+    print(f"  Expectancy (R)      : {summary['avg_expectancy_r']:+.3f} R / trade")
+    print(f"  Calendar Quarters   : {summary['total_calendar_quarters']} total ({summary['no_trade_quarters']} no-trade, {summary['low_trade_quarters']} low-trade [1-2], {summary['active_quarters']} active [>=3])")
+    print(f"  Quarter Verdicts    : {summary['pass_quarters']} PASS | {summary['fail_quarters']} FAIL | {summary['inconclusive_quarters']} INCONCLUSIVE")
+    print(f"  Active Q-Pass Rate  : {summary['active_quarter_pass_pct']:.1f}% ({summary['pass_quarters']}/{summary['active_quarters']})")
+    print(f"  Full Q-Pass Rate    : {summary['full_calendar_pass_pct']:.1f}% ({summary['pass_quarters']}/{summary['total_calendar_quarters']})")
+    print("=" * 95)
