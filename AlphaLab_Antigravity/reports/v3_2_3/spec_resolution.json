@@ -1,11 +1,11 @@
 {
   "audit_version": "V3.2.3",
-  "resolution_timestamp": "2026-08-16T00:27:30+07:00",
+  "resolution_timestamp": "2026-08-16T00:37:00+07:00",
   "authoritative_precommit_commit": "f5be62deba702fd737149c64b5faca3599f0daca",
   "issue_1_duration_semantics": {
-    "historical_convention_proven": true,
-    "squeeze_duration_convention": "2-of-3 bars (rolling 3 sum >= 2)",
-    "range_compression_convention": "2 consecutive bars (rolling 2 sum >= 2)",
+    "bb_squeeze_duration_convention": "2-of-3 bars (rolling 3 sum >= 2) - HISTORICALLY PROVEN from H-200 / H-101",
+    "range_compression_convention": "2 consecutive bars (rolling 2 sum >= 2) - HISTORICALLY PROVEN from H-206",
+    "volatility_ratio_compression_convention": "SPECIFICATION AMBIGUOUS — DURATION SEMANTICS NOT HISTORICALLY PROVEN",
     "evidence_files": [
       "AlphaLab_Antigravity/src/experiment_h101_directionality_and_trigger_study.py",
       "AlphaLab_Antigravity/src/experiment_h200_to_h203_high_frequency.py"
@@ -23,7 +23,7 @@
   },
   "hypothesis_resolution": {
     "H-204": "VALIDLY REPRODUCED — REJECTED",
-    "H-205": "VALIDLY REPRODUCED — REJECTED",
+    "H-205": "SPECIFICATION AMBIGUOUS — DURATION SEMANTICS NOT HISTORICALLY PROVEN",
     "H-206": "VALIDLY REPRODUCED — REJECTED",
     "H-207": "VALIDLY REPRODUCED — REJECTED",
     "H-208A": "SPECIFICATION AMBIGUOUS — EXACT REPRODUCTION IMPOSSIBLE",

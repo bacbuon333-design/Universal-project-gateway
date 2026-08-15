@@ -3,18 +3,19 @@
 ## 1. REPOSITORY & DYNAMIC GIT METADATA
 * **Repository**: [`bacbuon333-design/Universal-project-gateway`](https://github.com/bacbuon333-design/Universal-project-gateway)
 * **Active Branch**: `research/quant-v3.2.3-final-ambiguity-resolution`
-* **Base Commit SHA**: `fe6a08c6c3c83a28977a52330673f9ff9ff2529d`
+* **V3.2.2 Base Commit SHA**: `3096a37f8f4e90221887051b9ab999515d48ad52`
 * **Original Precommit SHA**: `f5be62deba702fd737149c64b5faca3599f0daca`
-* **Active HEAD Commit SHA**: `9b37be19b5266d9c87326dc1e8bf01e84629454f`
+* **Active HEAD Commit SHA**: `b07b64fc3a34ee6dfe02522111fc9f5ee59b2663`
 
 ---
 
 ## 2. DIRECT ANSWERS TO AUTHORITATIVE AUDIT QUESTIONS
 
 1. **What did `>=2 bars` originally mean?**
-   - In the project's historical codebase prior to precommit (`experiment_h101...`, `experiment_h200...`), squeeze duration was operationally implemented as at least $k$ out of $k+1$ bars (`rolling(3).sum().shift(1) >= 2`), while range compression was implemented as 2 consecutive bars (`rolling(2)... >= 2`).
+   - In the project's historical codebase prior to precommit (`experiment_h101...`, `experiment_h200...`), BB/Keltner squeeze duration was operationally implemented as at least $k$ out of $k+1$ bars (`rolling(3).sum().shift(1) >= 2`), while range compression was implemented as 2 consecutive bars (`rolling(2)... >= 2`).
 2. **Is that interpretation historically proven or ambiguous?**
-   - **HISTORICALLY PROVEN** from pre-existing code conventions.
+   - **HISTORICALLY PROVEN** for BB/Keltner squeeze (H-204, H-207) and Range compression (H-206).
+   - **AMBIGUOUS** for Volatility Ratio Contraction (H-205), as prior H-202 had no duration requirement.
 3. **What did `EMA50 slope` originally mean?**
    - The precommit text did not specify a lookback horizon ($k=1, 3, 5$).
 4. **Is the slope horizon historically proven or ambiguous?**
@@ -22,9 +23,9 @@
 5. **Did H-208C originally include an EMA50 regime filter?**
    - The precommit table column for H-208C omitted EMA50, leaving the entry filter **SPECIFICATION AMBIGUOUS**.
 6. **Which H-204→H-208 results are now exact?**
-   - **`H-204`, `H-205`, `H-206`, `H-207`** are exact reproductions.
+   - **`H-204`, `H-206`, `H-207`** are exact reproductions.
 7. **Which remain unreproducible because the original specification was ambiguous?**
-   - **`H-208A`, `H-208B`, `H-208C`** are formally classified as `SPECIFICATION AMBIGUOUS — EXACT REPRODUCTION IMPOSSIBLE`.
+   - **`H-205`, `H-208A`, `H-208B`, `H-208C`** are formally classified as `SPECIFICATION AMBIGUOUS`.
 8. **Does any validly reproduced hypothesis pass all original precommitted gates?**
    - **NO**. All validly reproduced hypotheses fail one or more hard precommitted gates.
 
@@ -35,7 +36,7 @@
 | Hypothesis | Trades | Min/Q | Med/Q | Max/Q | Max Share | Max/Med | Gini | Top 3 Q PnL | Top 5 Q PnL | R4 Pos (%) | R4 PF $\ge 1.20$ (%) | PF | Expectancy ($) | Final Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`H-204`** | 311 | **4** | 9.0 | 19 | 6.1% | 2.11 | 0.217 | 102.1% | 121.8% | 73.3% | 53.3% | **1.256** | $+11.68 | **`VALIDLY REPRODUCED — REJECTED`** |
-| **`H-205`** | 2545 | **50** | 79.0 | 98 | 3.9% | 1.24 | 0.100 | N/A (Loss) | N/A (Loss) | 6.7% | 3.3% | **0.962** | $-1.27 | **`VALIDLY REPRODUCED — REJECTED`** |
+| **`H-205`** | 2545 | **50** | 79.0 | 98 | 3.9% | 1.24 | 0.100 | N/A (Loss) | N/A (Loss) | 6.7% | 3.3% | **0.962** | $-1.27 | **`SPECIFICATION AMBIGUOUS — DURATION SEMANTICS NOT HISTORICALLY PROVEN`** |
 | **`H-206`** | 1623 | **32** | 49.0 | 63 | 3.9% | 1.29 | 0.076 | 178.7% | 206.0% | 40.0% | 10.0% | **1.087** | $+4.98 | **`VALIDLY REPRODUCED — REJECTED`** |
 | **`H-207`** | 277 | **2** | 8.0 | 20 | 7.2% | 2.50 | 0.268 | 148.1% | 183.4% | 56.7% | 43.3% | **1.164** | $+7.10 | **`VALIDLY REPRODUCED — REJECTED`** |
 | **`H-208A`** | 234 | **2** | 6.0 | 19 | 8.1% | 3.17 | 0.247 | 72.5% | 87.0% | 73.3% | 56.7% | **1.466** | $+17.09 | **`SPECIFICATION AMBIGUOUS — EXACT REPRODUCTION IMPOSSIBLE`** |
@@ -74,5 +75,5 @@
 
 ## 6. FINAL ACCEPTANCE STATEMENT
 
-> ### **H-204 THROUGH H-208 CHAPTER PARTIALLY CLOSED — ORIGINAL SPECIFICATION AMBIGUITY REMAINS FOR H-208A/B/C.**
-> ### **NO HISTORICAL CANDIDATE PASSED V3.2 DISTRIBUTED EDGE STANDARD.**
+> ### **H-204 THROUGH H-208 CHAPTER PARTIALLY CLOSED — ORIGINAL SPECIFICATION AMBIGUITY REMAINS FOR H-205, H-208A/B/C.**
+> ### **NO VALIDLY REPRODUCED HISTORICAL CANDIDATE PASSED THE DISTRIBUTED EDGE STANDARD.**
