@@ -22,6 +22,12 @@ def test_frozen_event_sha_and_counts():
     assert df.groupby("cohort").size().to_dict() == v311.EXPECTED_8H_COUNTS
 
 
+def test_v310_parent_conclusion_and_same_sample_closure_are_frozen():
+    _, prior = v311.load_frozen_events()
+    assert v311.V310_FINAL_SHA == "b387e25bdf6fd814c3034f3688af50e976f5cc59"
+    assert prior["mechanism_label"] == "H226 DELAYED 8H REVERSION REGIME / DIRECTION DEPENDENT — STRATEGY DESIGN NOT AUTHORIZED"
+
+
 def test_no_strategy_engine_or_raw_market_reconstruction():
     src = inspect.getsource(v311)
     assert "run_strategy(" not in src
