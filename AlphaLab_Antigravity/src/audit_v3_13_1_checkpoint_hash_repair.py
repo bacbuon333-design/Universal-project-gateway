@@ -63,7 +63,7 @@ def run_audit() -> dict:
         "gitattributes_checkpoint_lf": "AlphaLab_Antigravity/reports/v3_13/checkpoints/*.json text eol=lf" in attr_text,
         "gitattributes_report_lf": "V3_13_BLIND_OOS_CHECKPOINT_REPORT_*.md text eol=lf" in attr_text,
         "precommit_exists": PRECOMMIT.exists(),
-        "no_outcome_or_engine_execution": "run_strategy(" not in audit_source and "CanonicalV2ExecutionEngine" not in audit_source,
+        "no_outcome_or_engine_execution": ("run_" + "strategy(") not in audit_source and ("CanonicalV2" + "ExecutionEngine") not in audit_source,
     }
 
     failed = [k for k, ok in checks.items() if not ok]
