@@ -1,0 +1,17 @@
+{
+  "dataset_id": "GOLD_M30_CANONICAL_V2",
+  "dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "row_count": 100000,
+  "first_datetime": "2018-02-22T18:30:00+00:00",
+  "last_datetime": "2026-08-14T23:30:00+00:00",
+  "timezone": "UTC",
+  "min_year": 2018,
+  "max_year": 2026,
+  "contains_2018Q2": true,
+  "contains_2026Q2": true,
+  "instrument_symbol": "GOLD",
+  "instrument_asset_class": "COMMODITY",
+  "timestamp_semantic": "BAR_OPEN_TIME",
+  "request_boundary_representation": "UNIX_EPOCH_SECONDS_UTC",
+  "research_eligibility": "ELIGIBLE"
+}

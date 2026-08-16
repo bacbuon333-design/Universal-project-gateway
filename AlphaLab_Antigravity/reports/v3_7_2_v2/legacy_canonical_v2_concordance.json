@@ -1,0 +1,109 @@
+{
+  "purpose": "EMPIRICAL_CONCORDANCE_ONLY_NOT_LEGACY_PROVENANCE",
+  "legacy_research_eligibility_remains": "BLOCKED",
+  "canonical_v2_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "canonical_v2_rows": 100000,
+  "legacy_rows": 99999,
+  "canonical_label_range": [
+    "2018-02-22 18:30:00",
+    "2026-08-14 23:30:00"
+  ],
+  "legacy_label_range": [
+    "2018-02-01 15:00:00",
+    "2026-07-24 23:30:00"
+  ],
+  "common_label_range": [
+    "2018-02-22 18:30:00",
+    "2026-07-24 23:30:00"
+  ],
+  "canonical_labels_missing_in_legacy_within_common_range": 0,
+  "legacy_labels_missing_in_canonical_within_common_range": 0,
+  "same_label": {
+    "shift_minutes_applied_to_canonical_label": 0,
+    "overlap_rows": 99310,
+    "all_ohlc_exact_match_rate": 1.0,
+    "per_field": {
+      "open": {
+        "exact_match_rate": 1.0,
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0
+      },
+      "high": {
+        "exact_match_rate": 1.0,
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0
+      },
+      "low": {
+        "exact_match_rate": 1.0,
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0
+      },
+      "close": {
+        "exact_match_rate": 1.0,
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0
+      }
+    },
+    "tick_volume_exact_match_rate": 1.0,
+    "spread_exact_match_rate": 1.0
+  },
+  "canonical_plus_30m_to_legacy": {
+    "shift_minutes_applied_to_canonical_label": 30,
+    "overlap_rows": 97137,
+    "all_ohlc_exact_match_rate": 0.0,
+    "per_field": {
+      "open": {
+        "exact_match_rate": 0.0032840215365926473,
+        "max_abs_difference": 302.0799999999999,
+        "mean_abs_difference": 2.27760214954137
+      },
+      "high": {
+        "exact_match_rate": 0.004714990168524867,
+        "max_abs_difference": 239.47999999999956,
+        "mean_abs_difference": 1.9272256709595728
+      },
+      "low": {
+        "exact_match_rate": 0.005301790255000669,
+        "max_abs_difference": 386.47000000000025,
+        "mean_abs_difference": 2.1104913678618855
+      },
+      "close": {
+        "exact_match_rate": 0.0033560847051072196,
+        "max_abs_difference": 308.3600000000006,
+        "mean_abs_difference": 2.251506429064105
+      }
+    },
+    "tick_volume_exact_match_rate": 0.0008647580221748664,
+    "spread_exact_match_rate": 0.7101001678042352
+  },
+  "canonical_minus_30m_to_legacy": {
+    "shift_minutes_applied_to_canonical_label": -30,
+    "overlap_rows": 97138,
+    "all_ohlc_exact_match_rate": 0.0,
+    "per_field": {
+      "open": {
+        "exact_match_rate": 0.0032839877287982044,
+        "max_abs_difference": 302.0799999999999,
+        "mean_abs_difference": 2.2775829232638105
+      },
+      "high": {
+        "exact_match_rate": 0.004714941629434413,
+        "max_abs_difference": 239.47999999999956,
+        "mean_abs_difference": 1.9272067573966936
+      },
+      "low": {
+        "exact_match_rate": 0.005301735675019045,
+        "max_abs_difference": 386.47000000000025,
+        "mean_abs_difference": 2.1104704646997057
+      },
+      "close": {
+        "exact_match_rate": 0.003356050155448949,
+        "max_abs_difference": 308.3600000000006,
+        "mean_abs_difference": 2.251489530358871
+      }
+    },
+    "tick_volume_exact_match_rate": 0.0008647491198089316,
+    "spread_exact_match_rate": 0.7101031522164344
+  },
+  "interpretation_guard": "Highest match view is descriptive only. It cannot establish or change legacy source lineage, timezone, or timestamp semantics."
+}
