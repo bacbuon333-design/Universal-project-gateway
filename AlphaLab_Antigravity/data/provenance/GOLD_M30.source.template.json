@@ -1,0 +1,17 @@
+{
+  "template_only": true,
+  "warning": "DO NOT rename this to GOLD_M30.source.json until every field is backed by deterministic evidence tied to the exact dataset hash.",
+  "dataset_sha256": "REPLACE_WITH_EXACT_SHA256",
+  "source_type": "UNRESOLVED",
+  "source_identifier": "UNRESOLVED",
+  "exporter_or_extraction_method": "UNRESOLVED",
+  "exporter_path": "UNRESOLVED",
+  "timestamp_semantic": "UNRESOLVED",
+  "timestamp_timezone_status": "NAIVE_UNRESOLVED",
+  "timestamp_timezone": "UNRESOLVED",
+  "instrument": "GOLD",
+  "timeframe": "M30",
+  "transform_chain": [],
+  "evidence": [],
+  "notes": "A completed sidecar must prove source, extraction, timestamp semantics, timezone, and every transformation. Cadence or generic MT5 code is not sufficient evidence."
+}
