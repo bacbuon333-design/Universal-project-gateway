@@ -1,0 +1,44 @@
+{
+  "chapter": "V3.12 FRESH-OOS FORWARD LOCK",
+  "artifact_generation_parent_sha": "1278ab31c594033a73de2ee43d0b6a7e1133133f",
+  "scientific_parent_v311_final": "b821248667badea5e763173101c52ef95dbcf5d4",
+  "canonical_dataset_id": "GOLD_M30_CANONICAL_V2",
+  "canonical_dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "canonical_last_bar_open_utc": "2026-08-14T23:30:00+00:00",
+  "canonical_freeze_cutoff_utc": "2026-08-14T23:30:00+00:00",
+  "bridge_quarter_quarantined": "2026Q3",
+  "first_complete_fresh_oos_decision_quarter": "2026Q4",
+  "as_of_utc": "2026-08-16T10:48:02.158408+00:00",
+  "maturity_contract": {
+    "minimum_complete_quarters": 8,
+    "minimum_c1_events": 160,
+    "minimum_c4_events": 100,
+    "minimum_c1_events_each_complete_quarter": 10,
+    "minimum_c4_events_each_complete_quarter": 5
+  },
+  "outcome_metrics_computed": false,
+  "trading_engine_called": false,
+  "strategy_executed": false,
+  "strategy_design_authorized": false,
+  "same_sample_h226_research_closed": true,
+  "fresh_oos_file_present": false,
+  "fresh_oos_provenance_present": false,
+  "fresh_oos_dataset_sha256": null,
+  "fresh_oos_temporal_partition": null,
+  "readiness": {
+    "status": "WAITING_FOR_FIRST_FRESH_OOS_BAR",
+    "complete_decision_quarters": [],
+    "c1_total": 0,
+    "c4_total": 0,
+    "c1_min_per_complete_quarter": 0,
+    "c4_min_per_complete_quarter": 0,
+    "checks": {
+      "eight_complete_quarters": false,
+      "c1_total_min": false,
+      "c4_total_min": false,
+      "c1_each_quarter_min": false,
+      "c4_each_quarter_min": false
+    }
+  },
+  "final_status": "WAITING_FOR_FIRST_FRESH_OOS_BAR"
+}
