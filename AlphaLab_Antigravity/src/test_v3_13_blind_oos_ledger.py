@@ -23,9 +23,11 @@ def _write_checkpoint(directory: Path, sequence: int, stamp: str, previous_name=
         "previous_checkpoint_filename": previous_name,
         "previous_checkpoint_sha256": previous_sha,
     }
+    if sequence > 1:
+        obj["checkpoint_hash_scheme"] = ledger.HASH_SCHEME
     p = directory / name
-    p.write_text(json.dumps(obj, indent=2) + "\n", encoding="utf-8")
-    return p, v312.sha256_file(p)
+    p.write_bytes((json.dumps(obj, indent=2) + "\n").encode("utf-8"))
+    return p, ledger.checkpoint_sha256(p)
 
 
 def test_v312_parent_and_cutoff_are_frozen():
