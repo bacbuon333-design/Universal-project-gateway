@@ -1,0 +1,38 @@
+{
+  "status": "CANONICAL_EXECUTION_CONTRACT_PASS",
+  "canonical_dataset_id": "GOLD_M30_CANONICAL_V2",
+  "canonical_dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "legacy_execution_defect_confirmed": true,
+  "legacy_engine_modified": false,
+  "real_market_strategy_executed": false,
+  "synthetic_unit_execution_only": true,
+  "discovered_defect_checks": {
+    "legacy_buy_stop_uses_low_touch": true,
+    "legacy_buy_stop_fills_at_old_stop": true,
+    "legacy_sell_stop_uses_ask_high_touch": true,
+    "legacy_sell_stop_fills_at_old_stop": true,
+    "legacy_has_no_explicit_gap_stop_branch": true
+  },
+  "hardened_contract_checks": {
+    "separate_adapter_not_legacy_mutation": true,
+    "buy_gap_stop_branch_present": true,
+    "buy_gap_exit_at_open_present": true,
+    "sell_ask_open_defined": true,
+    "sell_gap_stop_branch_present": true,
+    "sell_gap_exit_at_ask_open_present": true,
+    "gap_exit_reason_present": true,
+    "next_open_entry_present": true,
+    "pessimistic_ambiguous_present": true,
+    "favorable_tp_capped": true,
+    "canonical_v2_authorized": true,
+    "post_eval_buffer_pass": true
+  },
+  "post_evaluation_buffer": {
+    "evaluation_end": "2026-06-30T23:30:00+00:00",
+    "dataset_last_datetime": "2026-08-14T23:30:00+00:00",
+    "required_buffer_minutes": 3600,
+    "available_buffer_minutes": 64800.0,
+    "pass": true
+  },
+  "git_head_at_execution": "70b507ce68496e17e2bf0e2f2b4afcbf77ebb455"
+}
