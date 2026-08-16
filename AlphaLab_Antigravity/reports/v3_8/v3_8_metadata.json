@@ -1,0 +1,241 @@
+{
+  "batch": "V3.8 H221-H226",
+  "artifact_generation_parent_sha": "9d7764cf28321b05bd9392f98e9751c8c58727b8",
+  "canonical_dataset_id": "GOLD_M30_CANONICAL_V2",
+  "canonical_dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "execution_engine": "CanonicalV2ExecutionEngine",
+  "execution_contract": "CANONICAL_V2_GAP_SAFE_V3_7_3",
+  "evaluation_entry_quarters": [
+    "2018Q2",
+    "2026Q2"
+  ],
+  "complete_years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "configuration_count": 24,
+  "family_count": 6,
+  "spread_pips": 25.0,
+  "commission_per_lot_usd": 7.0,
+  "slippage_pips": 0.0,
+  "fixed_lot": 0.1,
+  "max_holding_bars": 120,
+  "gate_count": 14,
+  "gate_names": [
+    "gate_A1",
+    "gate_A2",
+    "gate_A3",
+    "gate_A4",
+    "gate_B1",
+    "gate_B2",
+    "gate_D4_1",
+    "gate_D4_2",
+    "gate_D8_1",
+    "gate_D8_2",
+    "gate_Y1",
+    "gate_Y2",
+    "gate_E1",
+    "gate_E2"
+  ],
+  "survivors": [],
+  "batch_conclusion": "NO V3.8 CONFIGURATION PASSED ALL FROZEN DISTRIBUTED-EDGE GATES",
+  "configs": [
+    {
+      "config_id": "H221-C1",
+      "family": "H221_WRR",
+      "params": {
+        "W": 0.45,
+        "RMIN": 0.5
+      }
+    },
+    {
+      "config_id": "H221-C2",
+      "family": "H221_WRR",
+      "params": {
+        "W": 0.55,
+        "RMIN": 0.5
+      }
+    },
+    {
+      "config_id": "H221-C3",
+      "family": "H221_WRR",
+      "params": {
+        "W": 0.45,
+        "RMIN": 0.8
+      }
+    },
+    {
+      "config_id": "H221-C4",
+      "family": "H221_WRR",
+      "params": {
+        "W": 0.55,
+        "RMIN": 0.8
+      }
+    },
+    {
+      "config_id": "H222-C1",
+      "family": "H222_CRE",
+      "params": {
+        "K": 3,
+        "Z": 1.5
+      }
+    },
+    {
+      "config_id": "H222-C2",
+      "family": "H222_CRE",
+      "params": {
+        "K": 3,
+        "Z": 2.0
+      }
+    },
+    {
+      "config_id": "H222-C3",
+      "family": "H222_CRE",
+      "params": {
+        "K": 4,
+        "Z": 1.5
+      }
+    },
+    {
+      "config_id": "H222-C4",
+      "family": "H222_CRE",
+      "params": {
+        "K": 4,
+        "Z": 2.0
+      }
+    },
+    {
+      "config_id": "H223-C1",
+      "family": "H223_IBC",
+      "params": {
+        "N": 1,
+        "BUFFER": 0.0
+      }
+    },
+    {
+      "config_id": "H223-C2",
+      "family": "H223_IBC",
+      "params": {
+        "N": 1,
+        "BUFFER": 0.1
+      }
+    },
+    {
+      "config_id": "H223-C3",
+      "family": "H223_IBC",
+      "params": {
+        "N": 2,
+        "BUFFER": 0.0
+      }
+    },
+    {
+      "config_id": "H223-C4",
+      "family": "H223_IBC",
+      "params": {
+        "N": 2,
+        "BUFFER": 0.1
+      }
+    },
+    {
+      "config_id": "H224-C1",
+      "family": "H224_OSR",
+      "params": {
+        "CL": 0.7,
+        "RMIN": 1.0
+      }
+    },
+    {
+      "config_id": "H224-C2",
+      "family": "H224_OSR",
+      "params": {
+        "CL": 0.8,
+        "RMIN": 1.0
+      }
+    },
+    {
+      "config_id": "H224-C3",
+      "family": "H224_OSR",
+      "params": {
+        "CL": 0.7,
+        "RMIN": 1.5
+      }
+    },
+    {
+      "config_id": "H224-C4",
+      "family": "H224_OSR",
+      "params": {
+        "CL": 0.8,
+        "RMIN": 1.5
+      }
+    },
+    {
+      "config_id": "H225-C1",
+      "family": "H225_EDR",
+      "params": {
+        "L": 48,
+        "K": 1.5
+      }
+    },
+    {
+      "config_id": "H225-C2",
+      "family": "H225_EDR",
+      "params": {
+        "L": 48,
+        "K": 2.0
+      }
+    },
+    {
+      "config_id": "H225-C3",
+      "family": "H225_EDR",
+      "params": {
+        "L": 96,
+        "K": 1.5
+      }
+    },
+    {
+      "config_id": "H225-C4",
+      "family": "H225_EDR",
+      "params": {
+        "L": 96,
+        "K": 2.0
+      }
+    },
+    {
+      "config_id": "H226-C1",
+      "family": "H226_DRGR",
+      "params": {
+        "G": 0.05,
+        "RESID": 0.25
+      }
+    },
+    {
+      "config_id": "H226-C2",
+      "family": "H226_DRGR",
+      "params": {
+        "G": 0.1,
+        "RESID": 0.25
+      }
+    },
+    {
+      "config_id": "H226-C3",
+      "family": "H226_DRGR",
+      "params": {
+        "G": 0.05,
+        "RESID": 0.5
+      }
+    },
+    {
+      "config_id": "H226-C4",
+      "family": "H226_DRGR",
+      "params": {
+        "G": 0.1,
+        "RESID": 0.5
+      }
+    }
+  ]
+}

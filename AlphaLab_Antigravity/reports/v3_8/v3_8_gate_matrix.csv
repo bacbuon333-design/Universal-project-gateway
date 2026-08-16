@@ -1,0 +1,25 @@
+config_id,family,gate_A1,gate_A2,gate_A3,gate_A4,gate_B1,gate_B2,gate_D4_1,gate_D4_2,gate_D8_1,gate_D8_2,gate_Y1,gate_Y2,gate_E1,gate_E2,all_gates_pass,primary_failure_reason,final_status
+H221-C1,H221_WRR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.850 < 1.25,REJECTED
+H221-C2,H221_WRR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.878 < 1.25,REJECTED
+H221-C3,H221_WRR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.862 < 1.25,REJECTED
+H221-C4,H221_WRR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.844 < 1.25,REJECTED
+H222-C1,H222_CRE,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.901 < 1.25,REJECTED
+H222-C2,H222_CRE,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.857 < 1.25,REJECTED
+H222-C3,H222_CRE,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.916 < 1.25,REJECTED
+H222-C4,H222_CRE,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.915 < 1.25,REJECTED
+H223-C1,H223_IBC,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.962 < 1.25,REJECTED
+H223-C2,H223_IBC,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.988 < 1.25,REJECTED
+H223-C3,H223_IBC,True,True,True,True,False,False,False,False,False,False,True,False,False,True,False,Gate E1: PF 1.049 < 1.25,REJECTED
+H223-C4,H223_IBC,True,True,True,True,False,False,False,False,False,False,True,False,False,True,False,Gate E1: PF 1.006 < 1.25,REJECTED
+H224-C1,H224_OSR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.913 < 1.25,REJECTED
+H224-C2,H224_OSR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.865 < 1.25,REJECTED
+H224-C3,H224_OSR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.820 < 1.25,REJECTED
+H224-C4,H224_OSR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.774 < 1.25,REJECTED
+H225-C1,H225_EDR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.874 < 1.25,REJECTED
+H225-C2,H225_EDR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.879 < 1.25,REJECTED
+H225-C3,H225_EDR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.894 < 1.25,REJECTED
+H225-C4,H225_EDR,True,True,True,True,False,False,False,False,False,False,True,False,False,False,False,Gate E1: PF 0.875 < 1.25,REJECTED
+H226-C1,H226_DRGR,True,True,True,True,True,True,True,False,True,False,True,True,False,False,False,Gate E1: PF 0.937 < 1.25,REJECTED
+H226-C2,H226_DRGR,True,True,True,True,False,False,False,False,True,False,True,False,False,False,False,Gate E1: PF 0.946 < 1.25,REJECTED
+H226-C3,H226_DRGR,True,True,True,True,True,True,True,False,False,False,True,True,False,False,False,Gate E1: PF 0.943 < 1.25,REJECTED
+H226-C4,H226_DRGR,True,True,True,True,True,True,True,False,True,False,True,True,False,False,False,Gate E1: PF 0.954 < 1.25,REJECTED
