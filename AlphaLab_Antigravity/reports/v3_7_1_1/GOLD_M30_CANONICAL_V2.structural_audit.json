@@ -1,0 +1,29 @@
+{
+  "dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "status": "PASS",
+  "problems": [],
+  "row_count": 100000,
+  "first_bar_open_utc": "2018-02-22T18:30:00+00:00",
+  "last_bar_open_utc": "2026-08-14T23:30:00+00:00",
+  "duplicate_timestamp_count": 0,
+  "non_monotonic_timestamp_count": 0,
+  "median_delta_minutes": 30.0,
+  "pct_exact_30m_deltas": 97.8129781297813,
+  "bars_after_requested_end": 0,
+  "ohlc": {
+    "null_ohlc_rows": 0,
+    "high_below_low_rows": 0,
+    "high_below_open_or_close_rows": 0,
+    "low_above_open_or_close_rows": 0,
+    "total_violation_count": 0
+  },
+  "coverage": {
+    "status": "PASS",
+    "reasons": [],
+    "required_first_bar_no_later_than": "2018-04-01T00:00:00+00:00",
+    "actual_first_bar_open_utc": "2018-02-22T18:30:00+00:00",
+    "requested_last_completed_bar_open_utc": "2026-08-16T07:30:00+00:00",
+    "actual_last_bar_open_utc": "2026-08-14T23:30:00+00:00",
+    "latest_history_lag_seconds": 115200.0
+  }
+}

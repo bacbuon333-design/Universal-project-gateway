@@ -1,0 +1,77 @@
+{
+  "dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "source_type": "METATRADER5_TERMINAL_BROKER_FEED",
+  "source_identifier": "MetaTrader5 broker feed|company=XM Global Limited|server=XMGlobal-MT5 9|symbol=GOLD",
+  "broker_company": "XM Global Limited",
+  "broker_server": "XMGlobal-MT5 9",
+  "broker_symbol": "GOLD",
+  "exporter_or_extraction_method": "MetaTrader5.copy_rates_range",
+  "exporter_path": "AlphaLab_Antigravity/src/export_v3_7_1_1_mt5_canonical_gold_m30_v2.py",
+  "exporter_git_sha": "4fce86366883a7f9f71f9fc6ce7bd69bff77b389",
+  "timestamp_semantic": "BAR_OPEN_TIME",
+  "timestamp_timezone_status": "EXPLICIT_UTC",
+  "timestamp_timezone": "UTC",
+  "timeframe": "M30",
+  "generated_at_utc": "2026-08-16T08:05:39.985719+00:00",
+  "requested_start_utc": "2018-01-01T00:00:00+00:00",
+  "requested_last_completed_bar_open_utc": "2026-08-16T07:30:00+00:00",
+  "returned_first_bar_open_utc": "2018-02-22T18:30:00+00:00",
+  "returned_last_bar_open_utc": "2026-08-14T23:30:00+00:00",
+  "row_count": 100000,
+  "size_bytes": 10157376,
+  "transform_chain": [
+    "MetaTrader5.initialize using the operator-selected terminal connection",
+    "MetaTrader5.copy_rates_range(symbol=GOLD, timeframe=TIMEFRAME_M30, date_from/date_to=UTC Unix epoch seconds in two-year chunks)",
+    "Preserve raw MT5 rate fields without resampling/interpolation/gap filling",
+    "Stable-sort ascending by raw epoch time and reject duplicate epochs",
+    "Derive timestamp_utc directly from raw Unix epoch seconds with UTC timezone",
+    "Serialize fixed canonical columns with LF line endings and 17-significant-digit float formatting",
+    "Calculate SHA-256 over exact serialized CSV bytes"
+  ],
+  "official_api_documentation": [
+    {
+      "title": "MetaTrader5 Python copy_rates_range",
+      "url": "https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesrange_py",
+      "contract": "Bars are selected by bar open time; MT5 bar open times are stored/returned in UTC."
+    },
+    {
+      "title": "MetaTrader5 Python copy_rates_from",
+      "url": "https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesfrom_py",
+      "contract": "date_from is an initial bar open date; received bar time is UTC."
+    }
+  ],
+  "environment": {
+    "python_version": "3.14.2",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pandas_version": "3.0.3",
+    "mt5_python_package_version": "5.0.5488",
+    "mt5_terminal_version": [
+      500,
+      6090,
+      "31 Jul 2026"
+    ]
+  },
+  "terminal_metadata_non_sensitive": {
+    "company": "XM Global Limited",
+    "name": "XM Global MT5",
+    "connected": true,
+    "trade_allowed": false,
+    "build": 6090,
+    "maxbars": 100000
+  },
+  "symbol_metadata": {
+    "name": "GOLD",
+    "path": "Derivatives\\Spot Metals\\GOLD",
+    "currency_base": "USD",
+    "currency_profit": "USD",
+    "digits": 2,
+    "point": 0.01,
+    "trade_contract_size": 100.0
+  },
+  "sensitive_account_fields_committed": false,
+  "dataset_id": "GOLD_M30_CANONICAL_V2",
+  "request_boundary_representation": "UNIX_EPOCH_SECONDS_UTC",
+  "request_boundary_semantic_repair": "date_from/date_to passed to MetaTrader5.copy_rates_range as integer Unix epoch seconds derived from timezone-aware UTC datetimes; no timezone-naive datetime is used.",
+  "prior_v3_7_1_dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "terminal_history_cap_explicit": 100000
+}
