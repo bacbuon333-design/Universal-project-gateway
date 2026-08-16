@@ -316,6 +316,24 @@ def deterministic_csv_write(df: pd.DataFrame, path: Path) -> None:
     os.replace(tmp, path)
 
 
+def _fetch_rates_range(symbol: str, start_utc: datetime, end_utc: datetime) -> Any:
+    mt5.symbol_select(symbol, True)
+    chunks = []
+    cur = start_utc.astimezone(UTC).replace(tzinfo=None)
+    end = end_utc.astimezone(UTC).replace(tzinfo=None)
+    step_years = 2
+    while cur < end:
+        nxt = min(datetime(cur.year + step_years, 1, 1), end)
+        r = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M30, cur, nxt)
+        if r is not None and len(r):
+            chunks.append(r)
+        cur = nxt
+    if not chunks:
+        raise RuntimeError(f"copy_rates_range returned no rates: {mt5.last_error()}")
+    import numpy as np
+    return np.concatenate(chunks)
+
+
 def run_export(symbol: str, terminal_path: Optional[str] = None, now_utc: Optional[datetime] = None) -> Dict[str, Any]:
     _require_new_output_paths()
 
@@ -325,9 +343,7 @@ def run_export(symbol: str, terminal_path: Optional[str] = None, now_utc: Option
     _initialize_mt5(terminal_path)
     try:
         identity = source_identity(symbol)
-        rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M30, REQUEST_START_UTC, requested_end)
-        if rates is None:
-            raise RuntimeError(f"copy_rates_range returned None: {mt5.last_error()}")
+        rates = _fetch_rates_range(symbol, REQUEST_START_UTC, requested_end)
         df = normalize_rates(rates)
     finally:
         mt5.shutdown()
