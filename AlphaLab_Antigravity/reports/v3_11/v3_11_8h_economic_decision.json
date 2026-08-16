@@ -1,0 +1,133 @@
+{
+  "mechanism_label": "H226 DELAYED 8H REVERSION ECONOMICALLY ASYMMETRIC / REGIME-CONCENTRATED \u2014 H226 STRATEGY CHAPTER CLOSED; FRESH OOS REQUIRED",
+  "decision_cohorts_frozen": [
+    "H226-C1",
+    "H226-C4"
+  ],
+  "h226_strategy_status_remains": "REJECTED",
+  "same_sample_h226_research_closed": true,
+  "strategy_design_authorized": false,
+  "fresh_oos_required_for_future_h226_inspired_strategy": true,
+  "detail": {
+    "H226-C1": {
+      "checks": {
+        "full_mean_excess_positive": true,
+        "full_median_excess_positive": true,
+        "quarter_block_ci_lower_positive": false,
+        "year_block_ci_lower_positive": false,
+        "pre2025_mean_excess_positive": false,
+        "recent_mean_excess_positive": true,
+        "up_gap_mean_excess_positive": false,
+        "down_gap_mean_excess_positive": true,
+        "at_least_5_of_7_positive_years": true,
+        "all_leave_one_year_out_means_positive": true
+      },
+      "all_broad_economic_checks_pass": false,
+      "positive_complete_years": 6,
+      "full": {
+        "n": 913,
+        "mean_raw": 0.1346561839946092,
+        "mean_excess": 0.02744252116751845,
+        "median_excess": 0.02736054587903533
+      },
+      "quarter_block_ci": [
+        -0.09422439036334948,
+        0.15374612177307667
+      ],
+      "year_block_ci": [
+        -0.048625207934876236,
+        0.11107914035562075
+      ]
+    },
+    "H226-C2": {
+      "checks": {
+        "full_mean_excess_positive": true,
+        "full_median_excess_positive": true,
+        "quarter_block_ci_lower_positive": false,
+        "year_block_ci_lower_positive": false,
+        "pre2025_mean_excess_positive": false,
+        "recent_mean_excess_positive": true,
+        "up_gap_mean_excess_positive": false,
+        "down_gap_mean_excess_positive": true,
+        "at_least_5_of_7_positive_years": true,
+        "all_leave_one_year_out_means_positive": true
+      },
+      "all_broad_economic_checks_pass": false,
+      "positive_complete_years": 5,
+      "full": {
+        "n": 696,
+        "mean_raw": 0.1550845207867934,
+        "mean_excess": 0.04430793059821162,
+        "median_excess": 0.05337832731127054
+      },
+      "quarter_block_ci": [
+        -0.0872348655257711,
+        0.19431993379946247
+      ],
+      "year_block_ci": [
+        -0.04746021214438144,
+        0.14607030989936734
+      ]
+    },
+    "H226-C3": {
+      "checks": {
+        "full_mean_excess_positive": true,
+        "full_median_excess_positive": true,
+        "quarter_block_ci_lower_positive": false,
+        "year_block_ci_lower_positive": false,
+        "pre2025_mean_excess_positive": false,
+        "recent_mean_excess_positive": true,
+        "up_gap_mean_excess_positive": false,
+        "down_gap_mean_excess_positive": true,
+        "at_least_5_of_7_positive_years": false,
+        "all_leave_one_year_out_means_positive": false
+      },
+      "all_broad_economic_checks_pass": false,
+      "positive_complete_years": 4,
+      "full": {
+        "n": 851,
+        "mean_raw": 0.10952153257071973,
+        "mean_excess": 0.00183713270327286,
+        "median_excess": 0.003148406581363658
+      },
+      "quarter_block_ci": [
+        -0.12415236507472688,
+        0.12881840506543235
+      ],
+      "year_block_ci": [
+        -0.09262884723831763,
+        0.08612154227555346
+      ]
+    },
+    "H226-C4": {
+      "checks": {
+        "full_mean_excess_positive": true,
+        "full_median_excess_positive": true,
+        "quarter_block_ci_lower_positive": false,
+        "year_block_ci_lower_positive": false,
+        "pre2025_mean_excess_positive": false,
+        "recent_mean_excess_positive": true,
+        "up_gap_mean_excess_positive": false,
+        "down_gap_mean_excess_positive": true,
+        "at_least_5_of_7_positive_years": false,
+        "all_leave_one_year_out_means_positive": false
+      },
+      "all_broad_economic_checks_pass": false,
+      "positive_complete_years": 4,
+      "full": {
+        "n": 639,
+        "mean_raw": 0.12926615557411555,
+        "mean_excess": 0.017759900726567954,
+        "median_excess": 0.005512468704880175
+      },
+      "quarter_block_ci": [
+        -0.13172946986201794,
+        0.1831638696680473
+      ],
+      "year_block_ci": [
+        -0.097254947155586,
+        0.1385218420043773
+      ]
+    }
+  }
+}

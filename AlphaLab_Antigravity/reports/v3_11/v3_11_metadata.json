@@ -1,0 +1,27 @@
+{
+  "chapter": "V3.11 H226 ECONOMIC-MATERIALITY & ASYMMETRY CLOSURE",
+  "artifact_generation_parent_sha": "3962a9a7db035e02389eb14a2fdf4987298fce33",
+  "scientific_parent_v310_final": "b387e25bdf6fd814c3034f3688af50e976f5cc59",
+  "source_v39_events_sha256": "aecdb78d22598a962c29adbd7448755eaf31399d351d5efcbeeddc0c823d920f",
+  "canonical_dataset_id": "GOLD_M30_CANONICAL_V2",
+  "canonical_dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "horizon": "8h",
+  "source_8h_counts": {
+    "H226-C1": 913,
+    "H226-C2": 696,
+    "H226-C3": 851,
+    "H226-C4": 639
+  },
+  "roundtrip_price_equiv_usd_per_oz": 0.32,
+  "quarter_bootstrap_reps": 5000,
+  "quarter_bootstrap_seed": 311226,
+  "year_bootstrap_reps": 5000,
+  "year_bootstrap_seed": 311227,
+  "raw_market_data_read": false,
+  "events_reconstructed": false,
+  "trading_engine_called": false,
+  "strategy_executed": false,
+  "strategy_design_authorized": false,
+  "same_sample_h226_research_closed": true,
+  "mechanism_label": "H226 DELAYED 8H REVERSION ECONOMICALLY ASYMMETRIC / REGIME-CONCENTRATED \u2014 H226 STRATEGY CHAPTER CLOSED; FRESH OOS REQUIRED"
+}
