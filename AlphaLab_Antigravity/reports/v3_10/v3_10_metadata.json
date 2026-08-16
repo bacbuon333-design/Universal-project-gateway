@@ -1,0 +1,31 @@
+{
+  "chapter": "V3.10 H226 DELAYED 8H REVERSION STABILITY AUDIT",
+  "artifact_generation_parent_sha": "4c0bdb6914dc26516203fb8aa0ebbe47149d395f",
+  "scientific_parent_v39_final": "ae3e4a0d0116b07867ead4e09a6466e54faef8d5",
+  "source_v39_event_sha256": "aecdb78d22598a962c29adbd7448755eaf31399d351d5efcbeeddc0c823d920f",
+  "source_v39_artifact_parent_sha": "505e217fba0d27bc250d14890093215c1cea8f69",
+  "canonical_dataset_id": "GOLD_M30_CANONICAL_V2",
+  "canonical_dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "horizon": "8h",
+  "cohorts": [
+    "H226-C1",
+    "H226-C2",
+    "H226-C3",
+    "H226-C4"
+  ],
+  "decision_cohorts": [
+    "H226-C1",
+    "H226-C4"
+  ],
+  "quarter_bootstrap_reps": 5000,
+  "quarter_bootstrap_seed": 310226,
+  "year_bootstrap_reps": 5000,
+  "year_bootstrap_seed": 310227,
+  "strategy_executed": false,
+  "trading_engine_called": false,
+  "raw_market_data_read": false,
+  "events_reconstructed": false,
+  "h226_strategy_status_remains": "REJECTED",
+  "strategy_design_authorized": false,
+  "mechanism_label": "H226 DELAYED 8H REVERSION REGIME / DIRECTION DEPENDENT \u2014 STRATEGY DESIGN NOT AUTHORIZED"
+}
