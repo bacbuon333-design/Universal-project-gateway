@@ -60,8 +60,6 @@ class CanonicalV2ExecutionEngine(CanonicalV2DeepQuantEngine):
                 dir_int = 1 if d == "BUY" else -1
 
                 if d == "BUY":
-                    # Bid-side BUY exit. If the bar opens below SL, the old stop
-                    # price is no longer executable; fill at the worse Bid open.
                     gap_stop = o[i] < sl_p
                     hit_sl = l[i] <= sl_p
                     hit_tp = h[i] >= tp_p
@@ -82,7 +80,6 @@ class CanonicalV2ExecutionEngine(CanonicalV2DeepQuantEngine):
                         exit_reason = "SL"
                         closed = True
                     elif hit_tp:
-                        # Deliberately no favorable gap improvement.
                         exit_price = tp_p - slippage_price
                         exit_reason = "TP"
                         closed = True
@@ -122,53 +119,42 @@ class CanonicalV2ExecutionEngine(CanonicalV2DeepQuantEngine):
 
                 if closed:
                     pnl_dict = calculate_trade_pnl(
-                        self.spec,
-                        dir_int,
-                        entry_p,
-                        exit_price,
-                        lots=fixed_lot,
-                        commission_per_lot=comm_rate,
+                        self.spec, dir_int, entry_p, exit_price,
+                        lots=fixed_lot, commission_per_lot=comm_rate,
                     )
                     pnl_usd = pnl_dict["net_pnl_usd"]
                     pnl_pts = pnl_dict["pnl_pips"]
                     sl_risk_dict = calculate_trade_pnl(
-                        self.spec,
-                        dir_int,
-                        entry_p,
-                        sl_p,
-                        lots=fixed_lot,
-                        commission_per_lot=comm_rate,
+                        self.spec, dir_int, entry_p, sl_p,
+                        lots=fixed_lot, commission_per_lot=comm_rate,
                     )
                     sl_risk_usd = abs(sl_risk_dict["net_pnl_usd"])
                     pnl_r = pnl_usd / sl_risk_usd if sl_risk_usd > 0 else 0.0
-                    trades.append(
-                        Trade(
-                            id=trade_id,
-                            entry_bar=active_trade["entry_bar"],
-                            entry_time=active_trade["entry_time"],
-                            exit_bar=i,
-                            exit_time=dt.iloc[i],
-                            direction=d,
-                            entry_price=entry_p,
-                            exit_price=exit_price,
-                            sl=sl_p,
-                            tp=tp_p,
-                            lots=fixed_lot,
-                            pnl_usd=pnl_usd,
-                            pnl_pts=pnl_pts,
-                            pnl_r=pnl_r,
-                            exit_reason=exit_reason,
-                            quarter=active_trade["quarter"],
-                            year=active_trade["year"],
-                            holding_bars=i - active_trade["entry_bar"],
-                        )
-                    )
+                    trades.append(Trade(
+                        id=trade_id,
+                        entry_bar=active_trade["entry_bar"],
+                        entry_time=active_trade["entry_time"],
+                        exit_bar=i,
+                        exit_time=dt.iloc[i],
+                        direction=d,
+                        entry_price=entry_p,
+                        exit_price=exit_price,
+                        sl=sl_p,
+                        tp=tp_p,
+                        lots=fixed_lot,
+                        pnl_usd=pnl_usd,
+                        pnl_pts=pnl_pts,
+                        pnl_r=pnl_r,
+                        exit_reason=exit_reason,
+                        quarter=active_trade["quarter"],
+                        year=active_trade["year"],
+                        holding_bars=i - active_trade["entry_bar"],
+                    ))
                     trade_id += 1
                     active_trade = None
 
-            # Signal at close i, entry at open i+1. The newly created trade is
-            # first managed on the next loop iteration, i+1, so the entry bar's
-            # OHLC participates in stop/target handling.
+            # Signal at close i; execution at open i+1. The new position is
+            # managed on the following loop iteration, which is the entry bar.
             if active_trade is None and i < n - 1:
                 sig = signals[i]
                 if sig != 0 and sl_dists[i] > 0 and tp_dists[i] > 0:
@@ -242,6 +228,11 @@ class CanonicalV2ExecutionEngine(CanonicalV2DeepQuantEngine):
         tot_pnl = float(trades_df["pnl_usd"].sum()) if tot else 0.0
         gp = float(trades_df.loc[trades_df["pnl_usd"] > 0, "pnl_usd"].sum()) if tot else 0.0
         gl = abs(float(trades_df.loc[trades_df["pnl_usd"] <= 0, "pnl_usd"].sum())) if tot else 0.0
+        active_q = quarters_df[quarters_df["trades"] >= 3]
+        n_active = len(active_q)
+        n_active_pass = len(active_q[active_q["verdict"] == "PASS"])
+        n_total_pass = len(quarters_df[quarters_df["verdict"] == "PASS"])
+
         summary = {
             "symbol": self.spec.symbol,
             "asset_class": self.spec.asset_class,
@@ -254,6 +245,9 @@ class CanonicalV2ExecutionEngine(CanonicalV2DeepQuantEngine):
             "avg_expectancy_usd": tot_pnl / tot if tot else 0.0,
             "avg_expectancy_r": float(trades_df["pnl_r"].mean()) if tot else 0.0,
             "total_quarters": len(quarters_df),
+            "active_quarters": n_active,
+            "active_quarter_pass_pct": (n_active_pass / n_active * 100.0) if n_active else 0.0,
+            "full_calendar_pass_pct": (n_total_pass / len(quarters_df) * 100.0) if len(quarters_df) else 0.0,
             "execution_contract": "CANONICAL_V2_GAP_SAFE_V3_7_3",
         }
         return trades_df, quarters_df, summary
