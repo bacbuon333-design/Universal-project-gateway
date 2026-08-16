@@ -1,0 +1,31 @@
+{
+  "dataset_id": "GOLD_M30_CANONICAL",
+  "relative_path": "AlphaLab_Antigravity/data/canonical/GOLD_M30_CANONICAL.csv",
+  "sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "size_bytes": 10157376,
+  "row_count": 100000,
+  "columns": [
+    "time",
+    "timestamp_utc",
+    "open",
+    "high",
+    "low",
+    "close",
+    "tick_volume",
+    "spread",
+    "real_volume"
+  ],
+  "first_bar_open_utc": "2018-02-22T18:30:00+00:00",
+  "last_bar_open_utc": "2026-08-14T23:30:00+00:00",
+  "timestamp_semantic": "BAR_OPEN_TIME",
+  "timestamp_timezone_status": "EXPLICIT_UTC",
+  "timestamp_timezone": "UTC",
+  "timeframe": "M30",
+  "lineage_status": "VERIFIED",
+  "structural_validation_status": "PASS",
+  "coverage_status": "PASS",
+  "canonical_lineage_verified": true,
+  "research_eligibility": "ELIGIBLE",
+  "blocking_reasons": [],
+  "exporter_git_sha": "f555f539380e7548a4115a630676068d9a3ed0d1"
+}
