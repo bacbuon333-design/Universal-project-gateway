@@ -1,0 +1,40 @@
+{
+  "chapter": "V3.9 LOSS-CONCENTRATION & H226 TAIL-MECHANISM AUDIT",
+  "artifact_generation_parent_sha": "505e217fba0d27bc250d14890093215c1cea8f69",
+  "scientific_parent_v38_final": "635258edb87da39cb3bd1a599bec2f6c94a0b477",
+  "canonical_dataset_id": "GOLD_M30_CANONICAL_V2",
+  "canonical_dataset_sha256": "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d",
+  "v38_strategy_conclusion_frozen": "NO V3.8 CONFIGURATION PASSED ALL FROZEN DISTRIBUTED-EDGE GATES",
+  "strategy_executed": false,
+  "trading_engine_called": false,
+  "v38_config_count_audited": 24,
+  "h226_cohorts": {
+    "H226-C1": {
+      "gap_z_min": 0.05,
+      "residual_min": 0.25
+    },
+    "H226-C2": {
+      "gap_z_min": 0.1,
+      "residual_min": 0.25
+    },
+    "H226-C3": {
+      "gap_z_min": 0.05,
+      "residual_min": 0.5
+    },
+    "H226-C4": {
+      "gap_z_min": 0.1,
+      "residual_min": 0.5
+    }
+  },
+  "horizons": {
+    "30m": 1,
+    "1h": 2,
+    "2h": 4,
+    "4h": 8,
+    "8h": 16
+  },
+  "bootstrap_reps": 2000,
+  "bootstrap_seed": 390226,
+  "mechanism_label": "H226 GAP-REVERSION MECHANISM WEAK / TAIL-UNSTABLE \u2014 STRATEGY STILL REJECTED",
+  "strategy_redesign_authorized": false
+}

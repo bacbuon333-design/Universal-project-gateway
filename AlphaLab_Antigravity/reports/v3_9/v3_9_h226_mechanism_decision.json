@@ -1,0 +1,107 @@
+{
+  "mechanism_label": "H226 GAP-REVERSION MECHANISM WEAK / TAIL-UNSTABLE \u2014 STRATEGY STILL REJECTED",
+  "decision_cohorts_frozen_pre_result": [
+    "H226-C1",
+    "H226-C4"
+  ],
+  "strategy_status_remains": "REJECTED",
+  "strategy_redesign_authorized": false,
+  "detail": {
+    "H226-C1": {
+      "2h": {
+        "mean": 0.039590571601620224,
+        "median": 0.024894758477086113,
+        "block_ci_lower": -0.0304951307363372,
+        "block_ci_upper": 0.10742960923060194
+      },
+      "4h": {
+        "mean": 0.04406800958696316,
+        "median": -0.016363996040700834,
+        "block_ci_lower": -0.053303929940104244,
+        "block_ci_upper": 0.13976429660787112
+      },
+      "positive_years_4h": 5,
+      "positive_year_pct_4h": 71.42857142857143,
+      "diagnostics_4h": {
+        "mean_reversion_positive": true,
+        "median_reversion_positive": false,
+        "block_ci_excludes_zero_positive": false,
+        "positive_years_at_least_4_of_7": true,
+        "gap_closure_probability_gt_50pct": true,
+        "left_tail_abs_exceeds_mean_magnitude": true
+      }
+    },
+    "H226-C2": {
+      "2h": {
+        "mean": 0.027809086756679913,
+        "median": 0.024792870363126156,
+        "block_ci_lower": -0.05722458819769466,
+        "block_ci_upper": 0.11205120918750666
+      },
+      "4h": {
+        "mean": 0.03947043740722747,
+        "median": 0.004422258184926995,
+        "block_ci_lower": -0.06199228183975672,
+        "block_ci_upper": 0.13382454352555334
+      },
+      "positive_years_4h": 5,
+      "positive_year_pct_4h": 71.42857142857143,
+      "diagnostics_4h": {
+        "mean_reversion_positive": true,
+        "median_reversion_positive": true,
+        "block_ci_excludes_zero_positive": false,
+        "positive_years_at_least_4_of_7": true,
+        "gap_closure_probability_gt_50pct": true,
+        "left_tail_abs_exceeds_mean_magnitude": true
+      }
+    },
+    "H226-C3": {
+      "2h": {
+        "mean": 0.029097653567204573,
+        "median": 0.020340840038898765,
+        "block_ci_lower": -0.04870763059202043,
+        "block_ci_upper": 0.10553838414956204
+      },
+      "4h": {
+        "mean": 0.02371004185546168,
+        "median": -0.038674044892273676,
+        "block_ci_lower": -0.08534228591953855,
+        "block_ci_upper": 0.1284150784145674
+      },
+      "positive_years_4h": 5,
+      "positive_year_pct_4h": 71.42857142857143,
+      "diagnostics_4h": {
+        "mean_reversion_positive": true,
+        "median_reversion_positive": false,
+        "block_ci_excludes_zero_positive": false,
+        "positive_years_at_least_4_of_7": true,
+        "gap_closure_probability_gt_50pct": true,
+        "left_tail_abs_exceeds_mean_magnitude": true
+      }
+    },
+    "H226-C4": {
+      "2h": {
+        "mean": 0.008579588894221247,
+        "median": 0.011653498565509571,
+        "block_ci_lower": -0.08481809343078323,
+        "block_ci_upper": 0.11117191362180248
+      },
+      "4h": {
+        "mean": 0.015886840334803354,
+        "median": -0.016363996040700834,
+        "block_ci_lower": -0.09151824586533153,
+        "block_ci_upper": 0.12447864319914861
+      },
+      "positive_years_4h": 5,
+      "positive_year_pct_4h": 71.42857142857143,
+      "diagnostics_4h": {
+        "mean_reversion_positive": true,
+        "median_reversion_positive": false,
+        "block_ci_excludes_zero_positive": false,
+        "positive_years_at_least_4_of_7": true,
+        "gap_closure_probability_gt_50pct": true,
+        "left_tail_abs_exceeds_mean_magnitude": true
+      }
+    }
+  }
+}
