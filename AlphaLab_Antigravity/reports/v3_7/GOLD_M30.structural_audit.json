@@ -1,0 +1,35 @@
+{
+  "dataset_id": "GOLD_M30",
+  "actual_sha256": "979d7e410efbdc17e37ecae7f6a37ed30ba1844097bd012f2b90dd6d0be4f5f0",
+  "row_count": 99999,
+  "columns": [
+    "time",
+    "datetime_str",
+    "open",
+    "high",
+    "low",
+    "close",
+    "tick_volume",
+    "spread",
+    "real_volume"
+  ],
+  "timestamp_column": "datetime_str",
+  "timestamp_parse_status": "PASS",
+  "first_timestamp": "2018-02-01 15:00:00",
+  "last_timestamp": "2026-07-24 23:30:00",
+  "timestamp_timezone_status_from_csv": "NAIVE_UNRESOLVED",
+  "timestamp_timezone_from_csv": "UNRESOLVED",
+  "median_delta_minutes": 30.0,
+  "pct_expected_cadence": 97.81295625912519,
+  "duplicate_timestamp_count": 0,
+  "non_monotonic_timestamp_count": 0,
+  "ohlc_violation_count": 0,
+  "ohlc_details": {
+    "null_ohlc_rows": 0,
+    "high_below_low_rows": 0,
+    "high_below_open_or_close_rows": 0,
+    "low_above_open_or_close_rows": 0
+  },
+  "structural_validation_status": "PASS",
+  "structural_problems": []
+}

@@ -1,0 +1,20 @@
+{
+  "dataset_id": "GOLD_M30",
+  "research_eligibility": "BLOCKED",
+  "blocking_reasons": [
+    "TIMESTAMP_SEMANTIC_UNRESOLVED",
+    "TIMESTAMP_TIMEZONE_UNRESOLVED",
+    "LINEAGE_NOT_VERIFIED",
+    "SOURCE_TYPE_UNRESOLVED",
+    "SOURCE_IDENTIFIER_UNRESOLVED",
+    "EXTRACTION_METHOD_UNRESOLVED",
+    "TRANSFORM_CHAIN_UNRESOLVED",
+    "PROVENANCE:PROVENANCE_SIDECAR_NOT_FOUND"
+  ],
+  "lineage_status": "UNRESOLVED",
+  "timestamp_semantic": "UNRESOLVED",
+  "timestamp_timezone_status": "NAIVE_UNRESOLVED",
+  "structural_validation_status": "PASS",
+  "fail_closed": true,
+  "git_head_at_execution": "bab10002da9092a51b1b038adb129db7fed12ce0"
+}
