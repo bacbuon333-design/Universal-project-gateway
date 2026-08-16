@@ -1,0 +1,38 @@
+{
+  "artifact_generation_parent_sha": "3eb5fd59575508b78b94be9146a2b82460a9b307",
+  "authoritative_csv": "AlphaLab_Antigravity/reports/v3_5/batch1_summary.csv",
+  "row_count": 12,
+  "config_ids": [
+    "H-218-C1",
+    "H-218-C2",
+    "H-218-C3",
+    "H-218-C4",
+    "H-219-C1",
+    "H-219-C2",
+    "H-219-C3",
+    "H-219-C4",
+    "H-220-C1",
+    "H-220-C2",
+    "H-220-C3",
+    "H-220-C4"
+  ],
+  "hard_gate_count": 14,
+  "hard_gate_columns": [
+    "gate_A1",
+    "gate_A2",
+    "gate_A3",
+    "gate_A4",
+    "gate_B1",
+    "gate_B2",
+    "gate_D4_1",
+    "gate_D4_2",
+    "gate_D8_1",
+    "gate_D8_2",
+    "gate_Y1",
+    "gate_Y2",
+    "gate_E1",
+    "gate_E2"
+  ],
+  "survivor_count": 0,
+  "report_generated_directly_from_csv": true
+}
