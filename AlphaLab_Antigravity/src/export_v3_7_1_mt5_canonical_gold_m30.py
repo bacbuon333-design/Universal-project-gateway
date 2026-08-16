@@ -331,7 +331,9 @@ def _fetch_rates_range(symbol: str, start_utc: datetime, end_utc: datetime) -> A
     if not chunks:
         raise RuntimeError(f"copy_rates_range returned no rates: {mt5.last_error()}")
     import numpy as np
-    return np.concatenate(chunks)
+    all_rates = np.concatenate(chunks)
+    _, unique_indices = np.unique(all_rates["time"], return_index=True)
+    return all_rates[np.sort(unique_indices)]
 
 
 def run_export(symbol: str, terminal_path: Optional[str] = None, now_utc: Optional[datetime] = None) -> Dict[str, Any]:
