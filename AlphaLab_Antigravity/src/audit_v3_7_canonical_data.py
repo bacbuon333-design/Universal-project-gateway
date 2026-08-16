@@ -8,7 +8,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import json
-import os
 import subprocess
 import sys
 
@@ -91,17 +90,18 @@ def analyze_structure(path: Path, expected_minutes: float = 30.0) -> Dict[str, A
             duplicate_count = int(parsed.duplicated().sum())
             delta_seconds = parsed.diff().dt.total_seconds()
             non_monotonic_count = int((delta_seconds.dropna() <= 0).sum())
-            positive_minutes = (delta_seconds.dropna()[delta_seconds.dropna() > 0] / 60.0)
+            positive_minutes = delta_seconds.dropna()
+            positive_minutes = positive_minutes[positive_minutes > 0] / 60.0
             if len(positive_minutes):
                 median_delta = float(positive_minutes.median())
-                pct_expected = float(np.mean(np.isclose(positive_minutes.to_numpy(), expected_minutes)) * 100.0)
+                pct_expected = float(
+                    np.mean(np.isclose(positive_minutes.to_numpy(), expected_minutes)) * 100.0
+                )
             if duplicate_count:
                 structural_problems.append("DUPLICATE_TIMESTAMPS")
             if non_monotonic_count:
                 structural_problems.append("NON_MONOTONIC_TIMESTAMPS")
 
-            # This describes only what is encoded in the CSV values themselves.
-            # Naive values stay unresolved unless an exact-hash provenance sidecar proves timezone.
             try:
                 tz = parsed.dt.tz
             except Exception:
@@ -190,8 +190,6 @@ def run_audit() -> Dict[str, Any]:
         provenance = unresolved_provenance()
         provenance_source = "NONE"
 
-    # A verified exact-hash sidecar can establish explicit time metadata.
-    # Otherwise the CSV's naive time values remain unresolved by design.
     if provenance["lineage_status"] == LineageStatus.VERIFIED.value:
         tz_status = provenance["timestamp_timezone_status"]
         tz_name = provenance["timestamp_timezone"]
@@ -284,14 +282,18 @@ def run_audit() -> Dict[str, Any]:
         out_path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     blockers_md = "\n".join(f"- `{x}`" for x in manifest.blocking_reasons) or "- None"
-    report = f"""# V3.7 CANONICAL DATA AUDIT REPORT\n\n"
+    report = "# V3.7 CANONICAL DATA AUDIT REPORT\n\n"
     report += f"- Dataset: `GOLD_M30`\n- SHA-256: `{actual_hash}`\n"
     report += f"- Rows: `{manifest.row_count}`\n- Structural validation: `{manifest.structural_validation_status}`\n"
     report += f"- Lineage: `{manifest.lineage_status}`\n- Timestamp semantic: `{manifest.timestamp_semantic}`\n"
     report += f"- Timezone status: `{manifest.timestamp_timezone_status}`\n- Research eligibility: **`{manifest.research_eligibility}`**\n\n"
     report += "## Blocking reasons\n\n" + blockers_md + "\n\n"
     report += "## Governance interpretation\n\n"
-    report += "Structural integrity is not provenance. M30 cadence does not prove bar-open/bar-close semantics, and naive timestamps are not promoted to UTC without exact-hash source evidence.\n"
+    report += (
+        "Structural integrity is not provenance. M30 cadence does not prove "
+        "bar-open/bar-close semantics, and naive timestamps are not promoted "
+        "to UTC without exact-hash source evidence.\n"
+    )
     report_path.write_text(report, encoding="utf-8")
 
     return {
