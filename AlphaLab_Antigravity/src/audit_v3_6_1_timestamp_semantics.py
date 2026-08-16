@@ -12,6 +12,8 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA_CANDIDATES = [
     ROOT / "GOLD_M30.csv",
     ROOT / "AlphaLab_Antigravity" / "GOLD_M30.csv",
+    ROOT / "AlphaLab_Antigravity" / "data" / "GOLD_M30.csv",
+    ROOT / "data" / "GOLD_M30.csv",
 ]
 OUT_DIR = ROOT / "AlphaLab_Antigravity" / "reports" / "v3_6_1"
 

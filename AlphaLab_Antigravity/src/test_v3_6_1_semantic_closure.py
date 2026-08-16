@@ -76,3 +76,20 @@ def test_open_time_requires_exact_alignment_reproduction():
 def test_unresolved_timestamp_does_not_choose_post_hoc_convention():
     d = vd.decide("UNRESOLVED", {"any_triggered": True})
     assert d["status"] == "TIMESTAMP_SEMANTICS_UNRESOLVED"
+
+
+if __name__ == "__main__":
+    tests = [
+        test_timestamp_classifier_open_only,
+        test_timestamp_classifier_close_only,
+        test_timestamp_classifier_conflict_is_ambiguous,
+        test_timestamp_classifier_cadence_not_semantic_evidence,
+        test_existing_v36_frozen_rules_trigger_from_committed_raw_outputs,
+        test_close_time_applies_any_rule_and_not_supported,
+        test_open_time_requires_exact_alignment_reproduction,
+        test_unresolved_timestamp_does_not_choose_post_hoc_convention,
+    ]
+    for t in tests:
+        t()
+        print(f"PASS: {t.__name__}")
+    print(f"\nAll {len(tests)} tests passed successfully!")
