@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import inspect
-import math
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -33,6 +31,11 @@ def test_exact_24_configs_and_6_families():
     assert len({c.family for c in exp.CONFIGS}) == 6
     assert [c.config_id for c in exp.CONFIGS[:4]] == ["H221-C1", "H221-C2", "H221-C3", "H221-C4"]
     assert [c.config_id for c in exp.CONFIGS[-4:]] == ["H226-C1", "H226-C2", "H226-C3", "H226-C4"]
+
+
+def test_frozen_canonical_v2_authority():
+    assert exp.CANONICAL_SHA == "c48ca44dcecae9eb1c2590c586e27c4bc5f246215c549d0d0bc1201d95d5ea1d"
+    assert exp.OUT_DIR.name == "v3_8"
 
 
 def test_frozen_cost_and_execution_contract_constants():
