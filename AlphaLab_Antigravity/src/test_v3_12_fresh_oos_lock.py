@@ -5,6 +5,7 @@ import inspect
 import pandas as pd
 
 import audit_v3_12_fresh_oos_readiness as audit
+import export_v3_12_fresh_oos_mt5 as exporter
 import fresh_oos_v312_contract as v312
 
 
@@ -128,6 +129,22 @@ def test_v311_parent_and_closure_are_frozen_in_auditor():
     src = inspect.getsource(audit.run_readiness_audit)
     assert "b821248667badea5e763173101c52ef95dbcf5d4" in src
     assert v312.FIRST_DECISION_QUARTER == "2026Q4"
+
+
+def test_accrual_exporter_uses_utc_epoch_boundaries_and_no_tzinfo_stripping():
+    src = inspect.getsource(exporter._fetch_epoch)
+    assert ".timestamp()" in src
+    assert "copy_rates_range" in src
+    assert "replace(tzinfo=None)" not in src
+
+
+def test_accrual_exporter_is_oos_only_and_exact_symbol():
+    src = inspect.getsource(exporter)
+    assert "GOLD_M30_CANONICAL_V2.csv" not in src
+    assert "GOLD_M30_FRESH_OOS" in src
+    assert "symbol != EXPECTED_BROKER_SYMBOL" in src
+    assert "previous_dataset_sha256" in src
+    assert "sensitive_account_fields_committed" in src
 
 
 if __name__ == "__main__":
