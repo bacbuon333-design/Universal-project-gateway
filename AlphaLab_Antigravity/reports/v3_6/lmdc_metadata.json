@@ -1,0 +1,11 @@
+{
+  "study_name": "V3.6 London Morning Directional Carry (LMDC) Event Study",
+  "evaluation_window": "2018Q2..2026Q2",
+  "total_complete_quarters": 33,
+  "total_trading_day_events": 2129,
+  "positive_morning_events": 1122,
+  "negative_morning_events": 1006,
+  "neutral_morning_events": 1,
+  "strong_events_ge_1.5": 1002,
+  "extreme_events_ge_2.0": 695
+}

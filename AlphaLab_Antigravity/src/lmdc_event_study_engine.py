@@ -15,6 +15,8 @@ from typing import Dict, List, Tuple
 import numpy as np
 import pandas as pd
 
+from deep_quant_engine import resolve_data_path
+
 sys.stdout.reconfigure(encoding='utf-8') if sys.platform == 'win32' else None
 
 EVAL_START = "2018Q2"
@@ -35,11 +37,7 @@ def compute_true_range(df: pd.DataFrame) -> np.ndarray:
 
 
 def run_lmdc_event_study(data_filename: str = "GOLD_M30.csv") -> Dict:
-    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    data_path = os.path.join(root_dir, data_filename)
-    if not os.path.exists(data_path):
-        data_path = os.path.join(root_dir, "AlphaLab_Antigravity", data_filename)
-        
+    data_path = resolve_data_path(data_filename)
     df = pd.read_csv(data_path)
     
     # Standardize column names

@@ -1,0 +1,15 @@
+{
+  "instrument": "GOLD_M30",
+  "mean_atr14_pre12_usd": 4.010323424813795,
+  "spread_pips": 25.0,
+  "spread_cost_usd": 0.25,
+  "commission_per_lot_usd": 7.0,
+  "commission_cost_usd_per_oz": 0.07,
+  "total_roundtrip_cost_usd": 0.32,
+  "cost_in_atr_units": 0.07979406299751447,
+  "observed_1h_signed_atr_return": 0.024160296307727994,
+  "observed_2h_signed_atr_return": 0.007801863366329086,
+  "observed_4h_signed_atr_return": 0.030549569696121617,
+  "observed_8h_signed_atr_return": 0.2433619546092693,
+  "is_4h_effect_greater_than_cost": false
+}
