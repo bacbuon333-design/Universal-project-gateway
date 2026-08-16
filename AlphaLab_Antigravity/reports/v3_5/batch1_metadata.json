@@ -1,0 +1,14 @@
+{
+  "config_count": 12,
+  "families": [
+    "PDBC",
+    "NIC",
+    "LMDC"
+  ],
+  "evaluation_window": "2018Q2..2026Q2",
+  "rolling4_windows": 30,
+  "rolling8_windows": 26,
+  "full_years": "2019..2025",
+  "full_gate_count": 14,
+  "survivor_count": 0
+}
