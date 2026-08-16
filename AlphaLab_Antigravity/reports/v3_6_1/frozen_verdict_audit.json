@@ -1,0 +1,40 @@
+{
+  "timestamp_semantic": "UNRESOLVED",
+  "frozen_rule_evidence": {
+    "rule4_triggered": true,
+    "rule4_ci": {
+      "1h": {
+        "low": -0.0104647809209662,
+        "high": 0.0583801559708469,
+        "crosses_zero": true
+      },
+      "2h": {
+        "low": -0.0513038132217408,
+        "high": 0.0699600668298194,
+        "crosses_zero": true
+      },
+      "4h": {
+        "low": -0.1288212022053487,
+        "high": 0.1611266378883617,
+        "crosses_zero": true
+      }
+    },
+    "rule5_triggered": true,
+    "cost_atr": 0.07979406299751447,
+    "effects_atr": {
+      "1h": 0.024160296307727994,
+      "2h": 0.007801863366329086,
+      "4h": 0.030549569696121617
+    },
+    "effect_below_cost": {
+      "1h": true,
+      "2h": true,
+      "4h": true
+    },
+    "any_triggered": true
+  },
+  "decision": {
+    "status": "TIMESTAMP_SEMANTICS_UNRESOLVED",
+    "classification": "WITHDRAW_EXISTING_LABEL_PENDING_SEMANTIC_PROOF"
+  }
+}

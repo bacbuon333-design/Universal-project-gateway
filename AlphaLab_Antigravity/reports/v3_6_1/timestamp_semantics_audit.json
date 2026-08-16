@@ -1,0 +1,207 @@
+{
+  "audit": "V3.6.1 LMDC timestamp semantics",
+  "dataset": {
+    "path": "AlphaLab_Antigravity\\data\\GOLD_M30.csv",
+    "timestamp_column": "datetime_str",
+    "row_count": 99999,
+    "first_timestamp": "2018-02-01 15:00:00",
+    "last_timestamp": "2026-07-24 23:30:00",
+    "median_delta_minutes": 30.0,
+    "pct_30m_deltas": 97.81295625912519,
+    "note": "Cadence confirms M30 spacing but does NOT prove whether timestamps denote bar open or bar close."
+  },
+  "decision": {
+    "status": "TIMESTAMP_SEMANTICS_AMBIGUOUS",
+    "semantic": "UNRESOLVED",
+    "confidence": "INSUFFICIENT",
+    "explicit_open_evidence_count": 0,
+    "explicit_close_evidence_count": 0,
+    "decision_rule": "Do not infer open-vs-close semantics from M30 cadence alone. Require explicit source/export/documentation evidence."
+  },
+  "evidence": {
+    "open_time_hits": [
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v171_hyper_compounding_mt5.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "64.exe\"): use_ipc = False if use_ipc: acc = mt5.account_info() print(f\"Connected MT5 Account: {acc.login} @ {acc.server}\") rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or le"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v171_hyper_compounding_mt5.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "nt: {acc.login} @ {acc.server}\") rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: df = pd.read_csv(DATA_PATH) df['datetime'] = pd.to_datetime(df['datetime_str'])"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v210_spread_resilient_trend_breakout.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "MODE_EMA, PRICE_CLOSE); bool macro_bull = (ema9_h1 > ema20_h1) && (ema20_h1 > ema55_h1) && (ema55_h1 > ema200_h1); if(!macro_bull) return; MqlRates rates[]; if(CopyRates(_Symbol, _Period, 1, 30, rates) < 30) return; int last = 29; double close = rates[last].close; double open = rates[last].open; double high = rates[last].high; double low = rates[last].low; doub"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v215_high_payoff_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "les\\XM Global MT5\\terminal64.exe\"): print(\"Failed to initialize MT5 IPC link:\", mt5.last_error()) return acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0:"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v215_high_payoff_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "rn acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: print(\"Could not fetch rates from MT5 terminal.\") mt5.shutdown() return df = pd.Data"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v220_pullback_rejection_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "les\\XM Global MT5\\terminal64.exe\"): print(\"Failed to initialize MT5 IPC link:\", mt5.last_error()) return acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0:"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v220_pullback_rejection_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "rn acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: print(\"Could not fetch rates from MT5 terminal.\") mt5.shutdown() return df = pd.Data"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v220_pullback_rejection_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "MODE_EMA, PRICE_CLOSE); bool macro_bull = (ema9_h1 > ema20_h1) && (ema20_h1 > ema55_h1) && (ema55_h1 > ema200_h1); if(!macro_bull) return; MqlRates rates[]; if(CopyRates(_Symbol, _Period, 1, 30, rates) < 30) return; int last = 29; double close = rates[last].close; double open = rates[last].open; double high = rates[last].high; double low = rates[last].low; doub"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v225_bollinger_surge_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "les\\XM Global MT5\\terminal64.exe\"): print(\"Failed to initialize MT5 IPC link:\", mt5.last_error()) return acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0:"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v225_bollinger_surge_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "rn acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: print(\"Could not fetch rates from MT5 terminal.\") mt5.shutdown() return df = pd.Data"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v225_bollinger_surge_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "MODE_EMA, PRICE_CLOSE); bool macro_bull = (ema9_h1 > ema20_h1) && (ema20_h1 > ema55_h1) && (ema55_h1 > ema200_h1); if(!macro_bull) return; MqlRates rates[]; if(CopyRates(_Symbol, _Period, 1, 30, rates) < 30) return; int last = 29; double close = rates[last].close; double open = rates[last].open; double high = rates[last].high; double low = rates[last].low; doub"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v230_keltner_multi_confluence_ipc.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "les\\XM Global MT5\\terminal64.exe\"): print(\"Failed to initialize MT5 IPC link:\", mt5.last_error()) return acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0:"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v230_keltner_multi_confluence_ipc.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "rn acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: print(\"Could not fetch rates from MT5 terminal.\") mt5.shutdown() return df = pd.Data"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v230_keltner_multi_confluence_ipc.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "MODE_EMA, PRICE_CLOSE); bool macro_bull = (ema9_h1 > ema20_h1) && (ema20_h1 > ema55_h1) && (ema55_h1 > ema200_h1); if(!macro_bull) return; MqlRates rates[]; if(CopyRates(_Symbol, _Period, 1, 30, rates) < 30) return; int last = 29; double close = rates[last].close; double open = rates[last].open; double high = rates[last].high; double low = rates[last].low; doub"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v235_bollinger_sigma_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "les\\XM Global MT5\\terminal64.exe\"): print(\"Failed to initialize MT5 IPC link:\", mt5.last_error()) return acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0:"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v235_bollinger_sigma_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "rn acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 80000) if rates is None or len(rates) == 0: print(\"Could not fetch rates from MT5 terminal.\") mt5.shutdown() return df = pd.Data"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v235_bollinger_sigma_ipc_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "MODE_EMA, PRICE_CLOSE); bool macro_bull = (ema9_h1 > ema20_h1) && (ema20_h1 > ema55_h1) && (ema55_h1 > ema200_h1); if(!macro_bull) return; MqlRates rates[]; if(CopyRates(_Symbol, _Period, 1, 30, rates) < 30) return; int last = 29; double close = rates[last].close; double open = rates[last].open; double high = rates[last].high; double low = rates[last].low; doub"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v250_hyper_growth_mt5_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "e'] = pd.to_datetime(df['datetime_str']) df.set_index('datetime', inplace=True) real_spread_pts = 25 else: acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or le"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v250_hyper_growth_mt5_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "acc = mt5.account_info() rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: df = pd.read_csv(DATA_PATH) df['datetime'] = pd.to_datetime(df['datetime_str'])"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v250_hyper_growth_mt5_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "MODE_EMA, PRICE_CLOSE); bool macro_bull = (ema9_h1 > ema20_h1) && (ema20_h1 > ema55_h1) && (ema55_h1 > ema200_h1); if(!macro_bull) return; MqlRates rates[]; if(CopyRates(_Symbol, _Period, 1, 30, rates) < 30) return; int last = 29; double close = rates[last].close; double open = rates[last].open; double high = rates[last].high; double low = rates[last].low; doub"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v300_mt5_verified_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "arget_symbol: target_symbol = \"GOLD\" mt5.symbol_select(target_symbol, True) print(f\"Detected Gold Symbol on Broker: {target_symbol}\") rates = mt5.copy_rates_from_pos(target_symbol, mt5.TIMEFRAME_M15, 0, 50000) if rates is None or len(rates) == 0: df = pd.read_csv(DATA_PATH) df['datetime'] = pd.to_datetime(df['datetime_str']) df.set_index('datetim"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v310_mt5_official_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "r() or \"XAUUSD\" in s.name.upper(): target_symbol = s.name break mt5.symbol_select(target_symbol, True) rates = mt5.copy_rates_from_pos(target_symbol, mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: df = pd.read_csv(DATA_PATH) df['datetime'] = pd.to_datetime(df['datetime_str'])"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v320_regime_adaptive_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "64.exe\"): use_ipc = False if use_ipc: acc = mt5.account_info() print(f\"Connected MT5 Account: {acc.login} @ {acc.server}\") rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or le"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v320_regime_adaptive_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "nt: {acc.login} @ {acc.server}\") rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: df = pd.read_csv(DATA_PATH) df['datetime'] = pd.to_datetime(df['datetime_str'])"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v350_mt5_official_hyper_growth.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "n; if(CopyBuffer(h_rsi_m15, 0, 0, 2, rsi) < 2) return; if(CopyBuffer(h_atr14_m15, 0, 0, 2, atr) < 2) return; MqlRates rates[]; ArraySetAsSeries(rates, true); if(CopyRates(_Symbol, PERIOD_M15, 1, 55, rates) < 55) return; double close = rates[0].close; double open = rates[0].open; double high = rates[0].high; double low = rates[0].low; double body = MathAbs(close - o"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "checkpoints\\checkpoint_v400_master_flagship_engine.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "n; if(CopyBuffer(h_rsi_m15, 0, 0, 2, rsi) < 2) return; if(CopyBuffer(h_atr14_m15, 0, 0, 2, atr) < 2) return; MqlRates rates[]; ArraySetAsSeries(rates, true); if(CopyRates(_Symbol, PERIOD_M15, 1, 55, rates) < 55) return; double close = rates[0].close; double open = rates[0].open; double high = rates[0].high; double low = rates[0].low; double body = MathAbs(close - o"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "src\\audit_cp101_mt5_official_metrics.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": ") if not mt5.initialize(path=r\"C:\\Program Files\\XM Global MT5\\terminal64.exe\"): print(\"Failed to connect to MT5 terminal\") return rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0:"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "src\\audit_cp101_mt5_official_metrics.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "ct to MT5 terminal\") return rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 100000) if rates is None or len(rates) == 0: df = pd.read_csv(DATA_PATH) df['datetime'] = pd.to_datetime(df['datetime_str']) df.set_index('da"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "src\\audit_cp171_exact_mt5_rates.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "\") print(\"=\"*115) if not mt5.initialize(path=r\"C:\\Program Files\\XM Global MT5\\terminal64.exe\"): print(\"MT5 IPC error\") return rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 50000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 50000) df = pd.DataFrame(rates) if 'time' i"
+      },
+      {
+        "semantic": "BAR_OPEN_TIME",
+        "file": "src\\audit_cp171_exact_mt5_rates.py",
+        "pattern": "copy_rates|copyrates",
+        "excerpt": "rint(\"MT5 IPC error\") return rates = mt5.copy_rates_from_pos(\"GOLD\", mt5.TIMEFRAME_M15, 0, 50000) if rates is None or len(rates) == 0: rates = mt5.copy_rates_from_pos(\"XAUUSD\", mt5.TIMEFRAME_M15, 0, 50000) df = pd.DataFrame(rates) if 'time' in df.columns: df['datetime'] = pd.to_datetime(df['time'], unit='s') else: df['datetime'] = pd.to_d"
+      }
+    ],
+    "close_time_hits": []
+  },
+  "allowed_next_action": "STOP_WITH_TIMESTAMP_AMBIGUITY"
+}
