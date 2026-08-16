@@ -5,7 +5,10 @@
 * **Branch**: `research/quant-v3.6.1-lmdc-semantic-closure`
 * **Parent V3.6 Final SHA**: `2e7c1b43138ca5e455847b0c87b58ed73dc99918`
 * **V3.6.1 Precommit SHA**: `0a263ec8eee684d0d576918ab848b89e7b395a3f`
-* **Audit Execution & Raw Evidence SHA**: `a73830635293da82c0b0fe951ea0cfcfdc71694f`
+* **Technical-Repair SHA**: `85c450e21e77de1b386d8105c85e5b72fa87738f`
+* **Audit Execution & Raw Evidence SHA**: `a7383065ea986ff2184784ed1cea635f103de202`
+* **Original Final Report Commit SHA**: `a6c4a8a32905ed540a5c90494b7969a56130e1ea`
+* **Metadata Note**: This document was amended after the original final-report commit solely to correct the recorded Raw Audit Evidence SHA. No research result, test result, timestamp classification, falsification rule, or scientific conclusion was changed.
 
 ---
 
@@ -63,4 +66,4 @@ In strict adherence to Conditional Outcome B (Section 16):
 ---
 
 ## 5. STRICT STOP RULE
-In accordance with Section 21 of the protocol, all research, modeling, parameter optimization, and strategy design activities are officially stopped. No H-221 or new trading strategies may be created.
+In accordance with Section 21 of the protocol, all research, modeling, parameter optimization, and strategy design activities are officially stopped. No H-221 or new trading strategies may be created within the closed LMDC chapter.
