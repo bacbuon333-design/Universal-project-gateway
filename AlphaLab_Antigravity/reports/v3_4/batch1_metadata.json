@@ -1,0 +1,19 @@
+{
+  "batch": "V3.4 Batch 1",
+  "hypotheses": [
+    "H-215",
+    "H-216",
+    "H-217"
+  ],
+  "configuration_count": 12,
+  "evaluation_start": "2018Q2",
+  "evaluation_end": "2026Q2",
+  "complete_quarters": 33,
+  "rolling4_windows": 30,
+  "spread_pips": 25.0,
+  "slippage_pips": 0.0,
+  "commission_per_lot": 7.0,
+  "fixed_lot": 0.1,
+  "post_hoc_directional_followup": true,
+  "survivor_count": 0
+}
