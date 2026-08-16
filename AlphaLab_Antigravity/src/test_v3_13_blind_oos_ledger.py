@@ -16,9 +16,10 @@ UTC = timezone.utc
 
 def _write_checkpoint(directory: Path, sequence: int, stamp: str, previous_name=None, previous_sha=None, payload_sequence=None):
     name = f"{sequence:06d}_{stamp}.json"
+    created = datetime.strptime(stamp, "%Y%m%dT%H%M%SZ").replace(tzinfo=UTC)
     obj = {
         "sequence": sequence if payload_sequence is None else payload_sequence,
-        "created_at_utc": pd.Timestamp.strptime(stamp, "%Y%m%dT%H%M%SZ").tz_localize("UTC").isoformat(),
+        "created_at_utc": created.isoformat(),
         "previous_checkpoint_filename": previous_name,
         "previous_checkpoint_sha256": previous_sha,
     }
