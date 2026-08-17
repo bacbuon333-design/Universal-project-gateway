@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Single frozen diagnostic backtest for ALAB-M1-FUSION-001.
+"""Single frozen diagnostic backtest with dual gross/net metrics for ALAB-M1-FUSION-001R.
 
 DIAGNOSTIC ONLY. Never overrides event-study verdict.
 Rules:
@@ -9,7 +9,7 @@ Rules:
 - SL: 1.00 * ATR14[t].
 - TP: NONE.
 - Max holding: 5 M1 bars (exit at Close of bar t+5 or stop touched first).
-- One position at a time.
+- One position at a time per symbol.
 """
 
 from typing import Any, Dict, List
@@ -17,9 +17,9 @@ import numpy as np
 import pandas as pd
 
 from .failed_auction import FailedAuctionEvent
+from .cost_contract import CostContract, get_verified_cost_contract
 
 LOT_SIZE = 0.10
-CONTRACT_SIZE = 100.0  # 1 lot Gold = 100 oz
 
 
 def run_diagnostic_backtest(
@@ -28,11 +28,13 @@ def run_diagnostic_backtest(
     min_reaction_score: int = 7,
     sl_atr_mult: float = 1.0,
     max_holding_bars: int = 5,
+    cost_contract: CostContract | None = None,
 ) -> Dict[str, Any]:
     """Execute single diagnostic backtest simulation."""
-    # Filter qualifying events (Score >= 7)
+    if cost_contract is None:
+        cost_contract = get_verified_cost_contract("GOLD")
+
     qualifying_events = [ev for ev in events if ev.reaction_score >= min_reaction_score]
-    
     n = len(df)
     opens = df["open"].to_numpy(dtype=float)
     highs = df["high"].to_numpy(dtype=float)
@@ -41,6 +43,11 @@ def run_diagnostic_backtest(
     dts = df["datetime"]
     has_spread = "spread" in df.columns
     spreads = df["spread"].to_numpy(dtype=float) if has_spread else np.zeros(n, dtype=float)
+
+    point = cost_contract.point
+    contract_size = cost_contract.trade_contract_size
+    oz = LOT_SIZE * contract_size  # 10 oz for 0.10 lot
+    comm_per_oz = (cost_contract.commission_per_lot_usd / 100.0)  # USD / oz
 
     trades = []
     current_position_exit_bar = -1
@@ -60,10 +67,12 @@ def run_diagnostic_backtest(
         atr_sig = ev.atr14
         sl_dist = sl_atr_mult * atr_sig
         
-        # Calculate spread cost if available
-        # In Gold, 1 point spread = 0.01 USD on 1 oz (XM: 25 points = 0.25 USD)
-        spread_cost_per_oz = spreads[t_entry] * 0.01 if has_spread else 0.0
-        commission_per_oz = 0.07  # Standard 7 USD / lot = 0.07 USD / oz
+        # Dynamic spread price conversion
+        spread_pts = spreads[t_entry] if has_spread else 0.0
+        spread_price_dist = spread_pts * point
+        spread_cost_usd = spread_price_dist * oz
+        comm_cost_usd = comm_per_oz * oz
+        total_costs_trade = spread_cost_usd + comm_cost_usd
 
         if side == "LONG":
             sl_price = entry_price - sl_dist
@@ -74,14 +83,13 @@ def run_diagnostic_backtest(
         exit_price = 0.0
         exit_reason = "TIME_EXIT"
 
-        # Simulate holding up to max_holding_bars
+        # Simulate holding
         max_bar = min(t_entry + max_holding_bars - 1, n - 1)
         for b in range(t_entry, max_bar + 1):
             if side == "LONG":
-                # Check adverse gap through stop
                 if opens[b] <= sl_price:
                     exit_bar = b
-                    exit_price = opens[b]  # pessimistic open fill
+                    exit_price = opens[b]  # pessimistic fill
                     exit_reason = "STOP_LOSS"
                     break
                 elif lows[b] <= sl_price:
@@ -92,7 +100,7 @@ def run_diagnostic_backtest(
             else:  # SHORT
                 if opens[b] >= sl_price:
                     exit_bar = b
-                    exit_price = opens[b]  # pessimistic open fill
+                    exit_price = opens[b]  # pessimistic fill
                     exit_reason = "STOP_LOSS"
                     break
                 elif highs[b] >= sl_price:
@@ -108,15 +116,12 @@ def run_diagnostic_backtest(
 
         current_position_exit_bar = exit_bar
 
-        # Calculate PnL (in USD for 0.10 lot = 10 oz)
-        oz = LOT_SIZE * CONTRACT_SIZE  # 10 oz
         if side == "LONG":
             gross_pnl_usd = (exit_price - entry_price) * oz
         else:
             gross_pnl_usd = (entry_price - exit_price) * oz
 
-        total_costs_usd = (spread_cost_per_oz + commission_per_oz) * oz
-        net_pnl_usd = gross_pnl_usd - total_costs_usd
+        net_pnl_usd = gross_pnl_usd - total_costs_trade
 
         trades.append({
             "event_id": ev.event_id,
@@ -132,33 +137,44 @@ def run_diagnostic_backtest(
             "exit_price": exit_price,
             "exit_reason": exit_reason,
             "holding_bars": exit_bar - t_entry + 1,
+            "cost_usd": total_costs_trade,
             "gross_pnl_usd": gross_pnl_usd,
             "net_pnl_usd": net_pnl_usd,
-            "pnl_bps": (net_pnl_usd / (entry_price * oz)) * 10000.0 if entry_price > 0 else 0.0,
-            "is_win": net_pnl_usd > 0,
+            "is_gross_win": gross_pnl_usd > 0,
+            "is_net_win": net_pnl_usd > 0,
         })
 
-    # Summary Performance Metrics
     total_trades = len(trades)
     if total_trades == 0:
         return {
             "status": "INSUFFICIENT_DIAGNOSTIC",
             "total_trades": 0,
             "message": "No qualifying trades taken.",
-            "cost_verification_status": "VERIFIED" if has_spread else "UNVERIFIED",
+            "cost_verification_status": cost_contract.cost_verification_status,
         }
 
     df_t = pd.DataFrame(trades)
-    wins = df_t[df_t["net_pnl_usd"] > 0]
-    losses = df_t[df_t["net_pnl_usd"] <= 0]
+    gross_wins = df_t[df_t["gross_pnl_usd"] > 0]
+    gross_losses = df_t[df_t["gross_pnl_usd"] <= 0]
+    net_wins = df_t[df_t["net_pnl_usd"] > 0]
+    net_losses = df_t[df_t["net_pnl_usd"] <= 0]
 
-    gross_profit = float(wins["net_pnl_usd"].sum()) if len(wins) > 0 else 0.0
-    gross_loss = abs(float(losses["net_pnl_usd"].sum())) if len(losses) > 0 else 0.0
+    gross_profit = float(gross_wins["gross_pnl_usd"].sum()) if len(gross_wins) > 0 else 0.0
+    gross_loss = abs(float(gross_losses["gross_pnl_usd"].sum())) if len(gross_losses) > 0 else 0.0
+    gross_pf = gross_profit / gross_loss if gross_loss > 1e-9 else (999.0 if gross_profit > 0 else 0.0)
 
-    profit_factor = gross_profit / gross_loss if gross_loss > 1e-9 else (999.0 if gross_profit > 0 else 0.0)
+    net_profit = float(net_wins["net_pnl_usd"].sum()) if len(net_wins) > 0 else 0.0
+    net_loss = abs(float(net_losses["net_pnl_usd"].sum())) if len(net_losses) > 0 else 0.0
+    net_pf = net_profit / net_loss if net_loss > 1e-9 else (999.0 if net_profit > 0 else 0.0)
+
+    gross_pnl_total = float(df_t["gross_pnl_usd"].sum())
     net_pnl_total = float(df_t["net_pnl_usd"].sum())
-    win_rate_pct = (len(wins) / total_trades) * 100.0
-    expectancy_usd = net_pnl_total / total_trades
+    total_costs_all = float(df_t["cost_usd"].sum())
+
+    gross_expectancy = gross_pnl_total / total_trades
+    net_expectancy = net_pnl_total / total_trades
+    win_rate_pct = (len(net_wins) / total_trades) * 100.0
+    gross_win_rate_pct = (len(gross_wins) / total_trades) * 100.0
 
     # Max Drawdown
     equity_curve = df_t["net_pnl_usd"].cumsum()
@@ -170,17 +186,17 @@ def run_diagnostic_backtest(
     longs = df_t[df_t["side"] == "LONG"]
     shorts = df_t[df_t["side"] == "SHORT"]
 
-    long_wins = int((longs["net_pnl_usd"] > 0).sum())
-    short_wins = int((shorts["net_pnl_usd"] > 0).sum())
+    long_net_wins = int((longs["net_pnl_usd"] > 0).sum())
+    short_net_wins = int((shorts["net_pnl_usd"] > 0).sum())
 
     stop_exits = int((df_t["exit_reason"] == "STOP_LOSS").sum())
     time_exits = int((df_t["exit_reason"] == "TIME_EXIT").sum())
 
-    cost_status = "VERIFIED" if has_spread else "UNVERIFIED"
+    cost_to_edge = (total_costs_all / gross_pnl_total) if gross_pnl_total > 1e-9 else 999.0
 
     if total_trades < 30:
         diag_status = "INSUFFICIENT_DIAGNOSTIC"
-    elif profit_factor >= 1.05 and net_pnl_total > 0:
+    elif net_pf >= 1.05 and net_pnl_total > 0:
         diag_status = "POSITIVE_DIAGNOSTIC"
     else:
         diag_status = "NEGATIVE_DIAGNOSTIC"
@@ -189,20 +205,26 @@ def run_diagnostic_backtest(
         "status": diag_status,
         "total_trades": total_trades,
         "long_trades": len(longs),
-        "long_wins": long_wins,
-        "long_win_rate_pct": (long_wins / len(longs) * 100.0) if len(longs) > 0 else 0.0,
+        "long_wins": long_net_wins,
+        "long_win_rate_pct": (long_net_wins / len(longs) * 100.0) if len(longs) > 0 else 0.0,
         "short_trades": len(shorts),
-        "short_wins": short_wins,
-        "short_win_rate_pct": (short_wins / len(shorts) * 100.0) if len(shorts) > 0 else 0.0,
+        "short_wins": short_net_wins,
+        "short_win_rate_pct": (short_net_wins / len(shorts) * 100.0) if len(shorts) > 0 else 0.0,
         "win_rate_pct": win_rate_pct,
-        "profit_factor": profit_factor,
-        "expectancy_usd": expectancy_usd,
+        "gross_win_rate_pct": gross_win_rate_pct,
+        "gross_profit_factor": gross_pf,
+        "net_profit_factor": net_pf,
+        "gross_expectancy_usd": gross_expectancy,
+        "net_expectancy_usd": net_expectancy,
+        "gross_pnl_usd": gross_pnl_total,
         "net_pnl_usd": net_pnl_total,
-        "gross_profit_usd": gross_profit,
-        "gross_loss_usd": gross_loss,
+        "total_costs_usd": total_costs_all,
+        "mean_cost_per_trade_usd": float(df_t["cost_usd"].mean()),
+        "median_cost_per_trade_usd": float(df_t["cost_usd"].median()),
+        "cost_to_gross_edge_ratio": cost_to_edge,
         "max_drawdown_usd": max_dd_usd,
         "stop_loss_exits": stop_exits,
         "time_exits": time_exits,
-        "cost_verification_status": cost_status,
+        "cost_verification_status": cost_contract.cost_verification_status,
         "trades": trades,
     }

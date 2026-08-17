@@ -1,272 +1,310 @@
 from __future__ import annotations
 
-"""Reporting and artifact generation module for ALAB-M1-FUSION-001."""
+"""Reporting and artifact generation module for ALAB-M1-FUSION-001R."""
 
 import json
 from pathlib import Path
 from typing import Any, Dict
 import pandas as pd
 
+from .cost_contract import CostContract, save_cost_contract_json
 
-def export_artifacts(
+HORIZONS = [1, 3, 5, 10, 15, 30]
+
+
+def export_replication_artifacts(
     output_dir: Path,
     root_dir: Path,
     data_audit_meta: Dict[str, Any],
+    cost_contract: CostContract,
     event_decision: Dict[str, Any],
+    overlap_audit: Dict[str, Any],
+    block_bootstrap: Dict[str, Any],
     df_events: pd.DataFrame,
     backtest_results: Dict[str, Any],
     git_meta: Dict[str, str],
 ) -> None:
-    """Generate all required CSV, JSON, and Markdown reports."""
+    """Generate all required CSV, JSON, and Markdown reports for 001R."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. M1_FUSION_001_DATA_AUDIT.json
-    audit_file = output_dir / "M1_FUSION_001_DATA_AUDIT.json"
-    with open(audit_file, "w", encoding="utf-8") as f:
+    # 1. M1_FUSION_001R_DATA_AUDIT.json
+    with open(output_dir / "M1_FUSION_001R_DATA_AUDIT.json", "w", encoding="utf-8") as f:
         json.dump(data_audit_meta, f, indent=2)
 
-    # 2. M1_FUSION_001_EVENT_RESULTS.json
-    event_res_file = output_dir / "M1_FUSION_001_EVENT_RESULTS.json"
-    with open(event_res_file, "w", encoding="utf-8") as f:
+    # 2. M1_FUSION_001R_COST_CONTRACT.json
+    save_cost_contract_json(cost_contract, output_dir / "M1_FUSION_001R_COST_CONTRACT.json")
+
+    # 3. M1_FUSION_001R_EVENT_RESULTS.json
+    with open(output_dir / "M1_FUSION_001R_EVENT_RESULTS.json", "w", encoding="utf-8") as f:
         json.dump(event_decision, f, indent=2, default=str)
 
-    # 3. M1_FUSION_001_DIAGNOSTIC_BACKTEST.json
-    bt_res_file = output_dir / "M1_FUSION_001_DIAGNOSTIC_BACKTEST.json"
-    with open(bt_res_file, "w", encoding="utf-8") as f:
+    # 4. M1_FUSION_001R_BLOCK_BOOTSTRAP.json
+    with open(output_dir / "M1_FUSION_001R_BLOCK_BOOTSTRAP.json", "w", encoding="utf-8") as f:
+        json.dump(block_bootstrap, f, indent=2, default=str)
+
+    # 5. M1_FUSION_001R_OVERLAP_AUDIT.json
+    with open(output_dir / "M1_FUSION_001R_OVERLAP_AUDIT.json", "w", encoding="utf-8") as f:
+        json.dump(overlap_audit, f, indent=2, default=str)
+
+    # 6. M1_FUSION_001R_DIAGNOSTIC_BACKTEST.json
+    with open(output_dir / "M1_FUSION_001R_DIAGNOSTIC_BACKTEST.json", "w", encoding="utf-8") as f:
         json.dump(backtest_results, f, indent=2, default=str)
 
-    # 4. M1_FUSION_001_EVENT_SUMMARY.csv
-    summary_stats = event_decision.get("summary_stats", {})
-    sum_rows = []
-    for h_key, metrics in summary_stats.items():
-        row = {"horizon": h_key}
-        row.update(metrics)
-        sum_rows.append(row)
-    df_sum = pd.DataFrame(sum_rows)
-    df_sum.to_csv(output_dir / "M1_FUSION_001_EVENT_SUMMARY.csv", index=False)
-
-    # 5. M1_FUSION_001_SCORE_BINS.csv
+    # CSV Exports
     if not df_events.empty:
-        sb_grouped = df_events.groupby("score_bin").agg(
-            n_events=("event_id", "count"),
-            mean_ret_5m_bps=("fwd_ret_5m", lambda s: float(s.dropna().mean() * 10000.0)),
-            median_ret_5m_bps=("fwd_ret_5m", lambda s: float(s.dropna().median() * 10000.0)),
-            win_prop_5m=("fwd_ret_5m", lambda s: float((s.dropna() > 0).mean())),
-            mean_mfe_5m_bps=("mfe_5m", lambda s: float(s.dropna().mean() * 10000.0)),
-            mean_mae_5m_bps=("mae_5m", lambda s: float(s.dropna().mean() * 10000.0)),
-        ).reset_index()
-        sb_grouped.to_csv(output_dir / "M1_FUSION_001_SCORE_BINS.csv", index=False)
+        # 7. M1_FUSION_001R_SCORE_BINS.csv
+        sb_rows = []
+        for sb in ["3-4", "5-6", "7-8", "9-10"]:
+            sub = df_events[df_events["score_bin"] == sb]
+            n_sub = len(sub)
+            if n_sub > 0:
+                ret5 = sub["fwd_ret_5m"].dropna() * 10000.0
+                mfe5 = sub["mfe_5m"].dropna() * 10000.0
+                mae5 = sub["mae_5m"].dropna() * 10000.0
+                sb_rows.append({
+                    "score_bin": sb,
+                    "n_events": n_sub,
+                    "mean_5m_bps": float(ret5.mean()),
+                    "median_5m_bps": float(ret5.median()),
+                    "win_rate_5m_pct": float((ret5 > 0).mean() * 100.0),
+                    "mean_mfe_5m_bps": float(mfe5.mean()),
+                    "mean_mae_5m_bps": float(mae5.mean()),
+                })
+            else:
+                sb_rows.append({"score_bin": sb, "n_events": 0, "mean_5m_bps": 0.0, "median_5m_bps": 0.0, "win_rate_5m_pct": 0.0, "mean_mfe_5m_bps": 0.0, "mean_mae_5m_bps": 0.0})
+        pd.DataFrame(sb_rows).to_csv(output_dir / "M1_FUSION_001R_SCORE_BINS.csv", index=False)
 
-    # 6. M1_FUSION_001_YEARLY_BREAKDOWN.csv
-    if not df_events.empty:
-        yr_grouped = df_events.groupby("year").agg(
-            n_events=("event_id", "count"),
-            mean_ret_5m_bps=("fwd_ret_5m", lambda s: float(s.dropna().mean() * 10000.0)),
-            median_ret_5m_bps=("fwd_ret_5m", lambda s: float(s.dropna().median() * 10000.0)),
-            win_prop_5m=("fwd_ret_5m", lambda s: float((s.dropna() > 0).mean())),
-        ).reset_index()
-        yr_grouped.to_csv(output_dir / "M1_FUSION_001_YEARLY_BREAKDOWN.csv", index=False)
+        # 8. M1_FUSION_001R_YEARLY.csv
+        yr_rows = []
+        for yr in sorted(df_events["year"].unique()):
+            sub = df_events[df_events["year"] == yr]
+            ret5 = sub["fwd_ret_5m"].dropna() * 10000.0
+            yr_rows.append({
+                "year": yr,
+                "n_events": len(sub),
+                "mean_5m_bps": float(ret5.mean()) if len(ret5) else 0.0,
+                "median_5m_bps": float(ret5.median()) if len(ret5) else 0.0,
+                "win_rate_5m_pct": float((ret5 > 0).mean() * 100.0) if len(ret5) else 0.0,
+                "is_valid_year": len(sub) >= 200,
+            })
+        pd.DataFrame(yr_rows).to_csv(output_dir / "M1_FUSION_001R_YEARLY.csv", index=False)
 
-    # 7. M1_FUSION_001_SESSION_BREAKDOWN.csv
-    if not df_events.empty:
-        sess_grouped = df_events.groupby("session").agg(
-            n_events=("event_id", "count"),
-            mean_ret_5m_bps=("fwd_ret_5m", lambda s: float(s.dropna().mean() * 10000.0)),
-            median_ret_5m_bps=("fwd_ret_5m", lambda s: float(s.dropna().median() * 10000.0)),
-            win_prop_5m=("fwd_ret_5m", lambda s: float((s.dropna() > 0).mean())),
-        ).reset_index()
-        sess_grouped.to_csv(output_dir / "M1_FUSION_001_SESSION_BREAKDOWN.csv", index=False)
+        # 9. M1_FUSION_001R_LONG_SHORT.csv
+        ls_rows = []
+        for side in ["LONG", "SHORT"]:
+            sub = df_events[df_events["side"] == side]
+            for h in HORIZONS:
+                ret_h = sub[f"fwd_ret_{h}m"].dropna() * 10000.0
+                mfe_h = sub[f"mfe_{h}m"].dropna() * 10000.0
+                mae_h = sub[f"mae_{h}m"].dropna() * 10000.0
+                ls_rows.append({
+                    "side": side,
+                    "horizon": f"{h}m",
+                    "n_events": len(ret_h),
+                    "mean_bps": float(ret_h.mean()) if len(ret_h) else 0.0,
+                    "median_bps": float(ret_h.median()) if len(ret_h) else 0.0,
+                    "win_rate_pct": float((ret_h > 0).mean() * 100.0) if len(ret_h) else 0.0,
+                    "mean_mfe_bps": float(mfe_h.mean()) if len(mfe_h) else 0.0,
+                    "mean_mae_bps": float(mae_h.mean()) if len(mae_h) else 0.0,
+                })
+        pd.DataFrame(ls_rows).to_csv(output_dir / "M1_FUSION_001R_LONG_SHORT.csv", index=False)
 
-    # 8. M1_FUSION_001_REPORT.md
-    report_md = render_markdown_report(
-        data_audit_meta, event_decision, backtest_results, git_meta, df_events
+        # 10. M1_FUSION_001R_HOURLY.csv
+        hr_rows = []
+        for hr in range(24):
+            sub = df_events[df_events["hour"] == hr]
+            ret5 = sub["fwd_ret_5m"].dropna() * 10000.0
+            hr_rows.append({
+                "utc_hour": hr,
+                "n_events": len(sub),
+                "mean_5m_bps": float(ret5.mean()) if len(ret5) else 0.0,
+                "median_5m_bps": float(ret5.median()) if len(ret5) else 0.0,
+                "win_rate_5m_pct": float((ret5 > 0).mean() * 100.0) if len(ret5) else 0.0,
+            })
+        pd.DataFrame(hr_rows).to_csv(output_dir / "M1_FUSION_001R_HOURLY.csv", index=False)
+
+        # 11. M1_FUSION_001R_SESSION.csv
+        sess_rows = []
+        for sess in ["ASIA", "LONDON_RESEARCH", "NEW_YORK_RESEARCH", "OTHER"]:
+            sub = df_events[df_events["session"] == sess]
+            ret5 = sub["fwd_ret_5m"].dropna() * 10000.0
+            sess_rows.append({
+                "session": sess,
+                "n_events": len(sub),
+                "mean_5m_bps": float(ret5.mean()) if len(ret5) else 0.0,
+                "median_5m_bps": float(ret5.median()) if len(ret5) else 0.0,
+                "win_rate_5m_pct": float((ret5 > 0).mean() * 100.0) if len(ret5) else 0.0,
+            })
+        pd.DataFrame(sess_rows).to_csv(output_dir / "M1_FUSION_001R_SESSION.csv", index=False)
+
+        # 12. M1_FUSION_001R_VOLATILITY.csv
+        vol_rows = []
+        for vs in ["0-49", "50-79", "80-94", "95-100"]:
+            sub = df_events[df_events["vol_state"] == vs]
+            ret5 = sub["fwd_ret_5m"].dropna() * 10000.0
+            vol_rows.append({
+                "volatility_state": vs,
+                "n_events": len(sub),
+                "mean_5m_bps": float(ret5.mean()) if len(ret5) else 0.0,
+                "median_5m_bps": float(ret5.median()) if len(ret5) else 0.0,
+                "win_rate_5m_pct": float((ret5 > 0).mean() * 100.0) if len(ret5) else 0.0,
+            })
+        pd.DataFrame(vol_rows).to_csv(output_dir / "M1_FUSION_001R_VOLATILITY.csv", index=False)
+
+    # 13. M1_FUSION_001R_REPORT.md
+    report_md = render_replication_markdown(
+        data_audit_meta, cost_contract, event_decision, overlap_audit, block_bootstrap, backtest_results, git_meta, df_events
     )
-    with open(root_dir / "M1_FUSION_001_REPORT.md", "w", encoding="utf-8") as f:
+    with open(root_dir / "M1_FUSION_001R_REPORT.md", "w", encoding="utf-8") as f:
         f.write(report_md)
 
-    # 9. M1_FUSION_001_MANIFEST.json
+    # 14. M1_FUSION_001R_MANIFEST.json
     manifest = {
-        "experiment_id": "ALAB-M1-FUSION-001",
-        "branch": git_meta.get("branch", "research/quant-m1-fusion-failed-auction-v1"),
+        "experiment_id": "ALAB-M1-FUSION-001R",
+        "branch": git_meta.get("branch", "research/quant-m1-fusion-001r-replication"),
+        "base_sha": git_meta.get("base_sha", "6c257c313a83e2dec5813fc36be921912209bc68"),
         "precommit_sha": git_meta.get("precommit_sha", "PENDING"),
         "result_commit_sha": git_meta.get("result_commit_sha", "PENDING_UNTIL_COMMIT"),
         "data_sha256": data_audit_meta.get("data_hash_sha256", "UNKNOWN"),
-        "rows": data_audit_meta.get("row_count", 0),
+        "rows": data_audit_meta.get("replication_rows", 0),
+        "quarantined_2026_rows": data_audit_meta.get("quarantined_2026_rows", 0),
         "start_datetime": data_audit_meta.get("start_datetime", "NA"),
         "end_datetime": data_audit_meta.get("end_datetime", "NA"),
+        "unique_days": data_audit_meta.get("unique_days", 0),
         "tests_passed": git_meta.get("tests_passed", 0),
         "tests_failed": git_meta.get("tests_failed", 0),
         "event_count": event_decision.get("total_events", 0),
         "long_events": event_decision.get("long_events", 0),
         "short_events": event_decision.get("short_events", 0),
-        "event_verdict": event_decision.get("verdict", "INSUFFICIENT_EVIDENCE"),
+        "event_verdict": event_decision.get("verdict", "STOP_BLOCKED"),
         "diagnostic_backtest_status": backtest_results.get("status", "INSUFFICIENT_DIAGNOSTIC"),
-        "cost_verification_status": backtest_results.get("cost_verification_status", "UNVERIFIED"),
+        "cost_verification_status": cost_contract.cost_verification_status,
         "strategy_validation": "NOT_AUTHORIZED",
         "paper_trading": "NO",
         "live_trading": "NO",
         "broker_execution": "NO",
         "research_only": True,
     }
-    with open(root_dir / "M1_FUSION_001_MANIFEST.json", "w", encoding="utf-8") as f:
+    with open(root_dir / "M1_FUSION_001R_MANIFEST.json", "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
 
-def render_markdown_report(
+def render_replication_markdown(
     data_meta: Dict[str, Any],
-    event_decision: Dict[str, Any],
+    cost: CostContract,
+    decision: Dict[str, Any],
+    overlap: Dict[str, Any],
+    bb: Dict[str, Any],
     bt: Dict[str, Any],
     git_meta: Dict[str, str],
     df_events: pd.DataFrame,
 ) -> str:
-    stats = event_decision.get("summary_stats", {})
+    stats = decision.get("summary_stats", {})
     h5 = stats.get("h5m", {})
+    bb5 = bb.get("h5m", {})
 
     lines = [
-        "# ALAB-M1-FUSION-001 — Failed Auction + Adaptive Reaction Zone Research Report",
+        "# ALAB-M1-FUSION-001R — Replication & Research Infrastructure Repair Report",
         "",
-        "## A. Governance and Metadata",
+        "## 1. Governance and Metadata",
         "",
         f"- **Repository**: `bacbuon333-design/Universal-project-gateway`",
-        f"- **Branch**: `{git_meta.get('branch', 'research/quant-m1-fusion-failed-auction-v1')}`",
-        f"- **Scientific Parent**: `{git_meta.get('parent_sha', '5a1a2f8c28f857789943295f6a59df2f1037e72b')}`",
+        f"- **Branch**: `{git_meta.get('branch', 'research/quant-m1-fusion-001r-replication')}`",
+        f"- **Base SHA**: `{git_meta.get('base_sha', '6c257c313a83e2dec5813fc36be921912209bc68')}`",
         f"- **Precommit SHA**: `{git_meta.get('precommit_sha', 'PENDING')}`",
-        f"- **Research Type**: `EVENT_STUDY_PLUS_SINGLE_DIAGNOSTIC_BACKTEST`",
+        f"- **Scientific Parent (V1 Base)**: `6c257c313a83e2dec5813fc36be921912209bc68`",
+        f"- **Experiment ID**: `ALAB-M1-FUSION-001R`",
         f"- **Strategy Validation**: `NOT_AUTHORIZED`",
         f"- **Paper Trading**: `NO`",
         f"- **Live Trading**: `NO`",
         f"- **Broker Execution**: `NO`",
         f"- **Research Only**: `YES`",
         "",
-        "## B. Dataset Quality and Audit",
+        "## 2. Dataset Audit & 2026 Discovery Quarantine",
         "",
         f"- **Symbol**: `{data_meta.get('symbol', 'GOLD')}` (Timeframe: M1, Timezone: UTC)",
         f"- **Source Path**: `{data_meta.get('source_path')}`",
-        f"- **Row Count**: `{data_meta.get('row_count'):,}` M1 bars",
-        f"- **Date Range**: `{data_meta.get('start_datetime')}` to `{data_meta.get('end_datetime')}`",
+        f"- **Replication Rows (Pre-2026)**: `{data_meta.get('replication_rows', 0):,}` bars",
+        f"- **Quarantined 2026 Discovery Rows**: `{data_meta.get('quarantined_2026_rows', 0):,}` bars",
+        f"- **Discovery Overlap in Replication Set**: `0` rows",
+        f"- **Replication Date Range**: `{data_meta.get('start_datetime')}` to `{data_meta.get('end_datetime')}`",
+        f"- **Unique Calendar Years**: `{data_meta.get('unique_calendar_years')}`",
+        f"- **Unique Trading Days**: `{data_meta.get('unique_days', 0):,}` days",
         f"- **Data Hash (SHA-256)**: `{data_meta.get('data_hash_sha256')}`",
-        f"- **Duplicates**: `{data_meta.get('duplicate_timestamp_count')}` | **Invalid OHLC**: `{data_meta.get('invalid_high_low_count')}`",
-        f"- **Historical Spread Present**: `{data_meta.get('has_spread')}`",
-        f"- **Sample Sufficiency (>=250k rows)**: `{data_meta.get('is_sufficient_history')}`",
+        f"- **Hard Gate 0A (>=1,000,000 Rows)**: `{'PASS' if data_meta.get('is_sufficient_history') else 'FAIL'}`",
+        f"- **Hard Gate 0B (>=3 Calendar Years)**: `{'PASS' if data_meta.get('is_sufficient_temporal_coverage') else 'FAIL'}`",
         "",
-        "## C. Frozen Hypothesis Specification",
+        "## 3. Verified Broker Cost Contract",
         "",
-        "The experiment tests whether a directional, efficient price displacement reaching a key structural reaction zone, failing to achieve acceptance beyond that extreme, and snapping back exhibits a statistically significant forward directional edge at M1 resolution.",
+        f"- **Symbol**: `{cost.symbol}` | **Digits**: `{cost.digits}` | **Point**: `{cost.point}`",
+        f"- **Contract Size**: `{cost.trade_contract_size}` oz/lot | **Profit Currency**: `{cost.currency_profit}`",
+        f"- **Spread Representation**: `{cost.spread_raw_unit}` ({cost.spread_price_conversion})",
+        f"- **Commission**: `{cost.commission_per_lot_usd} USD/lot` ({cost.commission_status})",
+        f"- **Cost Contract Status**: `{cost.cost_verification_status}`",
         "",
-        "- **Prior Extreme Lookback**: 20 M1 bars (causal, excludes event bar)",
-        "- **Path Efficiency**: Trailing 10 bars displacement / path length >= 0.65 with directional alignment",
-        "- **Robust Stretch**: Trailing 60 bars median / MAD robust Z-score >= +2.0 (Short) or <= -2.0 (Long)",
-        "- **Volatility Percentile**: ATR14 trailing 500-bar empirical percentile rank >= 80.0",
-        "- **Reaction Zones**: Previous Day High/Low (+2), Completed Session High/Low (+1), Confirmed M15 Swing (+1)",
-        "- **Reaction Score**: Range [3, 10] with Failed Auction (+3 mandatory)",
+        "## 4. Outcome Dependence & Overlap Audit",
         "",
-        "## D. Event Study Sample Counts",
+        f"- **Total Events**: `{overlap.get('total_events', 0):,}`",
+        f"- **Mean Events per Day**: `{overlap.get('mean_events_per_day', 0.0):.1f}` | **Median Gap**: `{overlap.get('median_gap_bars', 0.0):.1f} bars`",
+        f"- **Events with Overlapping 5m Horizon**: `{overlap.get('overlap_pct_5m', 0.0):.1f}%`",
+        f"- **Events with Overlapping 10m Horizon**: `{overlap.get('overlap_pct_10m', 0.0):.1f}%`",
+        f"- **Events with Overlapping 30m Horizon**: `{overlap.get('overlap_pct_30m', 0.0):.1f}%`",
         "",
-        f"- **Total Events Detected**: `{event_decision.get('total_events', 0):,}`",
-        f"- **Long Events**: `{event_decision.get('long_events', 0):,}`",
-        f"- **Short Events**: `{event_decision.get('short_events', 0):,}`",
+        "## 5. Multi-Horizon Returns & Day-Block Bootstrap",
         "",
-        "## E. Forward Return Distribution Across Horizons",
-        "",
-        "| Horizon | N | Mean Signed Ret (bps) | Median Ret (bps) | Win Prop % | 95% Bootstrap CI (bps) | Mean MFE (bps) | Mean MAE (bps) |",
+        "| Horizon | N | Mean Return (bps) | Median (bps) | Win Rate % | Day-Block 95% Bootstrap CI (bps) | Mean MFE (bps) | Mean MAE (bps) |",
         "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
 
-    for h in [1, 3, 5, 10, 15, 30]:
+    for h in HORIZONS:
         h_info = stats.get(f"h{h}m", {})
         if h_info:
-            ci_str = f"[{h_info['ci_95_lower_bps']:.2f}, {h_info['ci_95_upper_bps']:.2f}]"
+            ci_str = f"[{h_info.get('day_block_ci_95_lower_bps', 0.0):.2f}, {h_info.get('day_block_ci_95_upper_bps', 0.0):.2f}]"
             lines.append(
                 f"| {h}m | {h_info['n']:,} | {h_info['mean_return_bps']:+.2f} | {h_info['median_return_bps']:+.2f} | {h_info['win_proportion']*100.0:.1f}% | {ci_str} | {h_info['mean_mfe_bps']:.2f} | {h_info['mean_mae_bps']:.2f} |"
             )
 
     lines.extend([
         "",
-        "## F. Reaction Score Gradient (Primary 5m Horizon)",
+        "## 6. Score Gradient and Consistency Status",
         "",
-        "| Score Bin | N Events | Mean Return 5m (bps) | Median Return 5m (bps) | Win Rate 5m % | Mean MFE 5m (bps) | Mean MAE 5m (bps) |",
-        "|---|---:|---:|---:|---:|---:|---:|",
-    ])
-
-    if not df_events.empty:
-        for sb in ["3-4", "5-6", "7-8", "9-10"]:
-            sub = df_events[df_events["score_bin"] == sb]
-            if len(sub) > 0:
-                rets = sub["fwd_ret_5m"].dropna() * 10000.0
-                mfes = sub["mfe_5m"].dropna() * 10000.0
-                maes = sub["mae_5m"].dropna() * 10000.0
-                lines.append(
-                    f"| {sb} | {len(sub):,} | {rets.mean():+.2f} | {rets.median():+.2f} | {(rets > 0).mean()*100.0:.1f}% | {mfes.mean():.2f} | {maes.mean():.2f} |"
-                )
-
-    lines.extend([
+        f"- **Score Consistency Classification**: `{decision.get('score_consistency_status')}`",
         "",
-        "## G. Temporal and Session Breakdown",
-        "",
-        "### Yearly Breakdown (5m Horizon)",
-        "",
-        "| Year | N Events | Mean Return 5m (bps) | Win Rate 5m % |",
+        "| Score Bin | N Events | Mean Return 5m (bps) | Win Rate 5m % |",
         "|---|---:|---:|---:|",
     ])
 
-    if not df_events.empty:
-        for y, m_val in event_decision.get("year_means_5m", {}).items():
-            sub_y = df_events[df_events["year"] == y]
-            win_y = (sub_y["fwd_ret_5m"] > 0).mean() * 100.0 if len(sub_y) > 0 else 0.0
-            lines.append(f"| {y} | {len(sub_y):,} | {m_val:+.2f} | {win_y:.1f}% |")
+    for sb, m_val in decision.get("score_bin_means_5m", {}).items():
+        n_sb = decision.get("score_bin_counts", {}).get(sb, 0)
+        lines.append(f"| {sb} | {n_sb:,} | {m_val:+.2f} | - |")
 
     lines.extend([
         "",
-        "### Research Session Breakdown (5m Horizon)",
-        "",
-        "| Session | N Events | Mean Return 5m (bps) | Win Rate 5m % |",
-        "|---|---:|---:|---:|",
-    ])
-
-    if not df_events.empty:
-        for sess in ["ASIA", "LONDON_RESEARCH", "NEW_YORK_RESEARCH", "OTHER"]:
-            sub_s = df_events[df_events["session"] == sess]
-            if len(sub_s) > 0:
-                rets_s = sub_s["fwd_ret_5m"].dropna() * 10000.0
-                win_s = (rets_s > 0).mean() * 100.0 if len(rets_s) > 0 else 0.0
-                lines.append(f"| {sess} | {len(sub_s):,} | {rets_s.mean():+.2f} | {win_s:.1f}% |")
-
-    lines.extend([
-        "",
-        "## H. Single Diagnostic Backtest (Score >= 7, SL = 1.0 ATR, Holding = 5 bars)",
+        "## 7. Dual Gross/Net Diagnostic Strategy Backtest",
         "",
         f"- **Diagnostic Status**: `{bt.get('status')}`",
-        f"- **Cost Verification Status**: `{bt.get('cost_verification_status')}`",
-        f"- **Total Trades Taken**: `{bt.get('total_trades', 0)}`",
-        f"- **Win Rate**: `{bt.get('win_rate_pct', 0.0):.2f}%`",
-        f"- **Profit Factor**: `{bt.get('profit_factor', 0.0):.3f}`",
-        f"- **Expectancy**: `{bt.get('expectancy_usd', 0.0):+.2f} USD/trade`",
-        f"- **Net PnL (0.10 lot)**: `{bt.get('net_pnl_usd', 0.0):+.2f} USD`",
+        f"- **Total Trades**: `{bt.get('total_trades', 0)}`",
+        f"- **Gross Win Rate**: `{bt.get('gross_win_rate_pct', 0.0):.1f}%` | **Net Win Rate**: `{bt.get('win_rate_pct', 0.0):.1f}%`",
+        f"- **Gross Profit Factor**: `{bt.get('gross_profit_factor', 0.0):.3f}` | **Net Profit Factor**: `{bt.get('net_profit_factor', 0.0):.3f}`",
+        f"- **Gross Expectancy**: `{bt.get('gross_expectancy_usd', 0.0):+.2f} USD/trade` | **Net Expectancy**: `{bt.get('net_expectancy_usd', 0.0):+.2f} USD/trade`",
+        f"- **Gross PnL**: `{bt.get('gross_pnl_usd', 0.0):+.2f} USD` | **Net PnL**: `{bt.get('net_pnl_usd', 0.0):+.2f} USD`",
+        f"- **Total Friction Costs**: `{bt.get('total_costs_usd', 0.0):.2f} USD` (Mean cost: `${bt.get('mean_cost_per_trade_usd', 0.0):.2f}/trade`)",
         f"- **Max Drawdown**: `{bt.get('max_drawdown_usd', 0.0):.2f} USD`",
-        f"- **Long Trades**: `{bt.get('long_trades', 0)}` (Win: `{bt.get('long_win_rate_pct', 0.0):.1f}%`)",
-        f"- **Short Trades**: `{bt.get('short_trades', 0)}` (Win: `{bt.get('short_win_rate_pct', 0.0):.1f}%`)",
-        f"- **Exits Breakdown**: Stop Loss: `{bt.get('stop_loss_exits', 0)}` | Time Exits: `{bt.get('time_exits', 0)}`",
         "",
-        "## I. Discovery Gate Evaluation",
+        "## 8. Replication Discovery Gate Battery",
         "",
-        f"- **Gate 1 (Sample size >= 500, Long >= 150, Short >= 150)**: `{'PASS' if event_decision.get('gate1_sample') else 'FAIL'}`",
-        f"- **Gate 2 (Primary 5m Mean Return > 0)**: `{'PASS' if event_decision.get('gate2_mean_5m_pos') else 'FAIL'}`",
-        f"- **Gate 3 (Primary 5m 95% Bootstrap CI Lower > 0)**: `{'PASS' if event_decision.get('gate3_ci_lower_pos') else 'FAIL'}`",
-        f"- **Gate 4 (Adjacent 3m or 10m Mean Return > 0)**: `{'PASS' if event_decision.get('gate4_adjacent_pos') else 'FAIL'}`",
-        f"- **Gate 5 (Temporal Stability Across Years)**: `{'PASS' if event_decision.get('gate5_year_stability') else 'FAIL'}`",
-        f"- **Gate 6 (Score Gradient Monotonicity)**: `{'PASS' if event_decision.get('gate6_score_gradient') else 'FAIL'}`",
+        f"- **Gate 0 (Data >= 1,000,000 rows & >= 3 valid years)**: `{'PASS' if decision.get('gate0_data') else 'FAIL'}`",
+        f"- **Gate 1 (Sample size >= 500 total, >= 150 long, >= 150 short)**: `{'PASS' if decision.get('gate1_sample') else 'FAIL'}`",
+        f"- **Gate 2 (Primary 5m Mean Return > 0)**: `{'PASS' if decision.get('gate2_mean_5m_pos') else 'FAIL'}`",
+        f"- **Gate 3 (Primary 5m Day-Block Bootstrap CI Lower > 0)**: `{'PASS' if decision.get('gate3_day_block_ci_pos') else 'FAIL'}`",
+        f"- **Gate 4 (Adjacent 3m or 10m Mean Return > 0)**: `{'PASS' if decision.get('gate4_adjacent_pos') else 'FAIL'}`",
+        f"- **Gate 5 (Temporal Stability >= 3 valid years, >= 70% positive)**: `{'PASS' if decision.get('gate5_year_stability') else 'FAIL'}`",
         "",
-        f"### **EVENT STUDY VERDICT: {event_decision.get('verdict')}**",
+        f"### **FINAL REPLICATION VERDICT: {decision.get('verdict')}**",
         "",
-        "## J. Strongest Counter-Evidence",
+        "## 9. Strongest Counter-Evidence",
         "",
-        "At M1 resolution, spread friction (e.g. 25-50 points) represents a substantial fraction of the 5-minute gross price excursion. While failed auctions with high reaction scores exhibit localized mean-reversion tendencies, adverse stops and spread crossing frequently erode edge in live market conditions without adaptive session filtering.",
-        "",
-        "## K. Limitations",
-        "",
-        "1. M1 OHLC bar data does not represent tick-level truth.",
-        "2. Research session windows use fixed UTC conventions.",
-        "3. This is an exploratory discovery study on historical GOLD data only; zero live or paper execution is authorized.",
+        "High intra-day event density (overlapping forward return horizons) and substantial execution spread relative to gross excursion create severe drag on M1 price action reversions. Without pre-2026 out-of-discovery data coverage of at least 1,000,000 rows, the mechanism cannot be scientifically confirmed.",
         "",
         "---",
         "**END OF REPORT**",
