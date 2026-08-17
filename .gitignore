@@ -48,6 +48,7 @@ Thumbs.db
 
 # Large canonical datasets (>25MB)
 AlphaLab_Antigravity/data/canonical/GOLD_M1_PRE2026.csv
+AlphaLab_Antigravity/data/canonical/GOLD_M1_FINAL_HOLDOUT_2015_2017.csv
 AlphaLab_Antigravity/data/canonical/*.csv.tmp
 
 # MECH-002 local large evidence tables
@@ -61,3 +62,6 @@ AlphaLab_Antigravity/reports/m1_mech_004/local/
 
 # MECH-005 local large falsification event tables
 AlphaLab_Antigravity/reports/m1_mech_005/local/
+
+# FINAL HOLDOUT local large event tables
+AlphaLab_Antigravity/reports/m1_final_holdout/local/
