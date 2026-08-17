@@ -8,10 +8,12 @@ import pandas as pd
 
 from m1_final_holdout.confirmation import (
     BOOTSTRAP_ITERATIONS, BOOTSTRAP_SEED, EXPERIMENT_ID, REPRESENTATIONS,
+    MIN_BREACH_EVENTS, MIN_EXACT_5M_COVERAGE_PCT, MIN_EXCURSION_RATIO_COVERAGE_PCT,
     audit_holdout_dataset, build_confirmation_table, build_holdout_frame,
     build_yearly_descriptive_table, evaluate_final_holdout_gates,
     joint_max_rho_day_block_bootstrap, validate_holdout_frame,
 )
+from m1_mech_005.invariance_falsification import _representation_payload
 
 ROOT=Path(__file__).resolve().parents[2]
 DATA_PATH=ROOT/"AlphaLab_Antigravity"/"data"/"canonical"/"GOLD_M1_FINAL_HOLDOUT_2015_2017.csv"
@@ -54,11 +56,22 @@ def main()->None:
     audit=audit_holdout_dataset(df,dataset_sha256=actual_sha); write_json(OUT/"M1_FINAL_HOLDOUT_DATA_AUDIT.json",audit)
 
     frame=build_holdout_frame(df)
-    confirmation,boots,fits=build_confirmation_table(frame)
-    joint=joint_max_rho_day_block_bootstrap(fits)
-    yearly=build_yearly_descriptive_table(frame)
-    gates=evaluate_final_holdout_gates(audit,frame,confirmation,boots,joint)
+    exact_n=int(frame["exact_5m_available"].sum()) if len(frame) else 0
+    exact_pct=float(frame["exact_5m_available"].mean()*100.0) if len(frame) else 0.0
+    d_n=len(_representation_payload(frame,"EXCURSION_RATIO",5)) if len(frame) else 0
+    d_pct=float(d_n/exact_n*100.0) if exact_n else 0.0
+    pre_inference_coverage_ok=(len(frame)>=MIN_BREACH_EVENTS and exact_pct>=MIN_EXACT_5M_COVERAGE_PCT and d_pct>=MIN_EXCURSION_RATIO_COVERAGE_PCT)
 
+    if pre_inference_coverage_ok:
+        confirmation,boots,fits=build_confirmation_table(frame)
+        joint=joint_max_rho_day_block_bootstrap(fits)
+        yearly=build_yearly_descriptive_table(frame)
+    else:
+        confirmation=pd.DataFrame(columns=["representation","horizon_min","rho","ci95_lower","ci95_upper"])
+        boots={}; joint={"iterations":BOOTSTRAP_ITERATIONS,"valid_iterations":0,"status":"NOT_RUN_PRE_INFERENCE_COVERAGE_BLOCK"}
+        yearly=pd.DataFrame(columns=["representation","year","n","rho_5m"])
+
+    gates=evaluate_final_holdout_gates(audit,frame,confirmation,boots,joint)
     confirmation.to_csv(OUT/"M1_FINAL_HOLDOUT_CONFIRMATION.csv",index=False)
     write_json(OUT/"M1_FINAL_HOLDOUT_BOOTSTRAP.json",boots)
     write_json(OUT/"M1_FINAL_HOLDOUT_JOINT_MAX_RHO.json",joint)
@@ -72,7 +85,9 @@ def main()->None:
         "holdout_start":str(df["datetime"].min()),"holdout_end":str(df["datetime"].max()),
         "holdout_years":sorted(int(y) for y in df["datetime"].dt.year.unique()),
         "development_2018_2025_accessed":False,"discovery_2026_accessed":False,
-        "breach_events":int(len(frame)),"representations":list(REPRESENTATIONS),"primary_horizon_minutes":5,
+        "breach_events":int(len(frame)),"exact_5m_coverage_pct_pre_inference":exact_pct,
+        "excursion_ratio_5m_coverage_pct_pre_inference":d_pct,"scientific_regressions_run":bool(pre_inference_coverage_ok),
+        "representations":list(REPRESENTATIONS),"primary_horizon_minutes":5,
         "bootstrap_iterations":BOOTSTRAP_ITERATIONS,"bootstrap_seed":BOOTSTRAP_SEED,
         "strict_gradient_claim":"NOT_TESTED_FINAL_HOLDOUT","placebo_claim":"NOT_RETESTED_FINAL_HOLDOUT",
         "fixed_budget_claim":False,"market_law_claim":False,"causal_identification_claim":False,
@@ -98,6 +113,7 @@ No strict monotonic-bin claim, fixed-budget claim, market-law claim, or causal m
 - Range: `{df['datetime'].min()}` to `{df['datetime'].max()}`
 - Development 2018–2025 read by this runner: NO
 - 2026+ read by this runner: NO
+- Scientific regressions executed: `{pre_inference_coverage_ok}`
 
 ## Frozen confirmation rule
 PASS requires data/coverage integrity, all four point `rho_5m < 1`, all four individual UTC-day bootstrap 95% upper bounds `<1`, and the shared-day bootstrap 97.5th percentile of `max(rho)` across the four representations `<1`.
