@@ -1,0 +1,11 @@
+{
+  "G0_dataset_and_years": true,
+  "G1_geometry_and_exact_clock": true,
+  "G2_primary_rho_5m_below_one": true,
+  "G3_day_block_ci_upper_below_one": true,
+  "G4_3m_and_10m_rho_below_one": true,
+  "G5_temporal_stability": true,
+  "valid_years": 8,
+  "attenuated_years": 8,
+  "verdict": "REVERSION_COMPENSATION_SUPPORTED_IN_DEVELOPMENT"
+}

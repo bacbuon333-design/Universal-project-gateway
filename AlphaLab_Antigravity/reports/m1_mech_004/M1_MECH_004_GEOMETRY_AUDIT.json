@@ -1,0 +1,19 @@
+{
+  "events": 615058,
+  "years": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "max_abs_geometry_identity_error": 1.3322676295501878e-15,
+  "max_abs_total_identity_error": 2.842170943040401e-14,
+  "negative_excursion_count": 0,
+  "negative_in_candle_reversion_count": 0,
+  "exact_5m_available": 612351,
+  "exact_5m_coverage_pct": 99.55987890572922
+}

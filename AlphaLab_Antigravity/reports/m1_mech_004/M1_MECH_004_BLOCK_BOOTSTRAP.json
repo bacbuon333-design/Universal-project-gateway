@@ -1,0 +1,11 @@
+{
+  "method": "FIXED_RESIDUAL_FWL_UTC_DAY_BLOCK_BOOTSTRAP",
+  "iterations": 2000,
+  "seed": 20260817,
+  "unique_utc_days": 2065,
+  "valid_iterations": 2000,
+  "point_rho": 0.94191764717577,
+  "mean_rho": 0.9419740764945878,
+  "ci95_lower": 0.9307459904444307,
+  "ci95_upper": 0.9533413103021485
+}
