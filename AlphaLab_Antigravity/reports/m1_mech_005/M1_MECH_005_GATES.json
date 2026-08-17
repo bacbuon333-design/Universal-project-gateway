@@ -1,0 +1,9 @@
+{
+  "G0_boundary_coverage_and_base_reproduction": true,
+  "G1_all_four_coordinate_rho_5m_below_one": true,
+  "G2_all_four_coordinate_ci_upper_below_one": true,
+  "G3_all_four_inverse_gradients_monotonic": false,
+  "G4_local_shuffle_placebo_ci_contains_one": true,
+  "G5_sign_placebo_ci_contains_one": true,
+  "verdict": "COMPENSATION_FALSIFIED_OR_NOT_INVARIANT"
+}
