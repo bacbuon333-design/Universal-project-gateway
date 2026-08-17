@@ -118,7 +118,7 @@ def main() -> None:
     local_event_sha = sha256_file(LOCAL_EVENT_PATH)
 
     primary_row = regressions[regressions["horizon_min"] == 5]
-    primary_beta = float(primary_row.iloc[0]["beta_in_candle"]) if not primary_row.empty else np.nan
+    primary_rho = float(primary_row.iloc[0]["rho_total_on_in"]) if not primary_row.empty else np.nan
 
     manifest = {
         "experiment_id": EXPERIMENT_ID,
@@ -135,10 +135,13 @@ def main() -> None:
             str(k): int(v) for k, v in frame["event_class"].value_counts().to_dict().items()
         },
         "primary_horizon_minutes": 5,
-        "primary_beta_in_candle": primary_beta,
+        "primary_rho_total_on_in": primary_rho,
+        "primary_null_rho": 1.0,
         "bootstrap_method": bootstrap.get("method"),
         "bootstrap_iterations": BOOTSTRAP_ITERATIONS,
         "bootstrap_seed": BOOTSTRAP_SEED,
+        "post_close_regression_prohibited": True,
+        "pre_run_algebraic_coupling_repair": True,
         "gates": gates,
         "conservation_law_claimed": False,
         "causal_identification_claimed": False,
@@ -167,17 +170,20 @@ No strategy, PnL backtest, paper/live trading, broker execution, 2015–2017 hol
 
 ## Mechanics
 - `R_in`: snapback-direction movement from event extreme to event close, normalized by event ATR14.
-- `R_post(h)`: additional exact-clock snapback-direction movement after event close.
-- `R_total(h) = R_in + R_post(h)`.
-- Consumption ratio is descriptive only and is defined only when `R_total(h) > 0`.
+- `R_post(h)`: additional exact-clock snapback-direction movement after event close; descriptive only.
+- `R_total(h)`: snapback-direction displacement from event extreme to exact-clock future close.
+- Consumption ratio is descriptive only and defined only when `R_total(h) > 0`.
+
+## Pre-run scientific repair
+A draft regression of `R_post` on `R_in` was rejected before any real outcome was run because those variables are algebraically coupled through event close. The frozen primary model instead uses future `R_total`.
 
 ## Primary model
-`R_post(h) = beta * R_in + frozen controls + error`.
+`R_total(h) = rho_h * R_in + frozen controls + error`.
 
-Primary question: whether `beta_5m < 0`, with fixed-residual UTC day-block bootstrap uncertainty.
+Null reference: `rho=1` (one-for-one persistence). Evidence for attenuation/compensation requires `rho<1`, with the +5m UTC day-block bootstrap upper 95% bound also below 1.
 
 ## Interpretation boundary
-A negative coefficient is a development-set compensation relationship, not a physical conservation law and not randomized causal identification.
+A rho below 1 is development-set attenuation relative to one-for-one persistence. It is not a physical conservation law, a fixed budget, or randomized causal identification.
 No liquidity-provider, institutional-flow, or order-book causality is claimed.
 
 ## Verdict
