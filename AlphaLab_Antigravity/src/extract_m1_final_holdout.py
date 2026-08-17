@@ -62,6 +62,7 @@ def main() -> None:
         raise RuntimeError("STOP_BLOCKED_METATRADER5_IMPORT_FAILED") from exc
 
     opened_years: List[int] = []; per_year: Dict[str,int] = {}; terminal=None
+    td=DATA_PATH.with_suffix(DATA_PATH.suffix+".tmp"); ts=SEAL_PATH.with_suffix(SEAL_PATH.suffix+".tmp")
     try:
         if not mt5.initialize():
             raise RuntimeError(f"STOP_BLOCKED_MT5_INITIALIZE_FAILED: {mt5.last_error()}")
@@ -96,11 +97,14 @@ def main() -> None:
         if missing: raise RuntimeError(f"STOP_BLOCKED_MT5_RATE_SCHEMA_MISMATCH: {missing}")
         canonical=df[cols].copy()
         DATA_PATH.parent.mkdir(parents=True,exist_ok=True); OUT.mkdir(parents=True,exist_ok=True)
-        td=DATA_PATH.with_suffix(DATA_PATH.suffix+".tmp"); ts=SEAL_PATH.with_suffix(SEAL_PATH.suffix+".tmp")
         if td.exists(): td.unlink()
         if ts.exists(): ts.unlink()
         canonical.to_csv(td,index=False,date_format="%Y-%m-%dT%H:%M:%S%z")
         sha=sha256_file(td); audit=audit_holdout_dataset(canonical,dataset_sha256=sha)
+        if (int(audit.get("invalid_or_nonfinite_ohlc",1))!=0 or int(audit.get("non_whole_minute_timestamps",1))!=0
+                or int(audit.get("duplicate_timestamps",1))!=0 or not bool(audit.get("row_sufficiency",False))
+                or not bool(audit.get("per_year_row_sufficiency",False))):
+            raise RuntimeError(f"STOP_BLOCKED_HOLDOUT_CANONICAL_QUALITY_FAILED: {audit}")
         seal={
             "experiment_id":"ALAB-M1-FINAL-HOLDOUT-2015-2017","extraction_status":"SEALED_CANONICAL_CREATED_ONCE",
             "source":"MetaTrader5.copy_rates_range","symbol":SYMBOL,"timeframe":"M1","requested_years":list(HOLDOUT_YEARS),
@@ -112,6 +116,8 @@ def main() -> None:
         os.replace(td,DATA_PATH); os.replace(ts,SEAL_PATH)
         print(json.dumps(_safe(seal),indent=2))
     except Exception as exc:
+        for tmp in (td,ts):
+            if tmp.exists(): tmp.unlink()
         _write_opened_failure(exc,opened_years,per_year)
         raise
 
