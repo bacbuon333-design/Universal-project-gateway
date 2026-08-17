@@ -1,0 +1,150 @@
+{
+  "verdict": "REPLICATION_CONFIRMED",
+  "total_events": 271631,
+  "long_events": 130296,
+  "short_events": 141335,
+  "summary_stats": {
+    "h1m": {
+      "n": 271631,
+      "mean_return_bps": 0.0017367345044125772,
+      "median_return_bps": 0.0,
+      "std_return_bps": 2.8252915249285815,
+      "win_proportion": 0.4887917800251076,
+      "day_block_ci_95_lower_bps": -0.009127637557791923,
+      "day_block_ci_95_upper_bps": 0.012216737197898323,
+      "mean_mfe_bps": 1.589735598811079,
+      "median_mfe_bps": 0.9829351535839654,
+      "mean_mae_bps": 1.6392189307330747,
+      "median_mae_bps": 0.9863770371429242
+    },
+    "h3m": {
+      "n": 271631,
+      "mean_return_bps": 0.00784299495003188,
+      "median_return_bps": 0.05342422574935974,
+      "std_return_bps": 4.725961180038477,
+      "win_proportion": 0.5033151591681362,
+      "day_block_ci_95_lower_bps": -0.011557511192730272,
+      "day_block_ci_95_upper_bps": 0.028073784887073263,
+      "mean_mfe_bps": 2.853301213847453,
+      "median_mfe_bps": 1.89160528503141,
+      "mean_mae_bps": 2.9642062473926964,
+      "median_mae_bps": 1.8356687118607966
+    },
+    "h5m": {
+      "n": 271631,
+      "mean_return_bps": 0.031160538072028007,
+      "median_return_bps": 0.10728462611298042,
+      "std_return_bps": 6.007142476389195,
+      "win_proportion": 0.5098755296707665,
+      "day_block_ci_95_lower_bps": 0.0028432459218302973,
+      "day_block_ci_95_upper_bps": 0.05901507981824343,
+      "mean_mfe_bps": 3.712928976233996,
+      "median_mfe_bps": 2.501814841094266,
+      "mean_mae_bps": 3.867953648010553,
+      "median_mae_bps": 2.416928500589156
+    },
+    "h10m": {
+      "n": 271631,
+      "mean_return_bps": 0.03780819506945064,
+      "median_return_bps": 0.16754815613238938,
+      "std_return_bps": 8.36594093903471,
+      "win_proportion": 0.513037908044369,
+      "day_block_ci_95_lower_bps": -0.005120798516874412,
+      "day_block_ci_95_upper_bps": 0.0832598836437455,
+      "mean_mfe_bps": 5.303434459984131,
+      "median_mfe_bps": 3.6087021274164512,
+      "mean_mae_bps": 5.520898750853675,
+      "median_mae_bps": 3.4733911519360876
+    },
+    "h15m": {
+      "n": 271631,
+      "mean_return_bps": 0.03343563587323219,
+      "median_return_bps": 0.2570594964202127,
+      "std_return_bps": 10.176280567784032,
+      "win_proportion": 0.5162665527866849,
+      "day_block_ci_95_lower_bps": -0.02401124297114602,
+      "day_block_ci_95_upper_bps": 0.09153470101034711,
+      "mean_mfe_bps": 6.514985306934393,
+      "median_mfe_bps": 4.454574906280267,
+      "mean_mae_bps": 6.769059348946244,
+      "median_mae_bps": 4.283531420021643
+    },
+    "h30m": {
+      "n": 271631,
+      "mean_return_bps": 0.03270858146191518,
+      "median_return_bps": 0.3311386201450687,
+      "std_return_bps": 14.260008983210213,
+      "win_proportion": 0.5150332620356293,
+      "day_block_ci_95_lower_bps": -0.05466604188639689,
+      "day_block_ci_95_upper_bps": 0.12189008633862217,
+      "mean_mfe_bps": 9.287855354814258,
+      "median_mfe_bps": 6.363822499156606,
+      "mean_mae_bps": 9.6083099111411,
+      "median_mae_bps": 6.138877627844706
+    }
+  },
+  "valid_calendar_years_count": 8,
+  "positive_valid_years_count": 7,
+  "year_details": {
+    "2018": {
+      "n_events": 27520,
+      "mean_5m_bps": 0.029434092489151856,
+      "is_valid": true
+    },
+    "2019": {
+      "n_events": 25353,
+      "mean_5m_bps": 0.024405266358812815,
+      "is_valid": true
+    },
+    "2020": {
+      "n_events": 34119,
+      "mean_5m_bps": 0.1442821074512227,
+      "is_valid": true
+    },
+    "2021": {
+      "n_events": 36420,
+      "mean_5m_bps": 0.0649045277588041,
+      "is_valid": true
+    },
+    "2022": {
+      "n_events": 36289,
+      "mean_5m_bps": 0.025946616086818267,
+      "is_valid": true
+    },
+    "2023": {
+      "n_events": 35946,
+      "mean_5m_bps": 0.010296330863237134,
+      "is_valid": true
+    },
+    "2024": {
+      "n_events": 36836,
+      "mean_5m_bps": 0.025127948918719306,
+      "is_valid": true
+    },
+    "2025": {
+      "n_events": 39148,
+      "mean_5m_bps": -0.06356622913333324,
+      "is_valid": true
+    }
+  },
+  "score_bin_means_5m": {
+    "3-4": 0.060006743632646624,
+    "5-6": -0.018517891055309876,
+    "7-8": -0.08568488682643936,
+    "9-10": -0.3086668898405426
+  },
+  "score_bin_counts": {
+    "3-4": 181063,
+    "5-6": 81503,
+    "7-8": 8550,
+    "9-10": 515
+  },
+  "score_consistency_status": "INVERTED",
+  "gate0_data": true,
+  "gate1_sample": true,
+  "gate2_mean_5m_pos": true,
+  "gate3_day_block_ci_pos": true,
+  "gate4_adjacent_pos": true,
+  "gate5_year_stability": true,
+  "all_gates_pass": true
+}

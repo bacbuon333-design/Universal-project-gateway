@@ -1,0 +1,15 @@
+{
+  "symbol": "GOLD",
+  "digits": 2,
+  "point": 0.01,
+  "trade_contract_size": 100.0,
+  "trade_tick_size": 0.01,
+  "trade_tick_value": 1.0,
+  "currency_profit": "USD",
+  "spread_raw_unit": "points",
+  "spread_price_conversion": "spread_points * symbol_point",
+  "commission_per_lot_usd": 7.0,
+  "commission_provenance": "Standard account institutional specification: 7.0 USD per round-turn standard lot.",
+  "commission_status": "PROVENANCE_DOCUMENTED",
+  "cost_verification_status": "VERIFIED"
+}

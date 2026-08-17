@@ -29,7 +29,7 @@ def export_replication_artifacts(
 
     # 1. M1_FUSION_001R_DATA_AUDIT.json
     with open(output_dir / "M1_FUSION_001R_DATA_AUDIT.json", "w", encoding="utf-8") as f:
-        json.dump(data_audit_meta, f, indent=2)
+        json.dump(data_audit_meta, f, indent=2, default=str)
 
     # 2. M1_FUSION_001R_COST_CONTRACT.json
     save_cost_contract_json(cost_contract, output_dir / "M1_FUSION_001R_COST_CONTRACT.json")
@@ -151,18 +151,22 @@ def export_replication_artifacts(
             })
         pd.DataFrame(vol_rows).to_csv(output_dir / "M1_FUSION_001R_VOLATILITY.csv", index=False)
 
-    # 13. M1_FUSION_001R_REPORT.md
+    # 13. Markdown Reports
     report_md = render_replication_markdown(
         data_audit_meta, cost_contract, event_decision, overlap_audit, block_bootstrap, backtest_results, git_meta, df_events
     )
     with open(root_dir / "M1_FUSION_001R_REPORT.md", "w", encoding="utf-8") as f:
         f.write(report_md)
+    with open(root_dir / "M1_FUSION_001R_RUN1_REPORT.md", "w", encoding="utf-8") as f:
+        f.write(report_md)
+    with open(output_dir / "M1_FUSION_001R_RUN1_REPORT.md", "w", encoding="utf-8") as f:
+        f.write(report_md)
 
-    # 14. M1_FUSION_001R_MANIFEST.json
+    # 14. Manifests
     manifest = {
-        "experiment_id": "ALAB-M1-FUSION-001R",
-        "branch": git_meta.get("branch", "research/quant-m1-fusion-001r-replication"),
-        "base_sha": git_meta.get("base_sha", "6c257c313a83e2dec5813fc36be921912209bc68"),
+        "experiment_id": "ALAB-M1-FUSION-001R-RUN1",
+        "branch": git_meta.get("branch", "research/quant-m1-fusion-001r-run1"),
+        "base_sha": git_meta.get("base_sha", "88c9b3b36394592283f601e27b299632d3f98b2e"),
         "precommit_sha": git_meta.get("precommit_sha", "PENDING"),
         "result_commit_sha": git_meta.get("result_commit_sha", "PENDING_UNTIL_COMMIT"),
         "data_sha256": data_audit_meta.get("data_hash_sha256", "UNKNOWN"),
@@ -178,6 +182,11 @@ def export_replication_artifacts(
         "short_events": event_decision.get("short_events", 0),
         "event_verdict": event_decision.get("verdict", "STOP_BLOCKED"),
         "diagnostic_backtest_status": backtest_results.get("status", "INSUFFICIENT_DIAGNOSTIC"),
+        "primary_5m_mean_bps": event_decision.get("summary_stats", {}).get("h5m", {}).get("mean_return_bps", 0.0),
+        "primary_5m_day_block_95_ci_lower_bps": event_decision.get("summary_stats", {}).get("h5m", {}).get("day_block_ci_95_lower_bps", 0.0),
+        "primary_5m_day_block_95_ci_upper_bps": event_decision.get("summary_stats", {}).get("h5m", {}).get("day_block_ci_95_upper_bps", 0.0),
+        "score_consistency_status": event_decision.get("score_consistency_status", "UNKNOWN"),
+        "all_gates_pass": event_decision.get("all_gates_pass", False),
         "cost_verification_status": cost_contract.cost_verification_status,
         "strategy_validation": "NOT_AUTHORIZED",
         "paper_trading": "NO",
@@ -186,7 +195,11 @@ def export_replication_artifacts(
         "research_only": True,
     }
     with open(root_dir / "M1_FUSION_001R_MANIFEST.json", "w", encoding="utf-8") as f:
-        json.dump(manifest, f, indent=2)
+        json.dump(manifest, f, indent=2, default=str)
+    with open(root_dir / "M1_FUSION_001R_RUN1_MANIFEST.json", "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2, default=str)
+    with open(output_dir / "M1_FUSION_001R_RUN1_MANIFEST.json", "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2, default=str)
 
 
 def render_replication_markdown(

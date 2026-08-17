@@ -1,0 +1,11 @@
+{
+  "total_events": 271631,
+  "total_days": 2065,
+  "mean_events_per_day": 131.54043583535108,
+  "median_events_per_day": 135.0,
+  "p90_events_per_day": 160.0,
+  "median_gap_bars": 6.0,
+  "overlap_pct_5m": 46.257408975444534,
+  "overlap_pct_10m": 64.64528954828259,
+  "overlap_pct_30m": 93.8743879542024
+}

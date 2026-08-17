@@ -1,0 +1,44 @@
+{
+  "h1m": {
+    "mean_bps": 0.0017085397954223751,
+    "ci_95_lower_bps": -0.009127637557791923,
+    "ci_95_upper_bps": 0.012216737197898323,
+    "boot_simulations": 2000,
+    "unique_days_sampled": 2065
+  },
+  "h3m": {
+    "mean_bps": 0.007812229404099999,
+    "ci_95_lower_bps": -0.011557511192730272,
+    "ci_95_upper_bps": 0.028073784887073263,
+    "boot_simulations": 2000,
+    "unique_days_sampled": 2065
+  },
+  "h5m": {
+    "mean_bps": 0.031033036462298845,
+    "ci_95_lower_bps": 0.0028432459218302973,
+    "ci_95_upper_bps": 0.05901507981824343,
+    "boot_simulations": 2000,
+    "unique_days_sampled": 2065
+  },
+  "h10m": {
+    "mean_bps": 0.03827820308116308,
+    "ci_95_lower_bps": -0.005120798516874412,
+    "ci_95_upper_bps": 0.0832598836437455,
+    "boot_simulations": 2000,
+    "unique_days_sampled": 2065
+  },
+  "h15m": {
+    "mean_bps": 0.03364489258327522,
+    "ci_95_lower_bps": -0.02401124297114602,
+    "ci_95_upper_bps": 0.09153470101034711,
+    "boot_simulations": 2000,
+    "unique_days_sampled": 2065
+  },
+  "h30m": {
+    "mean_bps": 0.033249614267506014,
+    "ci_95_lower_bps": -0.05466604188639689,
+    "ci_95_upper_bps": 0.12189008633862217,
+    "boot_simulations": 2000,
+    "unique_days_sampled": 2065
+  }
+}

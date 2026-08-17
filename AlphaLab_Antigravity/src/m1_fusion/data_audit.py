@@ -95,7 +95,7 @@ def audit_and_load_m1_data(
 
     # Distinct calendar years in replication set
     if replication_rows > 0:
-        unique_years = sorted(list(df_replication["datetime"].dt.year.unique()))
+        unique_years = [int(y) for y in sorted(list(df_replication["datetime"].dt.year.unique()))]
         unique_days = int(df_replication["datetime"].dt.date.nunique())
     else:
         unique_years = []
