@@ -8,6 +8,13 @@ MECH-005 remains officially `COMPENSATION_FALSIFIED_OR_NOT_INVARIANT` because th
 
 2015–2017 has not been used in V1/001R/MECH-002/003/004/005 and remains sealed until this PRECOMMIT plus source/tests is committed and pushed.
 
+### Pre-open implementation audit
+Before any 2015–2017 rates were requested, the implementation underwent a final fail-closed audit. Two governance repairs were made while the holdout was still sealed:
+1. the extractor now refuses to seal a canonical file that fails timestamp/OHLC/row-sufficiency quality checks;
+2. the confirmation runner now blocks all scientific regressions/bootstrap if breach-count, exact-clock, or EXCURSION_RATIO coverage is insufficient.
+
+No holdout data or outcome was accessed during these repairs. The Git branch head containing this document and those repaired sources is the **authoritative PRECOMMIT**; all earlier pre-open branch states are superseded.
+
 ## Single final hypothesis
 After a breach of the prior 20 closed M1 bars' extreme, greater snapback realization inside the breach candle is associated with **sub-one-for-one persistence** in total snapback displacement at exactly +5 clock minutes.
 
@@ -50,13 +57,13 @@ Frozen procedure:
 3. Each annual chunk must contain at least `250,000` M1 rows.
 4. Concatenate in time order; no interpolation and no deduplication repair.
 5. Duplicate timestamps, boundary violations, missing years, invalid schema, or insufficient annual rows are extraction failures.
-6. Write canonical CSV and SHA seal atomically only after all three chunks pass.
+6. Write canonical CSV and SHA seal atomically only after all three chunks and canonical quality checks pass.
 7. Canonical CSV is local/gitignored; seal/audit artifacts are committed with the final result.
 
 ### Irreversibility rule
-Before any rates array is returned, an infrastructure-only failure may be repaired and retried because the holdout has not been opened.
+Before any **non-empty** 2015–2017 rates array is returned, an infrastructure-only failure may be repaired and retried because no holdout observations have been exposed.
 
-Once any 2015–2017 rates array has been returned, the holdout is considered OPENED. If extraction then fails, the extractor must create `M1_FINAL_HOLDOUT_OPENED_FAILURE.json` with `rerun_authorized=false`; the program must not rerun extraction or the scientific test.
+Once any **non-empty** 2015–2017 rates array has been returned, the holdout is considered OPENED. If extraction then fails, the extractor must create `M1_FINAL_HOLDOUT_OPENED_FAILURE.json` with `rerun_authorized=false`; the program must not rerun extraction or the scientific test.
 
 If a successful extraction seal or opened-failure marker already exists, the extractor must refuse overwrite/re-extraction.
 
@@ -75,6 +82,8 @@ The canonical holdout must satisfy all:
 - EXCURSION_RATIO retains >= `50%` of exact +5m events.
 
 Market-closure gaps are audited but are neither repaired nor themselves a failure.
+
+If the row/schema/timestamp/OHLC checks fail during extraction after a non-empty holdout response has been exposed, extraction ends with the irreversible opened-failure marker. If event/endpoint/representation coverage fails after a valid canonical seal, the runner must write a DATA_BLOCKED final verdict **without running rho regressions or bootstrap**.
 
 ## Frozen breach universe and causal features
 Use the MECH-003/004/005 mechanics:
@@ -191,6 +200,8 @@ There is no rescue MECH-006/007 on this same mechanism family after a valid hold
 - `M1_FINAL_HOLDOUT_MANIFEST.json`
 - `M1_FINAL_HOLDOUT_REPORT.md`
 - local full event table with SHA256 in manifest.
+
+If unsealing fails after a non-empty holdout response, `M1_FINAL_HOLDOUT_OPENED_FAILURE.json` replaces the normal scientific artifact path and permanently records that no valid scientific verdict was obtained.
 
 ## Absolute prohibitions after PRECOMMIT
 No 2018–2025 mining; no 2026 access; no coordinate/control/horizon/floor/coverage/gate changes; no gradient rescue; no rerun because result is unfavorable; no strategy/PnL/paper/live/broker execution; no source modification after holdout outcomes are observed.
