@@ -1,0 +1,16 @@
+{
+  "method": "SHARED_UTC_DAY_RESAMPLE_MAX_RHO",
+  "iterations": 2000,
+  "seed": 20260820,
+  "unique_utc_days": 773,
+  "valid_iterations": 2000,
+  "observed_rho_by_representation": {
+    "ATR_T": 0.9511742880574497,
+    "ATR_PRE": 0.960589689398152,
+    "PRICE_BPS": 0.9545190589933112,
+    "EXCURSION_RATIO": 0.964555699664237
+  },
+  "observed_max_rho": 0.964555699664237,
+  "bootstrap_mean_max_rho": 0.9710743484050799,
+  "bootstrap_ci95_upper_max_rho": 0.9971600316600856
+}

@@ -1,0 +1,25 @@
+{
+  "dataset_sha256": "fae4d3ef815c38110bf8e9e19ea70467b6ec1d4d0b5de2f4c790516d7331cb00",
+  "rows": 1058276,
+  "start": "2015-01-02 08:06:00+00:00",
+  "end": "2017-12-29 23:57:00+00:00",
+  "years": [
+    2015,
+    2016,
+    2017
+  ],
+  "per_year_rows": {
+    "2015": 352656,
+    "2016": 353513,
+    "2017": 352107
+  },
+  "unique_utc_days": 773,
+  "duplicate_timestamps": 0,
+  "non_whole_minute_timestamps": 0,
+  "invalid_or_nonfinite_ohlc": 0,
+  "gaps_gt_60s": 2690,
+  "gaps_gt_1h": 672,
+  "max_gap_seconds": 292080.0,
+  "row_sufficiency": true,
+  "per_year_row_sufficiency": true
+}

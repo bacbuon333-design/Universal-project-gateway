@@ -1,0 +1,64 @@
+{
+  "experiment_id": "ALAB-M1-FINAL-HOLDOUT-2015-2017",
+  "research_type": "ONE_SHOT_FINAL_HOLDOUT_CONFIRMATION",
+  "dataset_path": "J:\\MovedFromC\\Roaming_MetaQuotes\\Terminal\\BB16F565FAAA6B23A20C26C49416FF05\\AlphaLab_Antigravity\\data\\canonical\\GOLD_M1_FINAL_HOLDOUT_2015_2017.csv",
+  "dataset_sha256": "fae4d3ef815c38110bf8e9e19ea70467b6ec1d4d0b5de2f4c790516d7331cb00",
+  "dataset_rows": 1058276,
+  "holdout_start": "2015-01-02 08:06:00+00:00",
+  "holdout_end": "2017-12-29 23:57:00+00:00",
+  "holdout_years": [
+    2015,
+    2016,
+    2017
+  ],
+  "development_2018_2025_accessed": false,
+  "discovery_2026_accessed": false,
+  "breach_events": 200419,
+  "exact_5m_coverage_pct_pre_inference": 99.45813520674187,
+  "excursion_ratio_5m_coverage_pct_pre_inference": 87.56653439219798,
+  "scientific_regressions_run": true,
+  "representations": [
+    "ATR_T",
+    "ATR_PRE",
+    "PRICE_BPS",
+    "EXCURSION_RATIO"
+  ],
+  "primary_horizon_minutes": 5,
+  "bootstrap_iterations": 2000,
+  "bootstrap_seed": 20260820,
+  "strict_gradient_claim": "NOT_TESTED_FINAL_HOLDOUT",
+  "placebo_claim": "NOT_RETESTED_FINAL_HOLDOUT",
+  "fixed_budget_claim": false,
+  "market_law_claim": false,
+  "causal_identification_claim": false,
+  "strategy_backtest": "NOT_RUN",
+  "paper_trading": "NO",
+  "live_trading": "NO",
+  "broker_execution": "NO",
+  "gates": {
+    "G0_holdout_data_quality_and_coverage": true,
+    "G1_all_four_point_rho_5m_below_one": true,
+    "G2_all_four_individual_ci_upper_below_one": true,
+    "G3_joint_max_rho_bootstrap_upper_below_one": true,
+    "breach_events": 200419,
+    "exact_5m_coverage_pct": 99.45813520674187,
+    "excursion_ratio_5m_coverage_pct": 87.56653439219798,
+    "rho_5m_by_representation": {
+      "ATR_T": 0.9511742880574497,
+      "ATR_PRE": 0.960589689398152,
+      "PRICE_BPS": 0.9545190589933112,
+      "EXCURSION_RATIO": 0.964555699664237
+    },
+    "ci95_upper_by_representation": {
+      "ATR_T": 0.968807847327699,
+      "ATR_PRE": 0.9822718865994803,
+      "PRICE_BPS": 0.9825109275764647,
+      "EXCURSION_RATIO": 0.9966776593087687
+    },
+    "joint_ci95_upper_max_rho": 0.9971600316600856,
+    "verdict": "FINAL_HOLDOUT_CONFIRMED",
+    "research_program_status": "CLOSE_CONFIRMED_PHENOMENON"
+  },
+  "local_event_table": "J:\\MovedFromC\\Roaming_MetaQuotes\\Terminal\\BB16F565FAAA6B23A20C26C49416FF05\\AlphaLab_Antigravity\\reports\\m1_final_holdout\\local\\M1_FINAL_HOLDOUT_EVENTS.csv.gz",
+  "local_event_table_sha256": "647335103efc0da5170089897497a70c400c21779847de50492cd4b219c13ac8"
+}

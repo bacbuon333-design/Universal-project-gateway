@@ -1,0 +1,42 @@
+{
+  "ATR_T": {
+    "iterations": 2000,
+    "seed": 20260820,
+    "unique_utc_days": 773,
+    "valid_iterations": 2000,
+    "point_rho": 0.9511742880574497,
+    "mean_rho": 0.9512918888484355,
+    "ci95_lower": 0.9329675492770908,
+    "ci95_upper": 0.968807847327699
+  },
+  "ATR_PRE": {
+    "iterations": 2000,
+    "seed": 20260820,
+    "unique_utc_days": 773,
+    "valid_iterations": 2000,
+    "point_rho": 0.960589689398152,
+    "mean_rho": 0.9607356059450153,
+    "ci95_lower": 0.938925913217632,
+    "ci95_upper": 0.9822718865994803
+  },
+  "PRICE_BPS": {
+    "iterations": 2000,
+    "seed": 20260820,
+    "unique_utc_days": 773,
+    "valid_iterations": 2000,
+    "point_rho": 0.9545190589933112,
+    "mean_rho": 0.9546925525478743,
+    "ci95_lower": 0.9278096031377598,
+    "ci95_upper": 0.9825109275764647
+  },
+  "EXCURSION_RATIO": {
+    "iterations": 2000,
+    "seed": 20260820,
+    "unique_utc_days": 773,
+    "valid_iterations": 2000,
+    "point_rho": 0.964555699664237,
+    "mean_rho": 0.9644299358364229,
+    "ci95_lower": 0.9321267796225413,
+    "ci95_upper": 0.9966776593087687
+  }
+}
