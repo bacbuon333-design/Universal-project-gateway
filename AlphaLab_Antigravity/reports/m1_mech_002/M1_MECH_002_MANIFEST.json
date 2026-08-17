@@ -1,0 +1,65 @@
+{
+  "experiment_id": "ALAB-M1-MECH-002",
+  "research_type": "MARKET_STATE_TRANSITION_DISCOVERY",
+  "dataset_path": "J:\\MovedFromC\\Roaming_MetaQuotes\\Terminal\\BB16F565FAAA6B23A20C26C49416FF05\\AlphaLab_Antigravity\\data\\canonical\\GOLD_M1_PRE2026.csv",
+  "dataset_sha256": "10d6df33c749315824bb9552b139439e6bbfcbac1bed54f272a62696c2f4965e",
+  "development_start": "2018-01-02 09:05:00+00:00",
+  "development_end": "2025-12-31 19:59:00+00:00",
+  "sealed_holdout": "2015-2017 \u2014 NOT ACCESSED",
+  "events": 271631,
+  "primary_state_basis": "CLOSE_ONLY",
+  "intrabar_sequence_claimed": false,
+  "gap_aware_exact_clock_labels": true,
+  "economic_microstructure_claims": "NOT_AUTHORIZED_FROM_M1",
+  "descriptive_bin_cutpoints": {
+    "path_efficiency_quartile_edges": [
+      0.0,
+      0.24878048780479634,
+      0.420289855072502,
+      0.6009174311927433,
+      1.0
+    ],
+    "stretch_abs_quartile_edges": [
+      0.0,
+      0.7255885442853974,
+      1.4149091871722823,
+      2.3185619857007587,
+      20.0
+    ],
+    "sweep_depth_atr_quartile_edges": [
+      0.0020239714362061604,
+      0.0838366071290518,
+      0.18968289829834534,
+      0.3639408158912828,
+      11.108785551197116
+    ],
+    "reclaim_depth_atr_quartile_edges": [
+      0.002019357017113276,
+      0.159471650964861,
+      0.3593209319213277,
+      0.6697398707993576,
+      8.343982876297531
+    ],
+    "event_range_atr_quartile_edges": [
+      0.061707061838824115,
+      0.8009454953785868,
+      1.0514499526404038,
+      1.3819944971522782,
+      11.924367275208944
+    ],
+    "close_location_snapback_quartile_edges": [
+      0.007782101167132034,
+      0.4262295081967763,
+      0.6733333333333272,
+      0.8870967741934079,
+      1.0
+    ]
+  },
+  "local_event_table": "J:\\MovedFromC\\Roaming_MetaQuotes\\Terminal\\BB16F565FAAA6B23A20C26C49416FF05\\AlphaLab_Antigravity\\reports\\m1_mech_002\\local\\M1_MECH_002_EVENTS.csv.gz",
+  "local_event_table_sha256": "492e42b9492dd4c6bfa2484efef0f2146f8d4d5305945df2ee794abfe57b2639",
+  "strategy_backtest": "NOT_RUN",
+  "paper_trading": "NO",
+  "live_trading": "NO",
+  "broker_execution": "NO",
+  "research_only": true
+}

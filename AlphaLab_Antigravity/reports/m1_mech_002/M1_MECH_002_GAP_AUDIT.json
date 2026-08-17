@@ -1,0 +1,9 @@
+{
+  "events": 271631,
+  "exact_5m_available": 270419,
+  "continuous_5m_paths": 270310,
+  "gap_contaminated_5m": 1321,
+  "gap_contaminated_5m_pct": 0.48632151705806775,
+  "gap_any_within_30m": 6213,
+  "gap_any_within_30m_pct": 2.2872941600921837
+}
