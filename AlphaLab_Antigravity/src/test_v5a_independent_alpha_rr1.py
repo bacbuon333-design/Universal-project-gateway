@@ -190,14 +190,16 @@ def test_h404_pivot_is_confirmed_only_after_two_right_bars():
     src = inspect.getsource(exp.signal_h404)
     assert "j = i - flank" in src
     assert "j + flank + 1" in src
-    df = base_df(12)
-    # Pivot high at j=5 becomes eligible only at close i=7.
-    df.loc[3:7, "high"] = [100.5, 101.0, 103.0, 101.2, 100.8]
-    df.loc[7, "close"] = 102.0
-    df.loc[8, ["open", "high", "low", "close"]] = [102.5, 103.8, 102.0, 103.5]
+    df = base_df(30)
+    j, confirm_i, break_i = 15, 17, 18
+    # Pivot high at j=15 becomes eligible only at close i=17, after ATR14 warm-up.
+    df.loc[j-2:j+2, "high"] = [100.5, 101.0, 103.0, 101.2, 100.8]
+    df.loc[confirm_i, "close"] = 102.0
+    df.loc[break_i, ["open", "high", "low", "close"]] = [102.5, 103.8, 102.0, 103.5]
+    assert np.isfinite(exp.atr14(df).iloc[break_i])
     sig, _, _ = exp.signal_h404({"PIVOT_FLANK": 2})(df)
-    assert sig[6] == 0
-    assert sig[8] == 1
+    assert sig[confirm_i - 1] == 0
+    assert sig[break_i] == 1
 
 
 def test_raw_result_overwrite_guard_is_frozen():
