@@ -1,0 +1,23 @@
+{
+  "experiment_id": "ALAB-M1-FUSION-001",
+  "branch": "research/quant-m1-fusion-failed-auction-v1",
+  "precommit_sha": "e5d55487c0d588bddde584d41009e931c2fe9cfe",
+  "result_commit_sha": "PENDING_UNTIL_COMMIT",
+  "data_sha256": "b980ac086f5de4ab60621d0ddcb3bac59d37ebd0bec236d24971f81918b1f3ec",
+  "rows": 99999,
+  "start_datetime": "2026-04-15 01:12:00+00:00",
+  "end_datetime": "2026-07-24 23:57:00+00:00",
+  "tests_passed": 20,
+  "tests_failed": 0,
+  "event_count": 10929,
+  "long_events": 5918,
+  "short_events": 5011,
+  "event_verdict": "MECHANISM_CLUE",
+  "diagnostic_backtest_status": "NEGATIVE_DIAGNOSTIC",
+  "cost_verification_status": "VERIFIED",
+  "strategy_validation": "NOT_AUTHORIZED",
+  "paper_trading": "NO",
+  "live_trading": "NO",
+  "broker_execution": "NO",
+  "research_only": true
+}
