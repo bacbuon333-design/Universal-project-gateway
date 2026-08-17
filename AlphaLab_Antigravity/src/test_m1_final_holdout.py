@@ -106,8 +106,21 @@ def test_runner_has_no_gradient_or_placebo_rescue():
     assert "qcut" not in text and "within_day_side_cyclic" not in text and "balanced_post_sign" not in text
 
 
+def test_runner_blocks_inference_before_coverage_gate():
+    text=Path(__file__).with_name("run_m1_final_holdout.py").read_text(encoding="utf-8")
+    assert "pre_inference_coverage_ok" in text
+    assert "NOT_RUN_PRE_INFERENCE_COVERAGE_BLOCK" in text
+    assert text.index("pre_inference_coverage_ok") < text.index("build_confirmation_table(frame)")
+
+
 def test_extractor_contains_one_shot_failure_marker_contract():
     text=Path(__file__).with_name("extract_m1_final_holdout.py").read_text(encoding="utf-8")
     assert "STOP_BLOCKED_HOLDOUT_ALREADY_OPENED_OR_EXTRACTED" in text
     assert "HOLDOUT_OPENED_FAILURE_DO_NOT_RERUN" in text
     assert "copy_rates_range" in text and '"interpolation":False' in text
+
+
+def test_extractor_fails_canonical_quality_before_seal_replace():
+    text=Path(__file__).with_name("extract_m1_final_holdout.py").read_text(encoding="utf-8")
+    assert "STOP_BLOCKED_HOLDOUT_CANONICAL_QUALITY_FAILED" in text
+    assert text.index("STOP_BLOCKED_HOLDOUT_CANONICAL_QUALITY_FAILED") < text.index("os.replace(td,DATA_PATH)")
