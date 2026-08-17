@@ -1,0 +1,21 @@
+{
+  "dataset_id": "ALAB-DATA-M1-001",
+  "symbol": "GOLD",
+  "timeframe": "M1",
+  "timezone": "UTC",
+  "canonical_path": "AlphaLab_Antigravity/data/GOLD_M1_2001_2026.csv",
+  "pre_2026_rows": 0,
+  "quarantined_2026_rows": 99999,
+  "start_datetime": "NA",
+  "end_datetime": "NA",
+  "calendar_years": [],
+  "sha256": "b980ac086f5de4ab60621d0ddcb3bac59d37ebd0bec236d24971f81918b1f3ec",
+  "file_size_bytes": 7219308,
+  "source_provenance": "Local historical dataset + XMGlobal-MT5 9 terminal cache inspection",
+  "mt5_history_attempted": true,
+  "mt5_terminal_maxbars": 100000,
+  "mt5_hcc_archive_bytes": 256847844,
+  "discovery_2026_overlap": 0,
+  "data_verdict": "STOP_BLOCKED_DATA_INSUFFICIENT",
+  "research_only": true
+}

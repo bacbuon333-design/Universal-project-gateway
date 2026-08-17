@@ -1,0 +1,85 @@
+{
+  "task_id": "ALAB-DATA-M1-001",
+  "generated_at_utc": "2026-08-17T06:46:30Z",
+  "search_criteria": {
+    "symbols": ["GOLD", "XAUUSD", "XAUUSD.", "XAUUSDm", "XAUUSD#"],
+    "timeframe": "M1",
+    "target_rows": 1000000,
+    "target_cutoff_utc": "2026-01-01T00:00:00Z"
+  },
+  "sources_evaluated": [
+    {
+      "source_id": "LOCAL_CSV_GOLD_M1",
+      "path": "AlphaLab_Antigravity/data/GOLD_M1_2001_2026.csv",
+      "format": "CSV",
+      "total_rows": 99999,
+      "date_range": {
+        "start": "2026-04-15T01:12:00Z",
+        "end": "2026-07-24T23:57:00Z"
+      },
+      "pre_2026_rows": 0,
+      "quarantined_2026_rows": 99999,
+      "file_size_bytes": 7219308,
+      "sha256": "b980ac086f5de4ab60621d0ddcb3bac59d37ebd0bec236d24971f81918b1f3ec",
+      "status": "DISCOVERY_SAMPLE_SEEN_PRE_2026_EMPTY"
+    },
+    {
+      "source_id": "LOCAL_SQLITE_GOLD_M1",
+      "path": "AlphaLab_Antigravity/data/gold_history.db:gold_m1",
+      "format": "SQLITE",
+      "total_rows": 99999,
+      "date_range": {
+        "start": "2026-04-15T01:12:00Z",
+        "end": "2026-07-24T23:57:00Z"
+      },
+      "pre_2026_rows": 0,
+      "quarantined_2026_rows": 99999,
+      "status": "DISCOVERY_SAMPLE_SEEN_PRE_2026_EMPTY"
+    },
+    {
+      "source_id": "MT5_PYTHON_API_ACTIVE_BUFFER",
+      "terminal_server": "XMGlobal-MT5 9",
+      "terminal_login": 333943735,
+      "terminal_build": 6090,
+      "terminal_maxbars": 100000,
+      "api_calls_tested": ["copy_rates_range", "copy_rates_from", "copy_rates_from_pos"],
+      "symbol": "GOLD",
+      "total_rows_accessible": 100000,
+      "date_range": {
+        "start": "2026-05-06T09:57:00Z",
+        "end": "2026-08-17T09:36:00Z"
+      },
+      "pre_2026_rows": 0,
+      "error_at_pos_100000": "Terminal: Call failed (-1)",
+      "root_cause": "Terminal memory manager enforces Charts.MaxBars=100000 setting, preventing in-memory M1 access beyond 100,000 bars.",
+      "status": "PRE_2026_EMPTY"
+    },
+    {
+      "source_id": "MT5_OFFLINE_HISTORY_CACHE_HCC",
+      "path": "bases/XMGlobal-MT5 9/history/GOLD/",
+      "format": "PROPRIETARY_BINARY_HCC",
+      "files_detected": [
+        "2015.hcc (21.2 MB)",
+        "2016.hcc (21.3 MB)",
+        "2017.hcc (21.2 MB)",
+        "2018.hcc (21.2 MB)",
+        "2019.hcc (21.2 MB)",
+        "2020.hcc (21.3 MB)",
+        "2021.hcc (21.3 MB)",
+        "2022.hcc (21.3 MB)",
+        "2023.hcc (21.2 MB)",
+        "2024.hcc (21.4 MB)",
+        "2025.hcc (21.2 MB)",
+        "2026.hcc (21.8 MB)"
+      ],
+      "total_compressed_size_bytes": 256847844,
+      "status": "UNAVAILABLE_VIA_OFFICIAL_PYTHON_API_DUE_TO_MAXBARS_CAP"
+    }
+  ],
+  "discovery_summary": {
+    "total_pre_2026_valid_bars_found": 0,
+    "target_threshold": 1000000,
+    "sufficiency_status": "INSUFFICIENT",
+    "verdict": "STOP_BLOCKED_DATA_INSUFFICIENT"
+  }
+}
