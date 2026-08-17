@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-"""Causal feature computation for ALAB-M1-FUSION-001."""
+"""Causal feature computation for ALAB-M1-FUSION-001/001R."""
 
+from typing import Tuple
 import numpy as np
 import pandas as pd
 
@@ -49,28 +50,29 @@ def compute_path_efficiency(
         is_downward_displacement (bool array)
     """
     n = len(df)
-    c = df["close"].to_numpy(dtype=float)
-    eff_ratio = np.zeros(n, dtype=float)
+    c = df["close"]
+    diff = np.abs(np.diff(c.to_numpy(dtype=float), prepend=c.iloc[0]))
+    
+    # Causal displacement over trailing window ending at t - 1:
+    # net_disp = abs(close[t - 1] - close[t - 1 - window])
+    c_end = c.shift(1)
+    c_start = c.shift(1 + window)
+    net_disp = (c_end - c_start).abs().to_numpy(dtype=float)
+    
+    # Path length over trailing `window` 1-bar differences ending at t-1
+    path_len = pd.Series(diff).rolling(window, min_periods=window).sum().shift(1).to_numpy(dtype=float)
+    
+    valid_mask = (path_len > 1e-9) & np.isfinite(path_len) & np.isfinite(net_disp)
+    eff_ratio = np.where(valid_mask, net_disp / np.where(valid_mask, path_len, 1.0), 0.0)
+    eff_ratio[:window + 1] = 0.0
+
     is_up = np.zeros(n, dtype=bool)
     is_down = np.zeros(n, dtype=bool)
-
-    # Compute 1-bar price changes
-    diff = np.abs(np.diff(c, prepend=c[0]))
-
-    # Cumulative path length over trailing `window` bars ending at t-1
-    # For bar t, preceding window covers indices (t - window) to (t - 1).
-    for t in range(window + 1, n):
-        c_end = c[t - 1]
-        c_start = c[t - 1 - window]
-        net_disp = abs(c_end - c_start)
-        path_len = np.sum(diff[t - window : t])
-        if path_len > 1e-9:
-            eff_ratio[t] = net_disp / path_len
-        else:
-            eff_ratio[t] = 0.0
-
-        is_up[t] = c_end > c_start
-        is_down[t] = c_end < c_start
+    valid_dir = np.isfinite(c_end.to_numpy()) & np.isfinite(c_start.to_numpy())
+    is_up = np.where(valid_dir, (c_end > c_start).to_numpy(), False)
+    is_down = np.where(valid_dir, (c_end < c_start).to_numpy(), False)
+    is_up[:window + 1] = False
+    is_down[:window + 1] = False
 
     return eff_ratio, is_up, is_down
 
@@ -86,17 +88,24 @@ def compute_robust_stretch_z(
     c = df["close"].to_numpy(dtype=float)
     stretch_z = np.zeros(n, dtype=float)
 
-    for t in range(window + 1, n):
-        sub = c[t - 1 - window : t - 1]
-        med = np.median(sub)
-        mad = np.median(np.abs(sub - med))
+    chunk_size = 100000
+    for start in range(window + 1, n, chunk_size):
+        end = min(start + chunk_size, n)
+        k = end - start
+        w_start = start - 1 - window
+        w_end = end - 2
+        sub_c = c[w_start : w_end + 1]
+        sub_windows = np.lib.stride_tricks.sliding_window_view(sub_c, window)[:k]
+        c_prev = c[start - 1 : end - 1]
+        
+        med = np.median(sub_windows, axis=1)
+        mad = np.median(np.abs(sub_windows - med[:, None]), axis=1)
         sigma = 1.4826 * mad
-        if sigma > 1e-9 and np.isfinite(sigma):
-            z = (c[t - 1] - med) / sigma
-            stretch_z[t] = np.clip(z, -20.0, 20.0)
-        else:
-            stretch_z[t] = 0.0
+        valid = (sigma > 1e-9) & np.isfinite(sigma)
+        z_calc = np.where(valid, (c_prev - med) / np.where(valid, sigma, 1.0), 0.0)
+        stretch_z[start : end] = np.clip(z_calc, -20.0, 20.0)
 
+    stretch_z[:window + 1] = 0.0
     return stretch_z
 
 
@@ -108,17 +117,21 @@ def compute_atr_percentiles(
     a = atr.to_numpy(dtype=float)
     pct = np.zeros(n, dtype=float)
 
-    for t in range(window + 1, n):
-        current_atr = a[t - 1]
-        if not np.isfinite(current_atr):
-            pct[t] = 0.0
-            continue
-        sub = a[t - 1 - window : t - 1]
-        valid_sub = sub[np.isfinite(sub)]
-        if len(valid_sub) >= 50:
-            rank = np.sum(valid_sub <= current_atr) / len(valid_sub) * 100.0
-            pct[t] = rank
-        else:
-            pct[t] = 0.0
+    chunk_size = 100000
+    for start in range(window + 1, n, chunk_size):
+        end = min(start + chunk_size, n)
+        k = end - start
+        w_start = start - 1 - window
+        w_end = end - 2
+        sub_a = a[w_start : w_end + 1]
+        sub_windows = np.lib.stride_tricks.sliding_window_view(sub_a, window)[:k]
+        a_prev = a[start - 1 : end - 1]
+        
+        valid_mask = np.isfinite(sub_windows)
+        valid_counts = np.sum(valid_mask, axis=1)
+        hits = np.sum((sub_windows <= a_prev[:, None]) & valid_mask, axis=1)
+        ranks = np.where(valid_counts >= 50, (hits / np.maximum(valid_counts, 1)) * 100.0, 0.0)
+        pct[start : end] = ranks
 
+    pct[:window + 1] = 0.0
     return pct
