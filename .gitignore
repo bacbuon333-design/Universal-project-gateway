@@ -52,3 +52,6 @@ AlphaLab_Antigravity/data/canonical/*.csv.tmp
 
 # MECH-002 local large evidence tables
 AlphaLab_Antigravity/reports/m1_mech_002/local/
+
+# MECH-003 local large matched event tables
+AlphaLab_Antigravity/reports/m1_mech_003/local/
