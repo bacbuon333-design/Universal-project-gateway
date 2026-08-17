@@ -45,3 +45,8 @@ Z..ai/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Large canonical datasets (>25MB)
+AlphaLab_Antigravity/data/canonical/GOLD_M1_PRE2026.csv
+AlphaLab_Antigravity/data/canonical/*.csv.tmp
+

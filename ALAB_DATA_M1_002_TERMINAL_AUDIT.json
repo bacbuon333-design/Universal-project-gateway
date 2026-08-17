@@ -1,0 +1,19 @@
+{
+  "task_id": "ALAB-DATA-M1-002",
+  "audit_timestamp_utc": "2026-08-17T06:54:19.071898+00:00",
+  "terminal_path": "C:\\Program Files\\XM Global MT5",
+  "data_path": "C:\\Users\\gugul\\AppData\\Roaming\\MetaQuotes\\Terminal\\BB16F565FAAA6B23A20C26C49416FF05",
+  "commondata_path": "C:\\Users\\gugul\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common",
+  "terminal_build": 6090,
+  "server": "XMGlobal-MT5 9",
+  "login": 333943735,
+  "symbol": "GOLD",
+  "digits": 2,
+  "point": 0.01,
+  "contract_size": 100.0,
+  "old_maxbars_before_unlock": 100000,
+  "new_effective_maxbars": 100000000,
+  "oldest_accessible_before_unlock": "2026-05-06 10:03:00+00:00",
+  "history_unlock_status": "SUCCESS_UNLIMITED_CHART_BUFFER",
+  "oldest_accessible_after_unlock": "2018-01-02 09:05:00+00:00"
+}

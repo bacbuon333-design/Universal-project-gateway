@@ -1,0 +1,113 @@
+{
+  "task_id": "ALAB-DATA-M1-002",
+  "symbol": "GOLD",
+  "timeframe": "M1",
+  "total_chunks": 8,
+  "failed_chunks": 0,
+  "chunks": [
+    {
+      "year": 2018,
+      "requested_from": "2018-01-01T00:00:00+00:00",
+      "requested_to": "2018-12-31T23:59:59+00:00",
+      "returned_rows": 351696,
+      "actual_first_bar": "2018-01-02 09:05:00+00:00",
+      "actual_last_bar": "2018-12-31 18:50:00+00:00",
+      "last_error": [
+        1,
+        "Success"
+      ],
+      "retrieval_status": "SUCCESS"
+    },
+    {
+      "year": 2019,
+      "requested_from": "2019-01-01T00:00:00+00:00",
+      "requested_to": "2019-12-31T23:59:59+00:00",
+      "returned_rows": 352158,
+      "actual_first_bar": "2019-01-02 09:05:00+00:00",
+      "actual_last_bar": "2019-12-31 18:50:00+00:00",
+      "last_error": [
+        1,
+        "Success"
+      ],
+      "retrieval_status": "SUCCESS"
+    },
+    {
+      "year": 2020,
+      "requested_from": "2020-01-01T00:00:00+00:00",
+      "requested_to": "2020-12-31T23:59:59+00:00",
+      "returned_rows": 354255,
+      "actual_first_bar": "2020-01-02 09:05:00+00:00",
+      "actual_last_bar": "2020-12-31 18:50:00+00:00",
+      "last_error": [
+        1,
+        "Success"
+      ],
+      "retrieval_status": "SUCCESS"
+    },
+    {
+      "year": 2021,
+      "requested_from": "2021-01-01T00:00:00+00:00",
+      "requested_to": "2021-12-31T23:59:59+00:00",
+      "returned_rows": 353758,
+      "actual_first_bar": "2021-01-04 01:00:00+00:00",
+      "actual_last_bar": "2021-12-31 18:50:00+00:00",
+      "last_error": [
+        1,
+        "Success"
+      ],
+      "retrieval_status": "SUCCESS"
+    },
+    {
+      "year": 2022,
+      "requested_from": "2022-01-01T00:00:00+00:00",
+      "requested_to": "2022-12-31T23:59:59+00:00",
+      "returned_rows": 354441,
+      "actual_first_bar": "2022-01-03 01:00:00+00:00",
+      "actual_last_bar": "2022-12-30 23:57:00+00:00",
+      "last_error": [
+        1,
+        "Success"
+      ],
+      "retrieval_status": "SUCCESS"
+    },
+    {
+      "year": 2023,
+      "requested_from": "2023-01-01T00:00:00+00:00",
+      "requested_to": "2023-12-31T23:59:59+00:00",
+      "returned_rows": 353062,
+      "actual_first_bar": "2023-01-03 01:00:00+00:00",
+      "actual_last_bar": "2023-12-29 23:57:00+00:00",
+      "last_error": [
+        1,
+        "Success"
+      ],
+      "retrieval_status": "SUCCESS"
+    },
+    {
+      "year": 2024,
+      "requested_from": "2024-01-01T00:00:00+00:00",
+      "requested_to": "2024-12-31T23:59:59+00:00",
+      "returned_rows": 354980,
+      "actual_first_bar": "2024-01-02 01:00:00+00:00",
+      "actual_last_bar": "2024-12-31 20:00:00+00:00",
+      "last_error": [
+        1,
+        "Success"
+      ],
+      "retrieval_status": "SUCCESS"
+    },
+    {
+      "year": 2025,
+      "requested_from": "2025-01-01T00:00:00+00:00",
+      "requested_to": "2025-12-31T23:59:59+00:00",
+      "returned_rows": 353069,
+      "actual_first_bar": "2025-01-02 08:00:00+00:00",
+      "actual_last_bar": "2025-12-31 19:59:00+00:00",
+      "last_error": [
+        1,
+        "Success"
+      ],
+      "retrieval_status": "SUCCESS"
+    }
+  ]
+}

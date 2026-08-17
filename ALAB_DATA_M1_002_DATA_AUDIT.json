@@ -1,0 +1,40 @@
+{
+  "dataset_id": "ALAB-DATA-M1-002",
+  "symbol": "GOLD",
+  "timeframe": "M1",
+  "canonical_path": "AlphaLab_Antigravity/data/canonical/GOLD_M1_PRE2026.csv",
+  "row_count": 2827419,
+  "start_datetime_utc": "2018-01-02 09:05:00+00:00",
+  "end_datetime_utc": "2025-12-31 19:59:00+00:00",
+  "calendar_years": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "calendar_years_count": 8,
+  "rows_per_year": {
+    "2018": 351696,
+    "2019": 352158,
+    "2020": 354255,
+    "2021": 353758,
+    "2022": 354441,
+    "2023": 353062,
+    "2024": 354980,
+    "2025": 353069
+  },
+  "unique_trading_days": 2065,
+  "duplicates_removed": 0,
+  "missing_ohlc_count": 0,
+  "invalid_ohlc_count": 0,
+  "discovery_2026_overlap": 0,
+  "gaps_greater_than_1hr": 2064,
+  "max_gap_seconds": 281400,
+  "file_size_bytes": 218455559,
+  "sha256": "10d6df33c749315824bb9552b139439e6bbfcbac1bed54f272a62696c2f4965e",
+  "data_verdict": "READY_FOR_REPLICATION"
+}

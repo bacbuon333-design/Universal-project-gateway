@@ -1,0 +1,26 @@
+{
+  "dataset_id": "ALAB-DATA-M1-002",
+  "canonical_path": "AlphaLab_Antigravity/data/canonical/GOLD_M1_PRE2026.csv",
+  "sha256": "10d6df33c749315824bb9552b139439e6bbfcbac1bed54f272a62696c2f4965e",
+  "rows": 2827419,
+  "start": "2018-01-02 09:05:00+00:00",
+  "end": "2025-12-31 19:59:00+00:00",
+  "years": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "size_bytes": 218455559,
+  "source_server": "XMGlobal-MT5 9",
+  "terminal_build": 6090,
+  "effective_maxbars": 100000000,
+  "retrieval_method": "MetaTrader5.copy_rates_range(annual chunks 2018-2025)",
+  "discovery_2026_overlap": 0,
+  "data_verdict": "READY_FOR_REPLICATION",
+  "research_only": true
+}
