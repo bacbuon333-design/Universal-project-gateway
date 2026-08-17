@@ -1,0 +1,11 @@
+{
+  "total_events": 0,
+  "total_days": 0,
+  "mean_events_per_day": 0.0,
+  "median_events_per_day": 0.0,
+  "p90_events_per_day": 0.0,
+  "median_gap_bars": 0.0,
+  "overlap_pct_5m": 0.0,
+  "overlap_pct_10m": 0.0,
+  "overlap_pct_30m": 0.0
+}

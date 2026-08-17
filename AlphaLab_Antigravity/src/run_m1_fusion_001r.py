@@ -70,27 +70,78 @@ def main() -> None:
     print(f"Replication Date Range: {data_audit_meta['start_datetime']} to {data_audit_meta['end_datetime']}")
     print(f"Unique Calendar Years: {data_audit_meta['unique_calendar_years']}")
 
-    # 3. Hard Data Gate Fail-Closed Enforcement
-    print("\n[2/5] Evaluating Hard Pre-Execution Data Requirements...")
-    if not data_audit_meta["is_sufficient_history"]:
-        raise RuntimeError(
-            f"STOP_BLOCKED_INSUFFICIENT_HISTORY: Pre-2026 replication row count ({data_audit_meta['replication_rows']:,}) "
-            f"is below the mandatory threshold of {MIN_REPLICATION_ROWS:,} rows. "
-            "Runner halting before scientific inference in strict compliance with Section 4."
-        )
-
-    if not data_audit_meta["is_sufficient_temporal_coverage"]:
-        raise RuntimeError(
-            f"STOP_BLOCKED_INSUFFICIENT_TEMPORAL_COVERAGE: Valid pre-2026 calendar years ({data_audit_meta['valid_calendar_years']}) "
-            f"is below the mandatory threshold of {MIN_VALID_CALENDAR_YEARS} years. "
-            "Runner halting before scientific inference in strict compliance with Section 4."
-        )
-
-    # 4. Cost Contract Verification
-    print("\n[3/5] Retrieving and verifying broker cost contract...")
+    # 3. Cost Contract Verification
+    print("\n[2/5] Retrieving and verifying broker cost contract...")
     cost_contract = get_verified_cost_contract("GOLD")
     print(f"Cost Contract Status: {cost_contract.cost_verification_status} | Point: {cost_contract.point} | "
           f"Contract Size: {cost_contract.trade_contract_size} oz | Commission: ${cost_contract.commission_per_lot_usd}/lot")
+
+    # 4. Hard Data Gate Fail-Closed Enforcement
+    print("\n[3/5] Evaluating Hard Pre-Execution Data Requirements...")
+    git_meta = {
+        "branch": git_info["branch"],
+        "base_sha": "6c257c313a83e2dec5813fc36be921912209bc68",
+        "precommit_sha": git_info["head"],
+        "result_commit_sha": "PENDING_UNTIL_COMMIT",
+        "tests_passed": 36,
+        "tests_failed": 0,
+    }
+
+    if not data_audit_meta["is_sufficient_history"] or not data_audit_meta["is_sufficient_temporal_coverage"]:
+        verdict = (
+            "STOP_BLOCKED_INSUFFICIENT_HISTORY"
+            if not data_audit_meta["is_sufficient_history"]
+            else "STOP_BLOCKED_INSUFFICIENT_TEMPORAL_COVERAGE"
+        )
+        print(f"\nHARD DATA GATE TRIGGERED: {verdict}")
+        print("Pre-2026 replication data is insufficient. Halting before scientific inference.")
+
+        event_decision = {
+            "verdict": verdict,
+            "total_events": 0,
+            "long_events": 0,
+            "short_events": 0,
+            "summary_stats": {},
+            "valid_calendar_years_count": 0,
+            "positive_valid_years_count": 0,
+            "year_details": {},
+            "score_bin_means_5m": {},
+            "score_bin_counts": {},
+            "score_consistency_status": "INSUFFICIENT_REPLICATION_DATA",
+            "gate0_data": False,
+            "gate1_sample": False,
+            "gate2_mean_5m_pos": False,
+            "gate3_day_block_ci_pos": False,
+            "gate4_adjacent_pos": False,
+            "gate5_year_stability": False,
+            "all_gates_pass": False,
+        }
+        overlap_audit = {
+            "total_events": 0,
+            "total_days": 0,
+            "mean_events_per_day": 0.0,
+            "median_events_per_day": 0.0,
+            "p90_events_per_day": 0.0,
+            "median_gap_bars": 0.0,
+            "overlap_pct_5m": 0.0,
+            "overlap_pct_10m": 0.0,
+            "overlap_pct_30m": 0.0,
+        }
+        block_bootstrap = {}
+        bt_results = {
+            "status": "INSUFFICIENT_DIAGNOSTIC",
+            "total_trades": 0,
+            "message": "Replication halted due to insufficient pre-2026 data history.",
+            "cost_verification_status": cost_contract.cost_verification_status,
+        }
+        df_events = pd.DataFrame()
+
+        print(f"\nExporting fail-closed artifacts to {OUTPUT_DIR} and project root...")
+        export_replication_artifacts(
+            OUTPUT_DIR, ROOT, data_audit_meta, cost_contract, event_decision, overlap_audit, block_bootstrap, df_events, bt_results, git_meta
+        )
+        print("=" * 70)
+        return
 
     # 5. Detect Failed Auction Events
     print("\n[4/5] Detecting causal Failed Auction events and calculating Reaction Scores...")
@@ -103,26 +154,13 @@ def main() -> None:
         df_replication, events, data_audit_meta
     )
     print(f"Final Replication Verdict: {event_decision.get('verdict')}")
-    h5_stats = event_decision.get("summary_stats", {}).get("h5m", {})
-    print(f"5m Mean Signed Return: {h5_stats.get('mean_return_bps', 0.0):+.2f} bps "
-          f"(Day-Block 95% CI: [{h5_stats.get('day_block_ci_95_lower_bps', 0.0):.2f}, {h5_stats.get('day_block_ci_95_upper_bps', 0.0):.2f}])")
 
     # 7. Diagnostic Backtest
     bt_results = run_diagnostic_backtest(
         df_replication, events, min_reaction_score=7, sl_atr_mult=1.0, max_holding_bars=5, cost_contract=cost_contract
     )
-    print(f"Diagnostic Status: {bt_results.get('status')} | Trades: {bt_results.get('total_trades', 0)} | "
-          f"Gross PF: {bt_results.get('gross_profit_factor', 0.0):.3f} | Net PF: {bt_results.get('net_profit_factor', 0.0):.3f}")
 
     # 8. Export Artifacts
-    git_meta = {
-        "branch": git_info["branch"],
-        "base_sha": "6c257c313a83e2dec5813fc36be921912209bc68",
-        "precommit_sha": git_info["head"],
-        "result_commit_sha": "PENDING_UNTIL_COMMIT",
-        "tests_passed": 36,
-        "tests_failed": 0,
-    }
     export_replication_artifacts(
         OUTPUT_DIR, ROOT, data_audit_meta, cost_contract, event_decision, overlap_audit, block_bootstrap, df_events, bt_results, git_meta
     )

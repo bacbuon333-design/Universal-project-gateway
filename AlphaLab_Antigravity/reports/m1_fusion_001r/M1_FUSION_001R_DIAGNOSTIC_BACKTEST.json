@@ -1,0 +1,6 @@
+{
+  "status": "INSUFFICIENT_DIAGNOSTIC",
+  "total_trades": 0,
+  "message": "Replication halted due to insufficient pre-2026 data history.",
+  "cost_verification_status": "VERIFIED"
+}

@@ -1,0 +1,20 @@
+{
+  "verdict": "STOP_BLOCKED_INSUFFICIENT_HISTORY",
+  "total_events": 0,
+  "long_events": 0,
+  "short_events": 0,
+  "summary_stats": {},
+  "valid_calendar_years_count": 0,
+  "positive_valid_years_count": 0,
+  "year_details": {},
+  "score_bin_means_5m": {},
+  "score_bin_counts": {},
+  "score_consistency_status": "INSUFFICIENT_REPLICATION_DATA",
+  "gate0_data": false,
+  "gate1_sample": false,
+  "gate2_mean_5m_pos": false,
+  "gate3_day_block_ci_pos": false,
+  "gate4_adjacent_pos": false,
+  "gate5_year_stability": false,
+  "all_gates_pass": false
+}
