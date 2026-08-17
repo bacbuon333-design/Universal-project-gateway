@@ -38,8 +38,8 @@ def test_sealed_holdout_is_blocked():
 
 def test_upper_failed_auction_and_accepted_breakout_are_distinct():
     df = _bars()
-    df.loc[510, ["open", "high", "low", "close"]] = [100.0, 101.0, 99.8, 99.95]
-    df.loc[511, ["open", "high", "low", "close"]] = [100.0, 102.0, 99.8, 101.5]
+    df.loc[510, ["open", "high", "low", "close"]] = [100.0, 101.0, 99.95, 99.95]
+    df.loc[511, ["open", "high", "low", "close"]] = [100.0, 102.0, 99.95, 101.5]
     events = detect_breach_events(df)
     got = {(e.bar_index, e.event_class, e.side) for e in events}
     assert (510, "FAILED_AUCTION", "SHORT") in got
@@ -48,8 +48,8 @@ def test_upper_failed_auction_and_accepted_breakout_are_distinct():
 
 def test_lower_failed_auction_and_accepted_breakout_are_distinct():
     df = _bars()
-    df.loc[510, ["open", "high", "low", "close"]] = [100.0, 100.2, 99.0, 100.05]
-    df.loc[511, ["open", "high", "low", "close"]] = [100.0, 100.2, 98.0, 98.5]
+    df.loc[510, ["open", "high", "low", "close"]] = [100.0, 100.05, 99.0, 100.05]
+    df.loc[511, ["open", "high", "low", "close"]] = [100.0, 100.05, 98.0, 98.5]
     events = detect_breach_events(df)
     got = {(e.bar_index, e.event_class, e.side) for e in events}
     assert (510, "FAILED_AUCTION", "LONG") in got

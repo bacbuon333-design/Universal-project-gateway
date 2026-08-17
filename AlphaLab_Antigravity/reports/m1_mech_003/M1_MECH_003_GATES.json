@@ -1,0 +1,12 @@
+{
+  "G0_common_support": true,
+  "G1_covariate_balance": true,
+  "G2_primary_5m_att_positive": false,
+  "G3_day_block_ci_lower_positive": false,
+  "G4_secondary_horizon_positive": false,
+  "G5_temporal_stability": false,
+  "max_abs_smd_after": 0.09318659763790896,
+  "positive_years": 0,
+  "valid_years": 8,
+  "verdict": "MECHANISM_NOT_CONFIRMED"
+}

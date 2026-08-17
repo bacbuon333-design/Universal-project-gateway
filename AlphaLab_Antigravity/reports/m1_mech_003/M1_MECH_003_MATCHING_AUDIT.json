@@ -1,0 +1,10 @@
+{
+  "strata_total": 126141,
+  "strata_common_support": 47116,
+  "failed_auction_total": 271265,
+  "accepted_breakout_total": 343793,
+  "failed_auction_matched": 203651,
+  "accepted_breakout_matched": 240821,
+  "failed_auction_common_support_pct": 75.07455808895361,
+  "accepted_breakout_common_support_pct": 70.0482557818222
+}

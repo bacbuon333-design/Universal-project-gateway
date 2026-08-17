@@ -1,0 +1,9 @@
+{
+  "iterations": 2000,
+  "seed": 20260817,
+  "unique_utc_days": 2065,
+  "valid_iterations": 2000,
+  "mean_att_bps": -0.16389668093902218,
+  "ci95_lower_bps": -0.20816941298619496,
+  "ci95_upper_bps": -0.11689429171575921
+}
